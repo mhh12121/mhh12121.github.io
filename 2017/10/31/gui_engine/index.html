@@ -5,18 +5,18 @@
   
   <title>从DocumentFragment看到GUI渲染 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这里主要说说重绘(repaint)和回流(reflow)的问题 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；其中要使用DocumentFragmentMDN手册先看下以下代码 window.onload = function(){/*一个大致的ajax动态获取信息并添加到DOM中的代码*/     /*ajax*/     var xhr;     if(wind">
+  <meta name="description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
 <meta name="keywords" content="css">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从DocumentFragment看到GUI渲染">
 <meta property="og:url" content="https://mhh12121.github.io/2017/10/31/gui_engine/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；其中要使用DocumentFragmentMDN手册先看下以下代码 window.onload = function(){/*一个大致的ajax动态获取信息并添加到DOM中的代码*/     /*ajax*/     var xhr;     if(wind">
+<meta property="og:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2017-01-04T18:07:20.000Z">
+<meta property="og:updated_time" content="2017-10-31T15:55:21.935Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从DocumentFragment看到GUI渲染">
-<meta name="twitter:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；其中要使用DocumentFragmentMDN手册先看下以下代码 window.onload = function(){/*一个大致的ajax动态获取信息并添加到DOM中的代码*/     /*ajax*/     var xhr;     if(wind">
+<meta name="twitter:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/31/gui_engine/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.003Z" itemprop="datePublished">2017-10-31</time>
+  <time datetime="2017-10-31T15:55:21.947Z" itemprop="datePublished">2017-10-31</time>
 </a>
     
   </div>
@@ -92,6 +92,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
+<a id="more"></a>
 <h4 id="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"><a href="#犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；" class="headerlink" title="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"></a>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4><h4 id="其中要使用DocumentFragmentMDN手册"><a href="#其中要使用DocumentFragmentMDN手册" class="headerlink" title="其中要使用DocumentFragmentMDN手册"></a>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="external">MDN手册</a></h4><p>先看下以下代码</p>
 <pre><code class="javascript"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{<span class="comment">/*一个大致的ajax动态获取信息并添加到DOM中的代码*/</span>
     <span class="comment">/*ajax*/</span>
@@ -126,7 +127,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/gui_engine/" data-id="cj9fsg7e50003i6ugiooodeoi" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/gui_engine/" data-id="cj9fskztk0005o6ugnxna6psh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -137,19 +138,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2017/10/31/css-clip/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2017/10/31/js-async/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          css-clip问题
+          从setTimeout()看到js异步机制
         
       </div>
     </a>
   
   
-    <a href="/2017/10/31/js-time/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2017/10/31/Regexp/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">关于javascript中时间的一系列函数</div>
+      <div class="article-nav-title">正则表达式</div>
     </a>
   
 </nav>
@@ -204,6 +205,10 @@
           </li>
         
           <li>
+            <a href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
             <a href="/2017/10/31/Regexp/">正则表达式</a>
           </li>
         
@@ -213,10 +218,6 @@
         
           <li>
             <a href="/2017/10/31/css-clip/">css-clip问题</a>
-          </li>
-        
-          <li>
-            <a href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
           </li>
         
       </ul>

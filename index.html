@@ -69,7 +69,7 @@
     <article id="post-js-async" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/31/js-async/" class="article-date">
-  <time datetime="2017-10-31T15:48:03.151Z" itemprop="datePublished">2017-10-31</time>
+  <time datetime="2017-10-31T15:55:41.126Z" itemprop="datePublished">2017-10-31</time>
 </a>
     
   </div>
@@ -88,37 +88,63 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <a id="more"></a>
-<h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><pre><code>var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])
-</code></pre><p>指的是若干毫秒后执行func，大概是一个闹钟的功能; <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout" target="_blank" rel="external">MDN手册</a><br><!--more--></p>
-<h4 id="值得注意的问题"><a href="#值得注意的问题" class="headerlink" title="值得注意的问题"></a>值得注意的问题</h4><p>以前想过setTimeout(func,0)指的是不是立即执行呢？<br>下面看个例子:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">alert(<span class="number">1</span>);</div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">	alert(<span class="number">2</span>);</div><div class="line">&#125;,<span class="number">0</span>);</div><div class="line">alert(<span class="number">3</span>);</div></pre></td></tr></table></figure>
-<p>结果却是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1</div><div class="line">3</div><div class="line">2</div></pre></td></tr></table></figure></p>
-<p>是不是感到很奇怪，这个意思就是setTimeout(func,0)并不是立即执行;</p>
-<p>在网上查了资料，发现这个要从<span style="color:#f92672">js引擎</span>说起</p>
-<h4 id="js引擎的单线程性"><a href="#js引擎的单线程性" class="headerlink" title="js引擎的单线程性"></a>js引擎的单线程性</h4><p>首先区分两个概念:<br><span style="color:#f92672">js引擎</span>和<span style="color:#f92672">浏览器内核</span></p>
-<p>js引擎是单线程的这个没错，但是，就因为js引擎是单线程的，它没法再为其他功能服务；<br>同时，<span style="color:#f92672">浏览器是多线程的</span>,这就说的通了：比如浏览器事件触发、定时器计时、网络请求、渲染等都是由浏览器内核分配的其他线程完成的，js引擎只占其中一个线程。</p>
-<p>再举个经典例子：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> end = ture;</div><div class="line"><span class="built_in">window</span>.setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">	end = <span class="literal">false</span>;</div><div class="line">&#125;,<span class="number">1000</span>);</div><div class="line"><span class="keyword">while</span>(end);</div><div class="line">alert(<span class="string">'end'</span>);</div></pre></td></tr></table></figure></p>
-<p>上面的例子结果就是 while(end)处死循环，永远到不了alert(‘end’)，意思就是setTimeout里边的函数没有执行;</p>
-<p>下面就引入这个事件队列的问题，用一张图表示：<br><img src="../../../../css/images/jsengine.jpg" alt="js事件队列"></p>
-<p>js是基于事件驱动的语言,所以遵循一个叫事件队列的机制。从图中可看出浏览器的各种各样的线程，比如事件触发器、网络请求、定时器等，js引擎处理到与其他线程相关的代码，会把他们分发到其他线程，他们处理完后需要js引擎计算时就是在事件队列添加一个任务。然而在这个过程中，js并不会阻塞代码等待其他线程执行完毕，而是直接跳过这个分发给别的进程的代码，执行下一串代码。</p>
-<p>很明显上面while(end)的死循环问题就得到解决，执行到setTimeout的时候，把这个东西（定时器）扔到了事件队列后边，然后执行while(end)但这时end是true，所以造成死循环，与第一个setTimeout(func,0)的例子一样得到解释。</p>
-<p><div style="color:#f92672">PS:实现异步加载</div><br>1.现代浏览器prefetch（预加载）优化，即浏览器会另开新线程，提前下载js、css文件，prefetch不会改变dom结构.</p>
-<pre><code>&lt;link rel=&quot;prefetch&quot; href=&quot;http://&quot;&gt; &lt;!--利用空余时间加载剩下的网页--&gt;
-</code></pre><p>2.HTML5的defer async标签实现异步加载</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;script defer=<span class="string">"true"</span> type=<span class="string">"text/javascript"</span>&gt;&lt;/script&gt;&lt;!--不等js加载完成就加载后边的图片--&gt;</div><div class="line">&lt;script async="true" type="text/javascript"&gt;&lt;/script&gt;</div></pre></td></tr></table></figure>
-<p>3.动态加载js</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">document</span>.write(<span class="string">"&lt;script src="</span>a.js<span class="string">"&gt;&lt;/script&gt;"</span>);</div><div class="line"><span class="comment">/*还有修改src路径、创建script标签再将其放进DOM中，这些都是对DOM操作*/</span></div></pre></td></tr></table></figure>
-<h4 id="setTimeout-func-0-特殊功效"><a href="#setTimeout-func-0-特殊功效" class="headerlink" title="setTimeout(func,0)特殊功效"></a>setTimeout(func,0)特殊功效</h4><p><span style="color:#f92672;font-size:1.8rem">换个角度想，是不是可以用setTimeout(func,0)强行将func放到队列后边延迟执行呢？！这也算是个小技巧吧？</span></p>
-<p>而这个技巧在同样情况下（打开一个标签，就测试环境差不多）不同浏览器上出现的时间会不同，我个人认为这也可以看出浏览器的性能;</p>
-
+        <h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><pre><code>var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])
+</code></pre><p>指的是若干毫秒后执行func，大概是一个闹钟的功能; <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout" target="_blank" rel="external">MDN手册</a><br>
+        
+          <p class="article-more-link">
+            <a href="/2017/10/31/js-async/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/js-async/" data-id="cj9fsg7e70004i6ug68mevb16" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/js-async/" data-id="cj9fskztb0003o6ugfv611zjx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/31/gui_engine/" class="article-date">
+  <time datetime="2017-10-31T15:55:21.947Z" itemprop="datePublished">2017-10-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
+        
+          <p class="article-more-link">
+            <a href="/2017/10/31/gui_engine/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2017/10/31/gui_engine/" data-id="cj9fskztk0005o6ugnxna6psh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
 
     </footer>
   </div>
@@ -159,7 +185,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/Regexp/" data-id="cj9fsg7dk0000i6ug5jfjjeiv" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/Regexp/" data-id="cj9fskzsr0000o6ug6ozlmovx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
@@ -202,7 +228,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/markdown/" data-id="cj9fsg7eh0008i6ugb5dw6cba" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/markdown/" data-id="cj9fskzto0008o6ug8215zblb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Markdown/">Markdown</a></li></ul>
@@ -245,76 +271,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/css-clip/" data-id="cj9fsg7du0001i6ugosboxihe" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/10/31/gui_engine/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.003Z" itemprop="datePublished">2017-10-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-<h4 id="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"><a href="#犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；" class="headerlink" title="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"></a>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4><h4 id="其中要使用DocumentFragmentMDN手册"><a href="#其中要使用DocumentFragmentMDN手册" class="headerlink" title="其中要使用DocumentFragmentMDN手册"></a>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="external">MDN手册</a></h4><p>先看下以下代码</p>
-<pre><code class="javascript"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{<span class="comment">/*一个大致的ajax动态获取信息并添加到DOM中的代码*/</span>
-    <span class="comment">/*ajax*/</span>
-    <span class="keyword">var</span> xhr;
-    <span class="keyword">if</span>(<span class="built_in">window</span>.XMLHttpRequest){
-        xhr = <span class="keyword">new</span> <span class="built_in">window</span>.XMLHttpRequest();
-    }<span class="keyword">else</span>{
-        xhr = <span class="keyword">new</span> ActiveXObject(<span class="string">'Microsoft.XMLHttp'</span>);<span class="comment">/*IE6没什么X用*/</span>
-    }
-    xhr.open(<span class="string">'get'</span>,<span class="keyword">this</span>.getAtrribute(<span class="string">'data-url'</span>),<span class="literal">true</span>);
-    xhr.send(<span class="literal">null</span>);
-    xhr.onreadystatechange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-        <span class="keyword">if</span>(xhr.readyState == <span class="number">4</span> &amp;&amp; xhr.status == <span class="number">200</span>){
-            <span class="comment">/*核心*/</span>
-            <span class="keyword">var</span> frag = <span class="built_in">document</span>.createDocumentFragment();<span class="comment">/*创建一个文档节点，其实和用一串字符串存储在一个变量中一样*/</span>
-            <span class="keyword">for</span>(<span class="keyword">var</span> x = <span class="number">0</span>; x&lt;<span class="number">10</span>;x++){
-                <span class="keyword">var</span> li = <span class="built_in">document</span>.createElement(<span class="string">"li"</span>);
-                li.innerHTML = <span class="string">"List item"</span>+x;
-                frag.appendChild(li);
-            }
-            Node.appendChild(frag);
-
-            frag = <span class="literal">null</span>;<span class="comment">/*清空Documentfragment缓存*/</span>
-        }
-    }    
-}
-</code></pre>
-<h3 id="回流-reflow"><a href="#回流-reflow" class="headerlink" title="回流(reflow)"></a>回流(reflow)</h3><p>Render Tree中一部分或全部因为元素尺寸、布局、隐藏等改变而需要重新构建，每个页面在一开始加载的时候都会回流。</p>
-<pre><code>1. font-size:字体大小无疑会影响
-</code></pre><h3 id="重绘-repaint"><a href="#重绘-repaint" class="headerlink" title="重绘(repaint)"></a>重绘(repaint)</h3><p>Render Tree中一些只影响颜色、风格、</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/gui_engine/" data-id="cj9fsg7e50003i6ugiooodeoi" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/css-clip/" data-id="cj9fskzt00001o6ugjhsphljb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -357,7 +314,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/js-time/" data-id="cj9fsg7ed0005i6ug6jj4vc1v" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/js-time/" data-id="cj9fskztd0004o6ugho3ue8em" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
@@ -417,6 +374,10 @@
           </li>
         
           <li>
+            <a href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
             <a href="/2017/10/31/Regexp/">正则表达式</a>
           </li>
         
@@ -426,10 +387,6 @@
         
           <li>
             <a href="/2017/10/31/css-clip/">css-clip问题</a>
-          </li>
-        
-          <li>
-            <a href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
           </li>
         
       </ul>
