@@ -5,19 +5,19 @@
   
   <title>从setTimeout()看到js异步机制 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册">
+  <meta name="description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册 值得注意的问题以前想过setTimeout(func,0)指的是不是立即执行呢？下面看个例子: 123456alert(1);setTimeout(function()&amp;#123;	ale">
 <meta name="keywords" content="javascript">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从setTimeout()看到js异步机制">
 <meta property="og:url" content="https://mhh12121.github.io/2017/10/31/js-async/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册">
+<meta property="og:description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册 值得注意的问题以前想过setTimeout(func,0)指的是不是立即执行呢？下面看个例子: 123456alert(1);setTimeout(function()&amp;#123;	ale">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/css/images/jsengine.jpg">
-<meta property="og:updated_time" content="2016-12-30T13:35:18.000Z">
+<meta property="og:updated_time" content="2017-10-31T15:48:03.135Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从setTimeout()看到js异步机制">
-<meta name="twitter:description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册">
+<meta name="twitter:description" content="格式var timeoutID = window.setTimeout(func, [delay, param1, param2, ...]) 指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册 值得注意的问题以前想过setTimeout(func,0)指的是不是立即执行呢？下面看个例子: 123456alert(1);setTimeout(function()&amp;#123;	ale">
 <meta name="twitter:image" content="https://mhh12121.github.io/css/images/jsengine.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -74,7 +74,7 @@
         <section id="main"><article id="post-js-async" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/31/js-async/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.003Z" itemprop="datePublished">2017-10-31</time>
+  <time datetime="2017-10-31T15:48:03.151Z" itemprop="datePublished">2017-10-31</time>
 </a>
     
   </div>
@@ -93,8 +93,9 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><pre><code>var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])
-</code></pre><p>指的是若干毫秒后执行func，大概是一个闹钟的功能; <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout" target="_blank" rel="external">MDN手册</a><br><a id="more"></a></p>
+        <a id="more"></a>
+<h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><pre><code>var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])
+</code></pre><p>指的是若干毫秒后执行func，大概是一个闹钟的功能; <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout" target="_blank" rel="external">MDN手册</a><br><!--more--></p>
 <h4 id="值得注意的问题"><a href="#值得注意的问题" class="headerlink" title="值得注意的问题"></a>值得注意的问题</h4><p>以前想过setTimeout(func,0)指的是不是立即执行呢？<br>下面看个例子:</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">alert(<span class="number">1</span>);</div><div class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</div><div class="line">	alert(<span class="number">2</span>);</div><div class="line">&#125;,<span class="number">0</span>);</div><div class="line">alert(<span class="number">3</span>);</div></pre></td></tr></table></figure>
 <p>结果却是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">1</div><div class="line">3</div><div class="line">2</div></pre></td></tr></table></figure></p>
@@ -119,7 +120,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/js-async/" data-id="cj9fs2s1h00054oughzjyxani" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/js-async/" data-id="cj9fsg7e70004i6ug68mevb16" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
@@ -130,19 +131,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2017/10/31/js-time/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          关于javascript中时间的一系列函数
-        
-      </div>
-    </a>
   
-  
-    <a href="/2017/10/31/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2017/10/31/Regexp/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Hello World</div>
+      <div class="article-nav-title">正则表达式</div>
     </a>
   
 </nav>
@@ -193,6 +185,10 @@
       <ul>
         
           <li>
+            <a href="/2017/10/31/js-async/">从setTimeout()看到js异步机制</a>
+          </li>
+        
+          <li>
             <a href="/2017/10/31/Regexp/">正则表达式</a>
           </li>
         
@@ -206,10 +202,6 @@
         
           <li>
             <a href="/2017/10/31/gui_engine/">从DocumentFragment看到GUI渲染</a>
-          </li>
-        
-          <li>
-            <a href="/2017/10/31/js-time/">关于javascript中时间的一系列函数</a>
           </li>
         
       </ul>
