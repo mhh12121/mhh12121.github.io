@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>从DocumentFragment看到GUI渲染 | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+<meta name="keywords" content="css">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从DocumentFragment看到GUI渲染">
+<meta property="og:url" content="https://mhh12121.github.io/2017/11/02/gui_engine/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2017-11-01T16:00:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从DocumentFragment看到GUI渲染">
+<meta name="twitter:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/02/gui_engine/" class="article-date">
+  <time datetime="2017-11-01T16:00:35.374Z" itemprop="datePublished">2017-11-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      从DocumentFragment看到GUI渲染
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
+<a id="more"></a>
+<h4 id="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"><a href="#犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；" class="headerlink" title="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"></a>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4><h4 id="其中要使用DocumentFragmentMDN手册"><a href="#其中要使用DocumentFragmentMDN手册" class="headerlink" title="其中要使用DocumentFragmentMDN手册"></a>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="external">MDN手册</a></h4><p>先看下以下代码</p>
+<pre><code class="javascript"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{<span class="comment">/*一个大致的ajax动态获取信息并添加到DOM中的代码*/</span>
+    <span class="comment">/*ajax*/</span>
+    <span class="keyword">var</span> xhr;
+    <span class="keyword">if</span>(<span class="built_in">window</span>.XMLHttpRequest){
+        xhr = <span class="keyword">new</span> <span class="built_in">window</span>.XMLHttpRequest();
+    }<span class="keyword">else</span>{
+        xhr = <span class="keyword">new</span> ActiveXObject(<span class="string">'Microsoft.XMLHttp'</span>);<span class="comment">/*IE6没什么X用*/</span>
+    }
+    xhr.open(<span class="string">'get'</span>,<span class="keyword">this</span>.getAtrribute(<span class="string">'data-url'</span>),<span class="literal">true</span>);
+    xhr.send(<span class="literal">null</span>);
+    xhr.onreadystatechange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
+        <span class="keyword">if</span>(xhr.readyState == <span class="number">4</span> &amp;&amp; xhr.status == <span class="number">200</span>){
+            <span class="comment">/*核心*/</span>
+            <span class="keyword">var</span> frag = <span class="built_in">document</span>.createDocumentFragment();<span class="comment">/*创建一个文档节点，其实和用一串字符串存储在一个变量中一样*/</span>
+            <span class="keyword">for</span>(<span class="keyword">var</span> x = <span class="number">0</span>; x&lt;<span class="number">10</span>;x++){
+                <span class="keyword">var</span> li = <span class="built_in">document</span>.createElement(<span class="string">"li"</span>);
+                li.innerHTML = <span class="string">"List item"</span>+x;
+                frag.appendChild(li);
+            }
+            Node.appendChild(frag);
+
+            frag = <span class="literal">null</span>;<span class="comment">/*清空Documentfragment缓存*/</span>
+        }
+    }    
+}
+</code></pre>
+<p>上面这样写的好处就是：创建一个DocumentFragment(),这样在appendChild()的时候就只会触发一次reflow</p>
+<p>因为暂时没有现成网站，暂时先当作一个笔记吧：</p>
+<h3 id="回流-reflow"><a href="#回流-reflow" class="headerlink" title="回流(reflow)"></a>回流(reflow)</h3><p>Render Tree中一部分或全部因为元素尺寸、布局、隐藏等改变而需要重新构建，每个页面在一开始加载的时候都会回流，以下一些建议：</p>
+<pre><code>1. 如要修改，尽量修改DOM中下层的class，避免上层父级class改变
+2. 避免使用table（一开始接触就听说这玩意有问题）
+3. 避免在html中设置style，尽量在外部css设置style，跟documentFragment()是一个道理
+</code></pre><h3 id="重绘-repaint"><a href="#重绘-repaint" class="headerlink" title="重绘(repaint)"></a>重绘(repaint)</h3><p>Render Tree中一些只影响颜色、风格，最重要跟以上reflow不同的关键就是不影响DOM结构，比如一些absolute或者fixed定位元素就基本可以随便移动（假设他们的父元素不变啦）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2017/11/02/gui_engine/" data-id="cj9h8bcqj0000r6ugr4y0cfvt" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/11/02/markdown/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Markdown学习记录
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/10/31/js-async/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">从setTimeout()看到js异步机制</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Javascript/" style="font-size: 10px;">Javascript</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 20px;">css</a> <a href="/tags/javascript/" style="font-size: 10px;">javascript</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/11/02/markdown/">Markdown学习记录</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/02/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/31/js-async/">从setTimeout()看到js异步机制</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/31/Regexp/">正则表达式</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/31/js-time/">关于javascript中时间的一系列函数</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
