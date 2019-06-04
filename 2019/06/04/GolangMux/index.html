@@ -3,15 +3,20 @@
 <head>
   <meta charset="utf-8">
   
-  <title>兜的破烂</title>
+  <title>Golang Mux | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="兜的破烂">
-<meta property="og:url" content="https://mhh12121.github.io/index.html">
+  <meta name="description" content="开始做笔记…(之前面试被怼了)今天主要看一下mux的 路由匹配原理First, let’s go through its  usage : 12router:=mux.router()router.HandlerFunc(&quot;/api/v&amp;#123;version&amp;#125;/&amp;#123;category&amp;#125;&quot;,handler) About  HandlerFunc   123456// H">
+<meta name="keywords" content="golang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang Mux">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/04/GolangMux/index.html">
 <meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="开始做笔记…(之前面试被怼了)今天主要看一下mux的 路由匹配原理First, let’s go through its  usage : 12router:=mux.router()router.HandlerFunc(&quot;/api/v&amp;#123;version&amp;#125;/&amp;#123;category&amp;#125;&quot;,handler) About  HandlerFunc   123456// H">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-04T07:50:37.761Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="兜的破烂">
+<meta name="twitter:title" content="Golang Mux">
+<meta name="twitter:description" content="开始做笔记…(之前面试被怼了)今天主要看一下mux的 路由匹配原理First, let’s go through its  usage : 12router:=mux.router()router.HandlerFunc(&quot;/api/v&amp;#123;version&amp;#125;/&amp;#123;category&amp;#125;&quot;,handler) About  HandlerFunc   123456// H">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -64,9 +69,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-GolangMux" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-GolangMux" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/04/GolangMux/" class="article-date">
   <time datetime="2019-06-04T07:50:37.761Z" itemprop="datePublished">2019-06-04</time>
@@ -79,8 +82,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/04/GolangMux/">Golang Mux</a>
+    <h1 class="article-title" itemprop="name">
+      Golang Mux
     </h1>
   
 
@@ -123,432 +126,20 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-DesignPattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/04/30/DesignPattern/" class="article-date">
-  <time datetime="2018-04-30T15:48:00.000Z" itemprop="datePublished">2018-04-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
-    </h1>
+    <a href="/2018/04/30/DesignPattern/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Notes about Design Pattern</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>For reviewing some most likely used design pattern:</p>
-<h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>Pros:</p>
-<ol>
-<li><p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
-</li>
-<li><p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
-</li>
-<li></li>
-</ol>
-<p>Cons:</p>
-<ol>
-<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
-</ol>
-<p>Scenes:</p>
-<ol>
-<li>generate unique key;</li>
-<li>IO;</li>
-<li>global stored in memory for calculating purpose.For exmaple, Spring Bean is set as a singleton by default so that spring can manage this bean life cycle(but if Bean use non-singleton like prototype pattern,after the initialization of Bean, it will be transfered to J2EE container,Spring no longer manages this Bean)</li>
-</ol>
-<h2 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a><strong>Proxy</strong></h2><h3 id="dynamic-proxy"><a href="#dynamic-proxy" class="headerlink" title="dynamic proxy"></a><strong>dynamic proxy</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">     <span class="comment">//被代理者</span></div><div class="line">     Class cls =<span class="keyword">null</span>;</div><div class="line">     <span class="comment">//被代理的实例</span></div><div class="line">     Object obj = <span class="keyword">null</span>;</div><div class="line">     <span class="comment">//我要代理谁</span></div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</div><div class="line">             <span class="keyword">this</span>.obj = _obj;</div><div class="line">     &#125;</div><div class="line">     <span class="comment">//调用被代理的方法</span></div><div class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">     &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjwhi886v0000veugrjklcj6t" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
 
-
-  
-    <article id="post-Java-Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/03/07/Java-Concurrency/" class="article-date">
-  <time datetime="2018-03-07T03:00:00.000Z" itemprop="datePublished">2018-03-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/07/Java-Concurrency/">Java-Concurrency</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.</p>
-<p>Following is some notes about the avoiding or solving the deadlock.</p>
-<h2 id="Monitor"><a href="#Monitor" class="headerlink" title="Monitor "></a><strong>Monitor </strong></h2><p>At the beginning, we can look at a picture:<br><img src="../../images/monitor" alt="Monitor"></p>
-<p>  而一个锁就像一种任何时候只允许一个线程拥有的特权.<br>  一个线程可以允许多次对同一对象上锁.对于每一个对象来说,java虚拟机维护一个计数器,记录对象被加了多少次锁,没被锁的对象的计数器是0,线程每加锁一次,计数器就加1,每释放一次,计数器就减1.当计数器跳到0的  时候,锁就被完全释放了.   </p>
-<p>  java虚拟机中的一个线程在它到达监视区域开始处的时候请求一个锁.JAVA程序中每一个监视区域都和一个对象引用相关联.<br>The program is like a building. And it stores some data meanwhile. But every time this building can only be occupied by only <span style="color:#f92672"><strong>one</strong> thread.<br>If the thread enter this building, it’s called <strong>enter monitor</strong>;<br>If the thread enter the special room in this building, it’s called <strong>get monitor</strong>;<br>If the thread occupy the room, it’s called <strong>occupy monitor</strong>;<br>If the thread leave the room, it’s called <strong>release monitor</strong>;<br>If the thread leave the building, it’s called <strong>exit monitor</strong>;</span></p>
-<p>Then,a <strong>LOCK</strong> is an authority only for single thread in every time.<br>Single thread is allowed to multiplically add the lock to the same object.As for an object, JVM maintain a counter to record how many times the object was added lock.</p>
-<p>In Java, to implement a monitor, we’re supposed to use <strong>Lock</strong> and <strong>Condition</strong> class,</p>
-<h2 id="Semaphore"><a href="#Semaphore" class="headerlink" title="Semaphore"></a><strong>Semaphore</strong></h2><p>A counting semaphore. Conceptually, a semaphore maintains a set of permits. Each acquire() blocks if necessary until a permit is available, and then takes it. Each release() adds a permit, potentially releasing a blocking acquirer. However, no actual permit objects are used; the Semaphore just keeps a count of the number available and acts accordingly.</p>
-<p>Semaphores are often used to restrict the number of threads than can access some (physical or logical) resource. For example, here is a class that uses a semaphore to control access to a pool of items:</p>
-<p> class Pool {<br>   private static final int MAX_AVAILABLE = 100;<br>   private final Semaphore available = new Semaphore(MAX_AVAILABLE, true);</p>
-<p>   public Object getItem() throws InterruptedException {<br>     available.acquire();<br>     return getNextAvailableItem();<br>   }</p>
-<p>   public void putItem(Object x) {<br>     if (markAsUnused(x))<br>       available.release();<br>   }</p>
-<p>   // Not a particularly efficient data structure; just for demo</p>
-<p>   protected Object[] items = … whatever kinds of items being managed<br>   protected boolean[] used = new boolean[MAX_AVAILABLE];</p>
-<p>   protected synchronized Object getNextAvailableItem() {<br>     for (int i = 0; i &lt; MAX_AVAILABLE; ++i) {<br>       if (!used[i]) {<br>          used[i] = true;<br>          return items[i];<br>       }<br>     }<br>     return null; // not reached<br>   }</p>
-<p>   protected synchronized boolean markAsUnused(Object item) {<br>     for (int i = 0; i &lt; MAX_AVAILABLE; ++i) {<br>       if (item == items[i]) {<br>          if (used[i]) {<br>            used[i] = false;<br>            return true;<br>          } else<br>            return false;<br>       }<br>     }<br>     return false;<br>   }</p>
-<p> }</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/Java-Concurrency/" data-id="cjwhi887m0004veugitjioxju" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js-Promise" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/02/25/js-Promise/" class="article-date">
-  <time datetime="2018-02-25T08:19:02.751Z" itemprop="datePublished">2018-02-25</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/02/25/js-Promise/">My Understanding towards Promise/A+</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Personal comprehension about ES6 promise,including simulated promise implementation<br>
-        
-          <p class="article-more-link">
-            <a href="/2018/02/25/js-Promise/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/02/25/js-Promise/" data-id="cjwhi887o0005veugbu3tos6a" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Java-Collection" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/01/07/Java-Collection/" class="article-date">
-  <time datetime="2018-01-07T15:48:00.000Z" itemprop="datePublished">2018-01-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/01/07/Java-Collection/">Java-Collections</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Following is the summarize of the Java Collections:<br>
-        
-          <p class="article-more-link">
-            <a href="/2018/01/07/Java-Collection/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/07/Java-Collection/" data-id="cjwhi88750001veugt72qmsgm" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js-Scope" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/07/js-Scope/" class="article-date">
-  <time datetime="2017-11-06T16:19:40.962Z" itemprop="datePublished">2017-11-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/07/js-Scope/">From SetTimeout to Js Scope</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>There’s a chinese word ‘温故而知新’.<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/11/07/js-Scope/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/07/js-Scope/" data-id="cjammo2i60003acugtjfxtqc3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js-async" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/06/js-async/" class="article-date">
-  <time datetime="2017-11-06T15:20:39.992Z" itemprop="datePublished">2017-11-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/06/js-async/">从setTimeout()看到js异步机制</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="格式"><a href="#格式" class="headerlink" title="格式"></a>格式</h3><pre><code>var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])
-</code></pre><p>指的是若干毫秒后执行func，大概是一个闹钟的功能; <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout" target="_blank" rel="external">MDN手册</a><br>
-        
-          <p class="article-more-link">
-            <a href="/2017/11/06/js-async/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/06/js-async/" data-id="cjammo2im0009acugjl3701im" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/02/gui_engine/" class="article-date">
-  <time datetime="2017-11-01T16:00:35.374Z" itemprop="datePublished">2017-11-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/02/gui_engine/">从DocumentFragment看到GUI渲染</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-        
-          <p class="article-more-link">
-            <a href="/2017/11/02/gui_engine/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/02/gui_engine/" data-id="cjammo2ij0008acugleuq25o6" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Regexp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/10/31/Regexp/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.007Z" itemprop="datePublished">2017-10-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/10/31/Regexp/">正则表达式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~</p>
-<p>这里的正则表达式就暂时在javascript上讨论吧。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/10/31/Regexp/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/Regexp/" data-id="cjammo2hm0000acugrltt43te" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-css-clip" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/10/31/css-clip/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.003Z" itemprop="datePublished">2017-10-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/10/31/css-clip/">css-clip问题</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>今天在网上看见一个很好玩的属性<span style="color:#f92672;font-weight: bold;font-size: 2rem;">clip</span> <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="external">MDN手册</a></p>
-        
-          <p class="article-more-link">
-            <a href="/2017/10/31/css-clip/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/css-clip/" data-id="cjammo2hv0001acugfeazj5de" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
-
-  <nav id="page-nav">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">__('next') &raquo;</a>
-  </nav>
 </section>
         
           <aside id="sidebar">
