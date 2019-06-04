@@ -13,12 +13,12 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2018/03/07/java/img/java-monitor-associate-with-object.jpg">
-<meta property="og:updated_time" content="2019-06-04T16:03:46.583Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/java-monitor-associate-with-object.jpg">
+<meta property="og:updated_time" content="2019-06-04T16:07:08.883Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java-Concurrency">
 <meta name="twitter:description" content="Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.">
-<meta name="twitter:image" content="https://mhh12121.github.io/2018/03/07/java/img/java-monitor-associate-with-object.jpg">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/java-monitor-associate-with-object.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -96,7 +96,7 @@
         <p>Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.</p>
 <a id="more"></a>
 <p>Following is some notes about the avoiding or solving the deadlock.</p>
-<h2 id="Monitor"><a href="#Monitor" class="headerlink" title="Monitor "></a><strong>Monitor </strong></h2><p>At the beginning, we can look at a picture:<br><img src="../img/java-monitor-associate-with-object.jpg" alt="Monitor"></p>
+<h2 id="Monitor"><a href="#Monitor" class="headerlink" title="Monitor "></a><strong>Monitor </strong></h2><p>At the beginning, we can look at a picture:<br><img src="/img/java-monitor-associate-with-object.jpg" alt="Monitor"></p>
 <p>  而一个锁就像一种任何时候只允许一个线程拥有的特权.<br>  一个线程可以允许多次对同一对象上锁.对于每一个对象来说,java虚拟机维护一个计数器,记录对象被加了多少次锁,没被锁的对象的计数器是0,线程每加锁一次,计数器就加1,每释放一次,计数器就减1.当计数器跳到0的  时候,锁就被完全释放了.   </p>
 <p>  java虚拟机中的一个线程在它到达监视区域开始处的时候请求一个锁.JAVA程序中每一个监视区域都和一个对象引用相关联.<br>The program is like a building. And it stores some data meanwhile. But every time this building can only be occupied by only <span style="color:#f92672"><strong>one</strong> thread.<br>If the thread enter this building, it’s called <strong>enter monitor</strong>;<br>If the thread enter the special room in this building, it’s called <strong>get monitor</strong>;<br>If the thread occupy the room, it’s called <strong>occupy monitor</strong>;<br>If the thread leave the room, it’s called <strong>release monitor</strong>;<br>If the thread leave the building, it’s called <strong>exit monitor</strong>;</span></p>
 <p>Then,a <strong>LOCK</strong> is an authority only for single thread in every time.<br>Single thread is allowed to multiplically add the lock to the same object.As for an object, JVM maintain a counter to record how many times the object was added lock.</p>
@@ -108,7 +108,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="cjwhztnqb0009tkug7p3yy2us" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="cjwhzxpmg000cduugnr1t84ix" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
