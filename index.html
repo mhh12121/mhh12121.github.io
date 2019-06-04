@@ -69,7 +69,7 @@
     <article id="post-GolangMux" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/04/GolangMux/" class="article-date">
-  <time datetime="2019-06-04T07:50:37.761Z" itemprop="datePublished">2019-06-04</time>
+  <time datetime="2019-06-04T08:35:10.571Z" itemprop="datePublished">2019-06-04</time>
 </a>
     
   </div>
@@ -88,37 +88,62 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>开始做笔记…<br>(之前面试被怼了)<br>今天主要看一下mux的</p>
-<h3 id="路由匹配原理"><a href="#路由匹配原理" class="headerlink" title="路由匹配原理"></a>路由匹配原理</h3><p>First, let’s go through its <strong><em> usage </em></strong>:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">router:=mux.router()</div><div class="line">router.HandlerFunc(<span class="string">"/api/v&#123;version&#125;/&#123;category&#125;"</span>,handler)</div></pre></td></tr></table></figure>
-<p>About <strong><em> HandlerFunc </em></strong> </p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// HandleFunc registers a new route with a matcher for the URL path.</span></div><div class="line"><span class="comment">// See Route.Path() and Route.HandlerFunc().</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *Router)</span> <span class="title">HandleFunc</span><span class="params">(path <span class="keyword">string</span>, f <span class="keyword">func</span>(http.ResponseWriter,</span></span></div><div class="line"><span class="function"><span class="params">    *http.Request)</span>) *<span class="title">Route</span></span> &#123;</div><div class="line">    <span class="keyword">return</span> r.NewRoute().Path(path).HandlerFunc(f)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>then let’s see  <strong><em> Route.Path(path) </em></strong> :</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">    <span class="comment">// Path -----------------------------------------------------------------------</span></div><div class="line"></div><div class="line"><span class="comment">// Path adds a matcher for the URL path.</span></div><div class="line"><span class="comment">// It accepts a template with zero or more URL variables enclosed by &#123;&#125;. The</span></div><div class="line"><span class="comment">// template must start with a "/".</span></div><div class="line"><span class="comment">// Variables can define an optional regexp pattern to be matched:</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// - &#123;name&#125; matches anything until the next slash.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// - &#123;name:pattern&#125; matches the given regexp pattern.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// For example:</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">//     r := mux.NewRouter()</span></div><div class="line"><span class="comment">//     r.Path("/products/").Handler(ProductsHandler)</span></div><div class="line"><span class="comment">//     r.Path("/products/&#123;key&#125;").Handler(ProductsHandler)</span></div><div class="line"><span class="comment">//     r.Path("/articles/&#123;category&#125;/&#123;id:[0-9]+&#125;").</span></div><div class="line"><span class="comment">//       Handler(ArticleHandler)</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// Variable names must be unique in a given route. They can be retrieved</span></div><div class="line"><span class="comment">// calling mux.Vars(request).</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *Route)</span> <span class="title">Path</span><span class="params">(tpl <span class="keyword">string</span>)</span> *<span class="title">Route</span></span> &#123;</div><div class="line">	r.err = r.addRegexpMatcher(tpl, regexpTypePath)</div><div class="line">	<span class="keyword">return</span> r</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>In <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Continue, the method *** addRegexpMatcher() ***:</div><div class="line"></div><div class="line">```go</div><div class="line">// addRegexpMatcher adds a host or path matcher and builder to a route.</div><div class="line">func (r *Route) addRegexpMatcher(tpl string, typ regexpType) error &#123;</div><div class="line">	if r.err != nil &#123;</div><div class="line">		return r.err</div><div class="line">	&#125;</div><div class="line">	if typ == regexpTypePath || typ == regexpTypePrefix &#123;</div><div class="line">		if len(tpl) &gt; 0 &amp;&amp; tpl[0] != &apos;/&apos; &#123;</div><div class="line">			return fmt.Errorf(&quot;mux: path must start with a slash, got %q&quot;, tpl)</div><div class="line">		&#125;</div><div class="line">		if r.regexp.path != nil &#123;</div><div class="line">			tpl = strings.TrimRight(r.regexp.path.template, &quot;/&quot;) + tpl</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	rr, err := newRouteRegexp(tpl, typ, routeRegexpOptions&#123;// This is Core code</div><div class="line">		strictSlash:    r.strictSlash,</div><div class="line">		useEncodedPath: r.useEncodedPath,</div><div class="line">	&#125;)</div><div class="line">	if err != nil &#123;</div><div class="line">		return err</div><div class="line">	&#125;</div><div class="line">	for _, q := range r.regexp.queries &#123;</div><div class="line">		if err = uniqueVars(rr.varsN, q.varsN); err != nil &#123;</div><div class="line">			return err</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	if typ == regexpTypeHost &#123;</div><div class="line">		if r.regexp.path != nil &#123;</div><div class="line">			if err = uniqueVars(rr.varsN, r.regexp.path.varsN); err != nil &#123;</div><div class="line">				return err</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		r.regexp.host = rr</div><div class="line">	&#125; else &#123;</div><div class="line">		if r.regexp.host != nil &#123;</div><div class="line">			if err = uniqueVars(rr.varsN, r.regexp.host.varsN); err != nil &#123;</div><div class="line">				return err</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">		if typ == regexpTypeQuery &#123;</div><div class="line">			r.regexp.queries = append(r.regexp.queries, rr)</div><div class="line">		&#125; else &#123;</div><div class="line">			r.regexp.path = rr</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	r.addMatcher(rr)</div><div class="line">	return nil</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>We will find that we only enter the first <strong><em> if </em></strong> block (from line 4 - line 11):<br>Getinto the <strong><em> newRouteRegexp() </em></strong></p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// newRouteRegexp parses a route template and returns a routeRegexp,</span></div><div class="line"><span class="comment">// used to match a host, a path or a query string.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// It will extract named variables, assemble a regexp to be matched, create</span></div><div class="line"><span class="comment">// a "reverse" template to build URLs and compile regexps to validate variable</span></div><div class="line"><span class="comment">// values used in URL building.</span></div><div class="line"><span class="comment">//</span></div><div class="line"><span class="comment">// Previously we accepted only Python-like identifiers for variable</span></div><div class="line"><span class="comment">// names ([a-zA-Z_][a-zA-Z0-9_]*), but currently the only restriction is that</span></div><div class="line"><span class="comment">// name and pattern can't be empty, and names can't contain a colon.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">newRouteRegexp</span><span class="params">(tpl <span class="keyword">string</span>, typ regexpType, options routeRegexpOptions)</span> <span class="params">(*routeRegexp, error)</span></span> &#123;</div><div class="line">	<span class="comment">// Check if it is well-formed.</span></div><div class="line">	idxs, errBraces := braceIndices(tpl)</div><div class="line">	<span class="keyword">if</span> errBraces != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errBraces</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// Backup the original.</span></div><div class="line">	template := tpl</div><div class="line">	<span class="comment">// Now let's parse it.</span></div><div class="line">	defaultPattern := <span class="string">"[^/]+"</span></div><div class="line">	<span class="keyword">if</span> typ == regexpTypeQuery &#123;</div><div class="line">		defaultPattern = <span class="string">".*"</span></div><div class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> typ == regexpTypeHost &#123;</div><div class="line">		defaultPattern = <span class="string">"[^.]+"</span></div><div class="line">	&#125;</div><div class="line">	<span class="comment">// Only match strict slash if not matching</span></div><div class="line">	<span class="keyword">if</span> typ != regexpTypePath &#123;</div><div class="line">		options.strictSlash = <span class="literal">false</span></div><div class="line">	&#125;</div><div class="line">	<span class="comment">// Set a flag for strictSlash.</span></div><div class="line">	endSlash := <span class="literal">false</span></div><div class="line">	<span class="keyword">if</span> options.strictSlash &amp;&amp; strings.HasSuffix(tpl, <span class="string">"/"</span>) &#123;</div><div class="line">		tpl = tpl[:<span class="built_in">len</span>(tpl)<span class="number">-1</span>]</div><div class="line">		endSlash = <span class="literal">true</span></div><div class="line">	&#125;</div><div class="line">	varsN := <span class="built_in">make</span>([]<span class="keyword">string</span>, <span class="built_in">len</span>(idxs)/<span class="number">2</span>)</div><div class="line">	varsR := <span class="built_in">make</span>([]*regexp.Regexp, <span class="built_in">len</span>(idxs)/<span class="number">2</span>)</div><div class="line">	pattern := bytes.NewBufferString(<span class="string">""</span>)</div><div class="line">	pattern.WriteByte(<span class="string">'^'</span>)</div><div class="line">	reverse := bytes.NewBufferString(<span class="string">""</span>)</div><div class="line">	<span class="keyword">var</span> end <span class="keyword">int</span></div><div class="line">	<span class="keyword">var</span> err error</div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(idxs); i += <span class="number">2</span> &#123;</div><div class="line">		<span class="comment">// Set all values we are interested in.</span></div><div class="line">		raw := tpl[end:idxs[i]]</div><div class="line">		end = idxs[i+<span class="number">1</span>]</div><div class="line">		parts := strings.SplitN(tpl[idxs[i]+<span class="number">1</span>:end<span class="number">-1</span>], <span class="string">":"</span>, <span class="number">2</span>)</div><div class="line">		name := parts[<span class="number">0</span>]</div><div class="line">		patt := defaultPattern</div><div class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(parts) == <span class="number">2</span> &#123;</div><div class="line">			patt = parts[<span class="number">1</span>]</div><div class="line">		&#125;</div><div class="line">		<span class="comment">// Name or pattern can't be empty.</span></div><div class="line">		<span class="keyword">if</span> name == <span class="string">""</span> || patt == <span class="string">""</span> &#123;</div><div class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"mux: missing name or pattern in %q"</span>,</div><div class="line">				tpl[idxs[i]:end])</div><div class="line">		&#125;</div><div class="line">		<span class="comment">// Build the regexp pattern.</span></div><div class="line">		fmt.Fprintf(pattern, <span class="string">"%s(?P&lt;%s&gt;%s)"</span>, regexp.QuoteMeta(raw), varGroupName(i/<span class="number">2</span>), patt)</div><div class="line"></div><div class="line">		<span class="comment">// Build the reverse template.</span></div><div class="line">		fmt.Fprintf(reverse, <span class="string">"%s%%s"</span>, raw)</div><div class="line"></div><div class="line">		<span class="comment">// Append variable name and compiled pattern.</span></div><div class="line">		varsN[i/<span class="number">2</span>] = name</div><div class="line">		varsR[i/<span class="number">2</span>], err = regexp.Compile(fmt.Sprintf(<span class="string">"^%s$"</span>, patt))</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// Add the remaining.</span></div><div class="line">	raw := tpl[end:]</div><div class="line">	pattern.WriteString(regexp.QuoteMeta(raw))</div><div class="line">	<span class="keyword">if</span> options.strictSlash &#123;</div><div class="line">		pattern.WriteString(<span class="string">"[/]?"</span>)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> typ == regexpTypeQuery &#123;</div><div class="line">		<span class="comment">// Add the default pattern if the query value is empty</span></div><div class="line">		<span class="keyword">if</span> queryVal := strings.SplitN(template, <span class="string">"="</span>, <span class="number">2</span>)[<span class="number">1</span>]; queryVal == <span class="string">""</span> &#123;</div><div class="line">			pattern.WriteString(defaultPattern)</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> typ != regexpTypePrefix &#123;</div><div class="line">		pattern.WriteByte(<span class="string">'$'</span>)</div><div class="line">	&#125;</div><div class="line">	reverse.WriteString(raw)</div><div class="line">	<span class="keyword">if</span> endSlash &#123;</div><div class="line">		reverse.WriteByte(<span class="string">'/'</span>)</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// Compile full regexp.</span></div><div class="line">	reg, errCompile := regexp.Compile(pattern.String())</div><div class="line">	<span class="keyword">if</span> errCompile != <span class="literal">nil</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, errCompile</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="comment">// Check for capturing groups which used to work in older versions</span></div><div class="line">	<span class="keyword">if</span> reg.NumSubexp() != <span class="built_in">len</span>(idxs)/<span class="number">2</span> &#123;</div><div class="line">		<span class="built_in">panic</span>(fmt.Sprintf(<span class="string">"route %s contains capture groups in its regexp. "</span>, template) +</div><div class="line">			<span class="string">"Only non-capturing groups are accepted: e.g. (?:pattern) instead of (pattern)"</span>)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="comment">// Done!</span></div><div class="line">	<span class="keyword">return</span> &amp;routeRegexp&#123;</div><div class="line">		template:   template,</div><div class="line">		regexpType: typ,</div><div class="line">		options:    options,</div><div class="line">		regexp:     reg,</div><div class="line">		reverse:    reverse.String(),</div><div class="line">		varsN:      varsN,</div><div class="line">		varsR:      varsR,</div><div class="line">	&#125;, <span class="literal">nil</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="Procedure"><a href="#Procedure" class="headerlink" title="Procedure :"></a>Procedure :</h4><ol>
-<li>braceIndices; It will check the all <strong><em> {variable} </em></strong> in Path and save them into a slice:<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// braceIndices returns the first level curly brace indices from a string.</span></div><div class="line"><span class="comment">// It returns an error in case of unbalanced braces.</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">braceIndices</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="params">([]<span class="keyword">int</span>, error)</span></span> &#123;</div><div class="line">	<span class="keyword">var</span> level, idx <span class="keyword">int</span></div><div class="line">	<span class="keyword">var</span> idxs []<span class="keyword">int</span></div><div class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(s); i++ &#123;</div><div class="line">		<span class="keyword">switch</span> s[i] &#123;</div><div class="line">		<span class="keyword">case</span> <span class="string">'&#123;'</span>:</div><div class="line">			<span class="keyword">if</span> level++; level == <span class="number">1</span> &#123;</div><div class="line">				idx = i</div><div class="line">			&#125;</div><div class="line">		<span class="keyword">case</span> <span class="string">'&#125;'</span>:</div><div class="line">			<span class="keyword">if</span> level--; level == <span class="number">0</span> &#123;</div><div class="line">				idxs = <span class="built_in">append</span>(idxs, idx, i+<span class="number">1</span>)<span class="comment">//注意：这里只是存了variable开始和结尾的index，而不是string</span></div><div class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> level &lt; <span class="number">0</span> &#123;</div><div class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"mux: unbalanced braces in %q"</span>, s)</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">if</span> level != <span class="number">0</span> &#123;</div><div class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"mux: unbalanced braces in %q"</span>, s)</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> idxs, <span class="literal">nil</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>====&gt;</p>
-<ol>
-<li>remove endSlash <figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> has Suffix():</div><div class="line">    tpl = tpl[:<span class="built_in">len</span>(tpl)<span class="number">-1</span>]<span class="comment">//remove end slash</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>====&gt;</p>
-<ol>
-<li>traverse idxs(variables)</li>
-</ol>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(idxs); i += <span class="number">2</span> &#123;</div><div class="line">		<span class="comment">// Set all values we are interested in.</span></div><div class="line">		raw := tpl[end:idxs[i]]</div><div class="line">		end = idxs[i+<span class="number">1</span>]</div><div class="line">		parts := strings.SplitN(tpl[idxs[i]+<span class="number">1</span>:end<span class="number">-1</span>], <span class="string">":"</span>, <span class="number">2</span>)</div><div class="line">		name := parts[<span class="number">0</span>]</div><div class="line">		patt := defaultPattern</div><div class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(parts) == <span class="number">2</span> &#123;</div><div class="line">			patt = parts[<span class="number">1</span>]</div><div class="line">		&#125;</div><div class="line">		<span class="comment">// Name or pattern can't be empty.</span></div><div class="line">		<span class="keyword">if</span> name == <span class="string">""</span> || patt == <span class="string">""</span> &#123;</div><div class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"mux: missing name or pattern in %q"</span>,</div><div class="line">				tpl[idxs[i]:end])</div><div class="line">		&#125;</div><div class="line">		<span class="comment">// Build the regexp pattern.</span></div><div class="line">		fmt.Fprintf(pattern, <span class="string">"%s(?P&lt;%s&gt;%s)"</span>, regexp.QuoteMeta(raw), varGroupName(i/<span class="number">2</span>), patt)</div><div class="line"></div><div class="line">		<span class="comment">// Build the reverse template.</span></div><div class="line">		fmt.Fprintf(reverse, <span class="string">"%s%%s"</span>, raw)</div><div class="line"></div><div class="line">		<span class="comment">// Append variable name and compiled pattern.</span></div><div class="line">		varsN[i/<span class="number">2</span>] = name</div><div class="line">		varsR[i/<span class="number">2</span>], err = regexp.Compile(fmt.Sprintf(<span class="string">"^%s$"</span>, patt))</div><div class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</div><div class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</div><div class="line">		&#125;</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
+        <p>开始做笔记…<br>(之前面试被怼了)</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/06/04/GolangMux/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/04/GolangMux/" data-id="cjwhi887k0003veugd11yhohl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/04/GolangMux/" data-id="cjwhjr53t0001nbuga2a6ztcz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/04/gui_engine/" class="article-date">
+  <time datetime="2019-06-04T07:54:00.123Z" itemprop="datePublished">2019-06-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/06/04/gui_engine/">从DocumentFragment看到GUI渲染</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/06/04/gui_engine/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/04/gui_engine/" data-id="cjwhjr5470009nbugqo29f3jn" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
 
     </footer>
   </div>
@@ -149,7 +174,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>For reviewing some most likely used design pattern:</p>
+        <a id="more"></a>
+<p>For reviewing some most likely used design pattern:</p>
 <h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>Pros:</p>
 <ol>
@@ -174,7 +200,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjwhi886v0000veugrjklcj6t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjwhjr53j0000nbugwolcw0if" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -229,7 +255,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/Java-Concurrency/" data-id="cjwhi887m0004veugitjioxju" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/03/07/Java-Concurrency/" data-id="cjwhjr53z0003nbugd4hr7a3t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -272,7 +298,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/02/25/js-Promise/" data-id="cjwhi887o0005veugbu3tos6a" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/02/25/js-Promise/" data-id="cjwhjr549000bnbug8dmbq5vz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
@@ -315,7 +341,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/07/Java-Collection/" data-id="cjwhi88750001veugt72qmsgm" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/07/Java-Collection/" data-id="cjwhjr5410004nbug24do0img" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -330,7 +356,7 @@
     <article id="post-js-Scope" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/11/07/js-Scope/" class="article-date">
-  <time datetime="2017-11-06T16:19:40.962Z" itemprop="datePublished">2017-11-07</time>
+  <time datetime="2017-11-06T16:19:40.963Z" itemprop="datePublished">2017-11-07</time>
 </a>
     
   </div>
@@ -358,7 +384,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/07/js-Scope/" data-id="cjammo2i60003acugtjfxtqc3" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/11/07/js-Scope/" data-id="cjwhjr54b000dnbugr99nt092" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
@@ -373,7 +399,7 @@
     <article id="post-js-async" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/11/06/js-async/" class="article-date">
-  <time datetime="2017-11-06T15:20:39.992Z" itemprop="datePublished">2017-11-06</time>
+  <time datetime="2017-11-06T15:20:39.993Z" itemprop="datePublished">2017-11-06</time>
 </a>
     
   </div>
@@ -402,7 +428,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/06/js-async/" data-id="cjammo2im0009acugjl3701im" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/11/06/js-async/" data-id="cjwhjr54e000fnbugwly13sa2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
@@ -414,53 +440,10 @@
 
 
   
-    <article id="post-gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/02/gui_engine/" class="article-date">
-  <time datetime="2017-11-01T16:00:35.374Z" itemprop="datePublished">2017-11-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/02/gui_engine/">从DocumentFragment看到GUI渲染</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-        
-          <p class="article-more-link">
-            <a href="/2017/11/02/gui_engine/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/11/02/gui_engine/" data-id="cjammo2ij0008acugleuq25o6" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-Regexp" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/31/Regexp/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.007Z" itemprop="datePublished">2017-10-31</time>
+  <time datetime="2017-10-31T15:38:20.008Z" itemprop="datePublished">2017-10-31</time>
 </a>
     
   </div>
@@ -489,7 +472,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/Regexp/" data-id="cjammo2hm0000acugrltt43te" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/Regexp/" data-id="cjwhjr5430005nbugfaj20y0t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
@@ -504,7 +487,7 @@
     <article id="post-css-clip" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/31/css-clip/" class="article-date">
-  <time datetime="2017-10-31T15:38:20.003Z" itemprop="datePublished">2017-10-31</time>
+  <time datetime="2017-10-31T15:38:20.004Z" itemprop="datePublished">2017-10-31</time>
 </a>
     
   </div>
@@ -532,7 +515,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/10/31/css-clip/" data-id="cjammo2hv0001acugfeazj5de" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/10/31/css-clip/" data-id="cjwhjr5450008nbugr7z3195c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -596,6 +579,10 @@
           </li>
         
           <li>
+            <a href="/2019/06/04/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
             <a href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
           </li>
         
@@ -605,10 +592,6 @@
         
           <li>
             <a href="/2018/02/25/js-Promise/">My Understanding towards Promise/A+</a>
-          </li>
-        
-          <li>
-            <a href="/2018/01/07/Java-Collection/">Java-Collections</a>
           </li>
         
       </ul>

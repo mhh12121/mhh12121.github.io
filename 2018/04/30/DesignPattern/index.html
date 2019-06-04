@@ -5,18 +5,18 @@
   
   <title>Notes about Design Pattern | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singleto">
+  <meta name="description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
 <meta name="keywords" content="Design Pattern">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Notes about Design Pattern">
 <meta property="og:url" content="https://mhh12121.github.io/2018/04/30/DesignPattern/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singleto">
+<meta property="og:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-05-04T10:01:23.000Z">
+<meta property="og:updated_time" content="2019-06-04T07:54:05.123Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Design Pattern">
-<meta name="twitter:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singleto">
+<meta name="twitter:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -91,7 +91,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>For reviewing some most likely used design pattern:</p>
+        <a id="more"></a>
+<p>For reviewing some most likely used design pattern:</p>
 <h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>Pros:</p>
 <ol>
@@ -116,7 +117,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjwhi886v0000veugrjklcj6t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjwhjr53j0000nbugwolcw0if" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -127,11 +128,11 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/06/04/GolangMux/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/04/gui_engine/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Golang Mux
+          从DocumentFragment看到GUI渲染
         
       </div>
     </a>
@@ -194,6 +195,10 @@
           </li>
         
           <li>
+            <a href="/2019/06/04/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
             <a href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
           </li>
         
@@ -203,10 +208,6 @@
         
           <li>
             <a href="/2018/02/25/js-Promise/">My Understanding towards Promise/A+</a>
-          </li>
-        
-          <li>
-            <a href="/2018/01/07/Java-Collection/">Java-Collections</a>
           </li>
         
       </ul>
