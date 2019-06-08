@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Something about Slice in Go | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
+<meta name="keywords" content="golang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Something about Slice in Go">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/Go/Slice/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-08T12:01:39.295Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Something about Slice in Go">
+<meta name="twitter:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Go/Slice" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/Go/Slice/" class="article-date">
+  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Something about Slice in Go
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Golang’s Slice is kinda diffrent===&gt;</p>
+<a id="more"></a>
+<p>This article [Slice]<a href="https://blog.golang.org/slices" target="_blank" rel="external">https://blog.golang.org/slices</a> may give you more information</p>
+<h2 id="slice-struct"><a href="#slice-struct" class="headerlink" title="slice struct"></a>slice struct</h2><p>slice其实是一个结构体，并不是简单的数组或者链表(不想用英文写了)</p>
+ <figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//actually its not visible to programmer</span></div><div class="line"><span class="comment">//我自己臆想出来的,但可以从src/runtime/slice.go找出,或者走这个链接：https://golang.org/src/runtime/slice.go</span></div><div class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span>&#123;</div><div class="line">    length <span class="keyword">int</span> <span class="comment">//length</span></div><div class="line">    pointer <span class="keyword">interface</span>&#123;&#125; <span class="comment">//point to first element, the type depends on the element</span></div><div class="line">    Capacity <span class="keyword">int</span><span class="comment">//max容量</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>来到这里你可能会想到，好像一个对象耶，那么这玩意儿传入func里面是不是传指针进去呢？（即里面的修改会影响到origianl？）<br>答案是不会<br>Example:<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">SubtractOneFromLength</span><span class="params">(slice []<span class="keyword">byte</span>)</span> []<span class="title">byte</span></span> &#123;</div><div class="line">    slice = slice[<span class="number">0</span> : <span class="built_in">len</span>(slice)<span class="number">-1</span>]</div><div class="line">    <span class="keyword">return</span> slice</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</div><div class="line">    fmt.Println(<span class="string">"Before: len(slice) ="</span>, <span class="built_in">len</span>(slice))</div><div class="line">    newSlice := SubtractOneFromLength(slice)<span class="comment">//you haven't passed the slice's header into it</span></div><div class="line">    fmt.Println(<span class="string">"After:  len(slice) ="</span>, <span class="built_in">len</span>(slice))</div><div class="line">    fmt.Println(<span class="string">"After:  len(newSlice) ="</span>, <span class="built_in">len</span>(newSlice))</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>You <strong><em> Must </em></strong> do so:<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">newSlice := SubtractOneFromLength(&amp;slice)<span class="comment">//Like this will work!</span></div></pre></td></tr></table></figure></p>
+<h2 id="Enlarge-Capcity"><a href="#Enlarge-Capcity" class="headerlink" title="Enlarge Capcity"></a>Enlarge Capcity</h2><p>你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，是直接 <strong><em> ×2 </em></strong><br>但是，那些只针对于没有定义 <strong><em> cap </em></strong> 字段的slice，万一规定了，像<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">10</span>, <span class="number">15</span>)</div></pre></td></tr></table></figure></p>
+<p>上限就是15了，如果强行append。。。。。。<strong><em> 也没关系! </em></strong>，只是这个时候会进行扩容，然后,原slice的地址（即第一个元素的地址）会进行改变<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1</span>, <span class="number">2</span>)</div><div class="line">slice[<span class="number">0</span>]=<span class="number">1</span></div><div class="line">slice=<span class="built_in">append</span>(slice,<span class="number">3</span>)</div><div class="line">fmt.Println(&amp;slice[<span class="number">0</span>])<span class="comment">//0x414020</span></div><div class="line"></div><div class="line">slice=<span class="built_in">append</span>(slice,<span class="number">4</span>)</div><div class="line">fmt.Println(&amp;slice[<span class="number">0</span>])<span class="comment">//0x414040</span></div></pre></td></tr></table></figure></p>
+<p>同样，<strong><em> 这里有另外一个坑 </em></strong>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//example in docs</span></div><div class="line">    slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">10</span>, <span class="number">15</span>)</div><div class="line">    fmt.Printf(<span class="string">"len: %d, cap: %d\n"</span>, <span class="built_in">len</span>(slice), <span class="built_in">cap</span>(slice))<span class="comment">//15</span></div><div class="line">    newSlice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="built_in">len</span>(slice), <span class="number">2</span>*<span class="built_in">cap</span>(slice))</div><div class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> slice &#123;</div><div class="line">        newSlice[i] = slice[i]</div><div class="line">    &#125;</div><div class="line">    slice = newSlice</div><div class="line">    fmt.Printf(<span class="string">"len: %d, cap: %d\n"</span>, <span class="built_in">len</span>(slice), <span class="built_in">cap</span>(slice))<span class="comment">//30</span></div></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">a:=<span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">3</span>,<span class="number">4</span>)</div><div class="line">a[<span class="number">0</span>]=<span class="number">1</span></div><div class="line">a[<span class="number">1</span>]=<span class="number">2</span></div><div class="line">a[<span class="number">2</span>]=<span class="number">3</span></div><div class="line"></div><div class="line">b:=<span class="built_in">append</span>(a,<span class="number">4</span>)</div><div class="line">c:=<span class="built_in">append</span>(a,<span class="number">100</span>)</div><div class="line">fmt.Println(&amp;a[<span class="number">0</span>], &amp;b[<span class="number">0</span>], &amp;c[<span class="number">0</span>]) <span class="comment">//Found that they use</span></div><div class="line">fmt.Println(a, b, c)</div><div class="line">c[<span class="number">0</span>] = <span class="number">101</span></div><div class="line">fmt.Println(a, b, c)</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjwngxprl000cpbug98d02cvw" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/06/05/LoginSecurity/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Something about authentication and authorization
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/06/04/js/gui_engine/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">从DocumentFragment看到GUI渲染</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Javascript/" style="font-size: 20px;">Javascript</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 20px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/05/Go/Slice/">Something about Slice in Go</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/04/js/gui_engine/">从DocumentFragment看到GUI渲染</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/04/Go/GolangMux/">Golang Mux</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
