@@ -3,15 +3,22 @@
 <head>
   <meta charset="utf-8">
   
-  <title>兜的破烂</title>
+  <title>Concurrency Problem | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="兜的破烂">
-<meta property="og:url" content="https://mhh12121.github.io/index.html">
+  <meta name="description" content="Channel  1.1 互斥 要先明白一句话   Share memory by communication, do not communicate by sharing memory通过通信来分享内存，而不是靠分享内存来通信   这句话应该见过无数遍了，但这就是golang channel的核心思想 作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从">
+<meta name="keywords" content="Golang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Concurrency Problem">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/Go/Concurrency/index.html">
 <meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="Channel  1.1 互斥 要先明白一句话   Share memory by communication, do not communicate by sharing memory通过通信来分享内存，而不是靠分享内存来通信   这句话应该见过无数遍了，但这就是golang channel的核心思想 作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://mhh12121.github.io/2019/06/05/Go/Java-Concurrency.html">
+<meta property="og:updated_time" content="2019-06-15T08:03:27.737Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="兜的破烂">
+<meta name="twitter:title" content="Concurrency Problem">
+<meta name="twitter:description" content="Channel  1.1 互斥 要先明白一句话   Share memory by communication, do not communicate by sharing memory通过通信来分享内存，而不是靠分享内存来通信   这句话应该见过无数遍了，但这就是golang channel的核心思想 作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从">
+<meta name="twitter:image" content="https://mhh12121.github.io/2019/06/05/Go/Java-Concurrency.html">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -64,92 +71,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-Regexp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/17/Regexp/" class="article-date">
-  <time datetime="2019-06-17T09:24:12.539Z" itemprop="datePublished">2019-06-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/17/Regexp/">正则表达式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~</p>
-<p>这里的正则表达式就暂时在javascript上讨论吧。<br>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/17/Regexp/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/17/Regexp/" data-id="cjx069m6g00010rugtiu6lrmz" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-LoginSecurity" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/LoginSecurity/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="external">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="external">HTTPS</a>??? Followings are my notes:</p>
-<h2 id="Oauth2"><a href="#Oauth2" class="headerlink" title="Oauth2"></a>Oauth2</h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjx069m6l00030rug6p906jem" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Go/Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/05/Go/Concurrency/" class="article-date">
   <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
@@ -162,8 +84,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Go/Concurrency/">Concurrency Problem</a>
+    <h1 class="article-title" itemprop="name">
+      Concurrency Problem
     </h1>
   
 
@@ -226,329 +148,29 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-Go/Slice" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/Go/Slice/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+    <a href="/2019/06/05/LoginSecurity/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
         
+          Something about authentication and authorization
+        
+      </div>
+    </a>
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Go/Slice/">Something about Slice in Go</a>
-    </h1>
   
+    <a href="/2019/06/05/Go/Slice/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Something about Slice in Go</div>
+    </a>
+  
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Golang’s Slice is kinda diffrent===&gt;</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/05/Go/Slice/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjx069m7k000f0rugbg8soc1n" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
 
-
-  
-    <article id="post-java/Java-Class" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/java/Java-Class/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/java/Java-Class/">class loading</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>类的加载</p>
-<p>双亲委托模型</p>
-<p>//todo</p>
-<p>final，static 等在jvm 内存中的处理</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-Class/" data-id="cjx069m7m000g0rug086rjh3l" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-java/Java-constantPool" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/java/Java-constantPool/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/java/Java-constantPool/">Java String constatn pool</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>字符串常量池</p>
-<p>//todo</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/" data-id="cjx069m7p000k0rugvqsg8e6a" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js/gui_engine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/04/js/gui_engine/" class="article-date">
-  <time datetime="2019-06-04T15:29:00.159Z" itemprop="datePublished">2019-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/04/js/gui_engine/">从DocumentFragment看到GUI渲染</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/04/js/gui_engine/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/04/js/gui_engine/" data-id="cjx069m7x000p0rugoq78l5z3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/GolangMux" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/04/Go/GolangMux/" class="article-date">
-  <time datetime="2019-06-04T15:28:21.951Z" itemprop="datePublished">2019-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/04/Go/GolangMux/">Golang Mux</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>开始做笔记…<br>(之前面试被怼了)</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/04/Go/GolangMux/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/04/Go/GolangMux/" data-id="cjx069m7i000c0ruge0qns0g7" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-DesignPattern" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/04/30/DesignPattern/" class="article-date">
-  <time datetime="2018-04-30T15:48:00.000Z" itemprop="datePublished">2018-04-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <a id="more"></a>
-<p>For reviewing some most likely used design pattern:</p>
-<h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>Pros:</p>
-<ol>
-<li><p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
-</li>
-<li><p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
-</li>
-<li></li>
-</ol>
-<p>Cons:</p>
-<ol>
-<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
-</ol>
-<p>Scenes:</p>
-<ol>
-<li>generate unique key;</li>
-<li>IO;</li>
-<li>global stored in memory for calculating purpose.For exmaple, Spring Bean is set as a singleton by default so that spring can manage this bean life cycle(but if Bean use non-singleton like prototype pattern,after the initialization of Bean, it will be transfered to J2EE container,Spring no longer manages this Bean)</li>
-</ol>
-<h2 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a><strong>Proxy</strong></h2><h3 id="dynamic-proxy"><a href="#dynamic-proxy" class="headerlink" title="dynamic proxy"></a><strong>dynamic proxy</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">     <span class="comment">//被代理者</span></div><div class="line">     Class cls =<span class="keyword">null</span>;</div><div class="line">     <span class="comment">//被代理的实例</span></div><div class="line">     Object obj = <span class="keyword">null</span>;</div><div class="line">     <span class="comment">//我要代理谁</span></div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</div><div class="line">             <span class="keyword">this</span>.obj = _obj;</div><div class="line">     &#125;</div><div class="line">     <span class="comment">//调用被代理的方法</span></div><div class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">     &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjx069m6900000rugmx18z6k8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-java/Java-Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/03/07/java/Java-Concurrency/" class="article-date">
-  <time datetime="2018-03-07T03:00:00.000Z" itemprop="datePublished">2018-03-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/07/java/Java-Concurrency/">Java-Concurrency</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.</p>
-        
-          <p class="article-more-link">
-            <a href="/2018/03/07/java/Java-Concurrency/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="cjx069m7s000l0rugw8wan8xu" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
-
-  <nav id="page-nav">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">__('next') &raquo;</a>
-  </nav>
 </section>
         
           <aside id="sidebar">
