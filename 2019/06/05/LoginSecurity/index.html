@@ -5,20 +5,22 @@
   
   <title>Something about authentication and authorization | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: Oauth2TLS (HTTPS)TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so">
+  <meta name="description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
 <meta name="keywords" content="security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something about authentication and authorization">
 <meta property="og:url" content="https://mhh12121.github.io/2019/06/05/LoginSecurity/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: Oauth2TLS (HTTPS)TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so">
+<meta property="og:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2019/06/05/SSL.png">
-<meta property="og:updated_time" content="2019-06-20T02:11:39.861Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/OauthProcess.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/Oauth4Methods.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/SSL.png">
+<meta property="og:updated_time" content="2019-06-20T02:26:28.565Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
-<meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: Oauth2TLS (HTTPS)TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so">
-<meta name="twitter:image" content="https://mhh12121.github.io/2019/06/05/SSL.png">
+<meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/OauthProcess.png">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -93,8 +95,10 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="external">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="external">HTTPS</a>??? Followings are my notes:</p>
-<h2 id="Oauth2"><a href="#Oauth2" class="headerlink" title="Oauth2"></a>Oauth2</h2><h2 id="TLS-HTTPS"><a href="#TLS-HTTPS" class="headerlink" title="TLS (HTTPS)"></a>TLS (HTTPS)</h2><p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
+        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="external">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="external">HTTPS</a>??? Followings are my notes:<br><a id="more"></a></p>
+<h2 id="Oauth2"><a href="#Oauth2" class="headerlink" title="Oauth2"></a>Oauth2</h2><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>主要流程如图：<br><img src="/img/OauthProcess.png" alt="OauthProcess" title="Process"></p>
+<h3 id="四种验证方法"><a href="#四种验证方法" class="headerlink" title="四种验证方法"></a>四种验证方法</h3><p><img src="/img/Oauth4Methods.png" alt="Oauth4method" title="four ways of identification"></p>
+<h2 id="TLS-HTTPS"><a href="#TLS-HTTPS" class="headerlink" title="TLS (HTTPS)"></a>TLS (HTTPS)</h2><p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
 <p>It provides securty over serverl aspects:</p>
 <ol>
 <li>encryption(加密性)：指提交的数据不被获得</li>
@@ -138,15 +142,16 @@
 </blockquote>
 </blockquote>
 <p>这样一来，以上颠倒了两个报文段的顺序，Alice解码发现顺序不对，就不会处理这两个报文</p>
-<h3 id="SSL-记录"><a href="#SSL-记录" class="headerlink" title="SSL 记录"></a>SSL 记录</h3><p>该记录如下图所示：<br><img src="../SSL.png" alt="SSL记录格式"></p>
+<h3 id="SSL-记录"><a href="#SSL-记录" class="headerlink" title="SSL 记录"></a>SSL 记录</h3><p>该记录如下图所示：<br><img src="/img/SSL.png" alt="SSL记录格式"></p>
 <p>主要由类型字段，版本字段，长度字段，数据字段和MAC构成，但其前三个字段是不加密的<br>类型字段：指出是握手报文还是有数据的报文，还被用于关闭SSL连接上（后面说到）</p>
 <h3 id="连接关闭时注意的问题"><a href="#连接关闭时注意的问题" class="headerlink" title="连接关闭时注意的问题"></a>连接关闭时注意的问题</h3><p>一般来讲，关闭连接就会由Client端，即Bob发起TCP FIN报文请求断开，但这个易遭到截断攻击（truncation attack)：<br>如果中间人过早地发送TCP FIN报文，Server端（Alice）会认为已经收到所有Bob的数据。</p>
 <p>解决方案：SSL记录中的<strong>类型字段</strong>指明这个记录是否用于关闭连接。这里还要注意，虽然这个字段是明文，但接收方仍然可以用记录的MAC对它进行鉴别</p>
+<p><strong><em>参考 《计算机网络自顶向下》 </em></strong></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjx4153yj0001v6ugrwwf1fj8" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjx41o5my0003u0uguow3fdyq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -157,19 +162,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          class loading
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/06/04/js/gui_engine/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-constantPool/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">从DocumentFragment看到GUI渲染</div>
+      <div class="article-nav-title">Java String constatn pool</div>
     </a>
   
 </nav>
@@ -220,6 +216,10 @@
       <ul>
         
           <li>
+            <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
+          </li>
+        
+          <li>
             <a href="/2019/06/05/java/Java-constantPool/">Java String constatn pool</a>
           </li>
         
@@ -233,10 +233,6 @@
         
           <li>
             <a href="/2019/06/05/java/Java-Class/">class loading</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
           </li>
         
       </ul>
