@@ -13,10 +13,12 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-19T09:26:57.979Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/golangusergroups.png">
+<meta property="og:updated_time" content="2019-06-20T08:09:15.706Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about Slice in Go">
 <meta name="twitter:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/golangusergroups.png">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -93,6 +95,7 @@
       
         <p>Golang’s Slice is kinda diffrent===&gt;</p>
 <a id="more"></a>
+<p><img src="/img/golangusergroups.png" alt="group"></p>
 <p>This article [Slice]<a href="https://blog.golang.org/slices" target="_blank" rel="external">https://blog.golang.org/slices</a> may give you more information</p>
 <h2 id="slice-struct"><a href="#slice-struct" class="headerlink" title="slice struct"></a>slice struct</h2><p>slice其实是一个结构体，并不是简单的数组或者链表(不想用英文写了)</p>
  <figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//actually its not visible to programmer</span></div><div class="line"><span class="comment">//我自己臆想出来的,但可以从src/runtime/slice.go找出,或者走这个链接：https://golang.org/src/runtime/slice.go</span></div><div class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span>&#123;</div><div class="line">    length <span class="keyword">int</span> <span class="comment">//length</span></div><div class="line">    pointer <span class="keyword">interface</span>&#123;&#125; <span class="comment">//point to first element, the type depends on the element</span></div><div class="line">    Capacity <span class="keyword">int</span><span class="comment">//max容量</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -127,7 +130,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjx41o5nu000fu0ughsdergsn" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjx69koox000fqluggw8z2y31" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -148,9 +151,9 @@
     </a>
   
   
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-constantPool/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">class loading</div>
+      <div class="article-nav-title">Java String constatn pool</div>
     </a>
   
 </nav>
@@ -179,7 +182,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Javascript/" style="font-size: 15px;">Javascript</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 15px;">css</a> <a href="/tags/golang/" style="font-size: 15px;">golang</a> <a href="/tags/javascript/" style="font-size: 15px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Javascript/" style="font-size: 15px;">Javascript</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 15px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 15px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -201,19 +204,19 @@
       <ul>
         
           <li>
+            <a href="/2019/06/21/Go/Context/">Golang Context</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
+          </li>
+        
+          <li>
             <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/05/java/Java-constantPool/">Java String constatn pool</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/05/Go/Concurrency/">Concurrency Problem</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/05/Go/Slice/">Something about Slice in Go</a>
           </li>
         
           <li>

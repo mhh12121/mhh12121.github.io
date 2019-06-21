@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Something should be noted in golang&#39;s map | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="There is SortedMap or LinkedHashMap in JavaBoth can ensure the inserted order of elements, but f  k myself, I found that Go only supports basic HashMap**which means you have to do SortedMap and Linked">
+<meta name="keywords" content="golang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Something should be noted in golang&#39;s map">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/19/Go/SortedMap/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="There is SortedMap or LinkedHashMap in JavaBoth can ensure the inserted order of elements, but f  k myself, I found that Go only supports basic HashMap**which means you have to do SortedMap and Linked">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://blog.golang.org/go-maps-in-action">
+<meta property="og:image" content="https://blog.golang.org/go-maps-in-action">
+<meta property="og:image" content="https://golang.org/pkg/sort/">
+<meta property="og:image" content="https://mhh12121.github.io/Concurrency">
+<meta property="og:updated_time" content="2019-06-21T15:43:11.834Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Something should be noted in golang&#39;s map">
+<meta name="twitter:description" content="There is SortedMap or LinkedHashMap in JavaBoth can ensure the inserted order of elements, but f  k myself, I found that Go only supports basic HashMap**which means you have to do SortedMap and Linked">
+<meta name="twitter:image" content="https://blog.golang.org/go-maps-in-action">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Go/SortedMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/19/Go/SortedMap/" class="article-date">
+  <time datetime="2019-06-19T02:36:00.000Z" itemprop="datePublished">2019-06-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Something should be noted in golang&#39;s map
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>There is <strong>SortedMap</strong> or <strong>LinkedHashMap</strong> in Java<br>Both can ensure the inserted order of elements, but f <strong> k myself, I found that Go </strong>only supports basic HashMap**<br>which means you have to do SortedMap and LinkedHashMap by yourself.</p>
+<pre><code>----From a damn interview test
+</code></pre><a id="more"></a>
+<p>I met a problem in an interview test:</p>
+<p>Given a file containing URLs on every line,you must record all of their occurence times, then save it into a new file<br>format like:</p>
+<pre><code>url1  2times
+url2  3times
+url3  4times
+</code></pre><p>But it should be noticed that all urls in new file have the same sequence as those in source files;</p>
+<p>其实你要解决三个问题：</p>
+<ol>
+<li>url频次统计（首先想起map）</li>
+<li>要按顺序放入新文件？？？//todo</li>
+<li>文件太大怎么办（拆乘多个文件，进行映射，再统计，但这里又不知道怎么保证顺序？？！！难倒只有手动实现LinkedHashMap红黑树？）</li>
+</ol>
+<p>Go blog <img src="https://blog.golang.org/go-maps-in-action" alt="map in action"> says:</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>When iterating over a map with a range loop, the iteration order is not specified and is not guaranteed to be the same from one iteration to the next. Since the release of Go 1.0, the runtime has randomized map iteration order.</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h3 id="SortedMap"><a href="#SortedMap" class="headerlink" title="SortedMap"></a>SortedMap</h3><p>Someone has already implemented it<br>From Go blog  <img src="https://blog.golang.org/go-maps-in-action" alt="map in action"></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> <span class="string">"sort"</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> m <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span></div><div class="line"><span class="keyword">var</span> keys []<span class="keyword">int</span></div><div class="line"><span class="keyword">for</span> k := <span class="keyword">range</span> m &#123;<span class="comment">//extract all the damn key out</span></div><div class="line">    keys = <span class="built_in">append</span>(keys, k)</div><div class="line">&#125;</div><div class="line">sort.Ints(keys)<span class="comment">//sort them</span></div><div class="line"><span class="keyword">for</span> _, k := <span class="keyword">range</span> keys &#123;<span class="comment">//then you can get a sorted map</span></div><div class="line">    fmt.Println(<span class="string">"Key:"</span>, k, <span class="string">"Value:"</span>, m[k])</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>If your <strong>key</strong> is not an int or string or you wanna sort it by yourself:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//we assume a struct is like below:</span></div><div class="line"><span class="keyword">type</span> Obj <span class="keyword">struct</span> &#123;</div><div class="line">	Title    <span class="keyword">string</span></div><div class="line">	Sequence <span class="keyword">int</span></div><div class="line">	Size     <span class="keyword">int</span></div><div class="line">&#125;</div><div class="line"><span class="comment">//</span></div><div class="line"><span class="keyword">type</span> By <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span></div><div class="line"><span class="function"></span></div><div class="line"><span class="function">//<span class="title">ObjSorter</span> <span class="title">joins</span> <span class="title">a</span> <span class="title">By</span> <span class="title">function</span> <span class="title">and</span> <span class="title">a</span> <span class="title">slice</span> <span class="title">of</span> <span class="title">Objs</span> <span class="title">to</span> <span class="title">be</span> <span class="title">sorted</span>.</span></div><div class="line"><span class="function"><span class="title">type</span> <span class="title">ObjSorter</span> <span class="title">struct</span></span> &#123;<span class="comment">//to wrap the obj and by function into this struct</span></div><div class="line">	objs []Obj</div><div class="line">	by   <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span></div><div class="line"><span class="function">&#125;</span></div><div class="line"><span class="function"></span></div><div class="line"><span class="function"><span class="title">func</span> <span class="params">(by By)</span> <span class="title">Sort</span><span class="params">(objs []Obj)</span></span> &#123;</div><div class="line">	os := &amp;ObjSorter&#123;</div><div class="line">		objs: objs,</div><div class="line">		by:   by,</div><div class="line">	&#125;</div><div class="line">	sort.Sort(os)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</div><div class="line">	<span class="keyword">return</span> s.by(&amp;s.objs[i], &amp;s.objs[j])</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span> &#123;</div><div class="line">	s.objs[i], s.objs[j] = s.objs[j], s.objs[i]</div><div class="line">&#125;</div><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span> &#123;</div><div class="line">	<span class="keyword">return</span> <span class="built_in">len</span>(s.objs)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Then to use it:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">SortedMap</span><span class="params">(m <span class="keyword">map</span>[Obj]<span class="keyword">int</span>)</span></span> &#123;</div><div class="line">	sortByTitle := <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span> &#123; <span class="comment">//sort by Ttitle field</span></div><div class="line">		<span class="keyword">return</span> o1.Title &lt; o2.Title</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// sortBySequence := func(o1, o2 *Obj) bool &#123; //sortBy Sequence field</span></div><div class="line">	<span class="comment">// 	return o1.Sequence &lt; o2.Sequence</span></div><div class="line">	<span class="comment">// &#125;</span></div><div class="line">	tempObjs := <span class="built_in">make</span>([]Obj, <span class="number">0</span>)</div><div class="line">	<span class="keyword">for</span> k := <span class="keyword">range</span> m &#123;</div><div class="line">		tempObjs = <span class="built_in">append</span>(tempObjs, k)</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	By(sortByTitle).Sort(tempObjs)<span class="comment">//Sorted this</span></div><div class="line">	<span class="keyword">for</span> _, k := <span class="keyword">range</span> tempObjs &#123;<span class="comment">//operate this </span></div><div class="line">		fmt.Printf(<span class="string">"key:%v,value:%v \n"</span>, k, m[k])</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>To test:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">    obj1 := &amp;Obj&#123;Title: <span class="string">"4"</span>&#125;</div><div class="line">	obj2 := &amp;Obj&#123;Title: <span class="string">"2"</span>&#125;</div><div class="line">	obj3 := &amp;Obj&#123;Title: <span class="string">"1"</span>&#125;</div><div class="line">	objs := <span class="built_in">make</span>([]*Obj, <span class="number">0</span>)</div><div class="line">	objs = <span class="built_in">append</span>(objs, obj1, obj2, obj3)</div><div class="line">	m := <span class="built_in">make</span>(<span class="keyword">map</span>[Obj]<span class="keyword">int</span>)</div><div class="line">	m[*obj1] = <span class="number">1</span></div><div class="line">	m[*obj3] = <span class="number">1</span></div><div class="line">	m[*obj2] = <span class="number">1</span></div><div class="line">	SortedMap(m)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Result:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">key:&#123;1 0 0&#125;,value:1 </div><div class="line">key:&#123;2 0 0&#125;,value:1 </div><div class="line">key:&#123;4 0 0&#125;,value:1</div></pre></td></tr></table></figure>
+<p>Above example can be found in <img src="https://golang.org/pkg/sort/" alt="Golang slice doc examples"></p>
+<h3 id="LinkedHashMap"><a href="#LinkedHashMap" class="headerlink" title="LinkedHashMap"></a>LinkedHashMap</h3><p>To just ensure <strong>inserted order</strong>:<br>you can refer to <img src="" alt="Java LinkedHashMap">//or arrayMap()</p>
+<p><strong>But</strong><br>here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
+<p>We do a trade-off between time and space:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//just create a slice to save sequence</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">CalcUrls</span><span class="params">()</span></span>&#123;</div><div class="line">    sequence:=<span class="built_in">make</span>([]<span class="keyword">string</span>,<span class="number">0</span>)</div><div class="line">    m:=<span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</div><div class="line">    <span class="comment">//.....</span></div><div class="line">    </div><div class="line">    url:=fp.ReadLine()</div><div class="line">    <span class="keyword">if</span> _,exists:=m[url];exists&#123;</div><div class="line">        m[url]++</div><div class="line">    &#125;<span class="keyword">else</span>&#123;</div><div class="line">        sequence=<span class="built_in">append</span>(sequence,url)</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//....</span></div><div class="line">    <span class="keyword">for</span> _,v:=<span class="keyword">range</span> sequence&#123;</div><div class="line">        res:=fmt.Sprintf(<span class="string">"url:%v,times:%v"</span>,v,m[v])</div><div class="line">        Writer.write(res)<span class="comment">//write into the new file</span></div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">//....</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>———————————新增———————————————<br>主要是红黑树是为了能便于删除和添加，而我遇到的面试题只考虑添加，所以没必要，<br>但是隔了一天，还是觉得不爽</p>
+<p>自己尝试实现一下基于红黑树的map看看，就当做复习吧：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div></pre></td></tr></table></figure>
+<p>———————————end———————————————–<br>The above code may use O(2n) space, but time complexity reduce to O(n)<br><strong>!!!Everything seems done!!!</strong></p>
+<p>So what if we use a <strong>large file?</strong></p>
+<h3 id="Large-File"><a href="#Large-File" class="headerlink" title="Large File"></a>Large File</h3><p>Solution: Split the large file into several files, it depends on your MEM:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">HashFile</span><span class="params">(url <span class="keyword">string</span>)</span> <span class="title">int</span></span>&#123;<span class="comment">//pass a url</span></div><div class="line">    seed:=<span class="number">131</span></div><div class="line">    hash:=<span class="number">0</span></div><div class="line">    <span class="keyword">for</span> _,v:=<span class="keyword">range</span> url&#123;</div><div class="line">        hash=hash*seed+v</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> hash &amp; <span class="number">0x7FFFFFFF</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="comment">//........</span></div><div class="line">    <span class="comment">//url:=fp.ReadLine()</span></div><div class="line">    pos:=HashFile(url)</div><div class="line">    file:=pos%<span class="number">10</span><span class="comment">//we assume that it split into 10 files</span></div><div class="line">    bufio.newWriter(file+<span class="string">".txt"</span>)</div><div class="line">    Writer.Write(file+<span class="string">".txt"</span>)<span class="comment">//write it into specific file</span></div><div class="line">    <span class="comment">//........</span></div><div class="line">    urls:=<span class="built_in">make</span>([]<span class="keyword">string</span>,<span class="number">0</span>)</div><div class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++&#123;</div><div class="line">        urlPlusTimes:=LoopEachFile(files)<span class="comment">//calculate each files' urls</span></div><div class="line">        urls=<span class="built_in">append</span>(urls,urlPlusTimes...)<span class="comment">// Here comes to the question??? how to ensure sequence???</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Addition"><a href="#Addition" class="headerlink" title="Addition"></a>Addition</h3><h4 id="unsafe"><a href="#unsafe" class="headerlink" title="unsafe"></a>unsafe</h4><p>map in golang is <strong>not thread-safe</strong>;<br>So it involves with concurrency situation, you must add <strong>sync.Mutex</strong> or <strong>sync.RWMutex</strong><br>About that, can refer to <img src="/Concurrency" alt="my previous blog"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="cjx69koos000cqlug2crhmztx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/06/21/Go/Context/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Golang Context
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/06/08/Go/GolangMux/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Golang Mux</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Javascript/" style="font-size: 15px;">Javascript</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 15px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 15px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/21/Go/Context/">Golang Context</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
+          </li>
+        
+          <li>
+            <a href="/2019/06/05/java/Java-Class/">class loading</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
