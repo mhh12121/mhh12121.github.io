@@ -5,19 +5,21 @@
   
   <title>Golang Context | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="//todo">
+  <meta name="description" content="Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用">
 <meta name="keywords" content="golang">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Golang Context">
 <meta property="og:url" content="https://mhh12121.github.io/2019/06/21/Go/Context/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="//todo">
+<meta property="og:description" content="Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/golangContextMascot.jpg">
-<meta property="og:updated_time" content="2019-06-21T15:45:29.071Z">
+<meta property="og:image" content="https://mhh12121.github.io/Concurrency">
+<meta property="og:image" content="https://blog.golang.org/context">
+<meta property="og:updated_time" content="2019-06-24T14:00:27.589Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang Context">
-<meta name="twitter:description" content="//todo">
+<meta name="twitter:description" content="Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用">
 <meta name="twitter:image" content="https://mhh12121.github.io/img/golangContextMascot.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -93,13 +95,21 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>//todo</p>
+        <p>Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用<br><a id="more"></a></p>
 <p><img src="/img/golangContextMascot.jpg" alt="Context"></p>
+<h2 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h2><p>开头已经说道，Context主要用于在goroutine之间传递上下文信息，而这些信息包括key-value pair，cancel信号，timeout信号等<br>http包，sql包里面都用到了context，比如http包里面，API可以由外部执行cancel操作，可以设置timeout信号来cancel<br>http请求服务如果过慢，则可以用timeout进行释放资源<br>举例：获取商品的默认库存数量等</p>
+<p><strong><em>参考 go在今日头条的实践</em></strong></p>
+<p>另外，之前的<img src="/Concurrency" alt="Concurrency"> 有谈到协程之前如何同步（比如 channel和select）<br>但如果要共享一些全局变量，或者需要同时被关闭，就可以用context来实现</p>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><blockquote><p>test for </p>
+<footer><strong>yoyo</strong></footer></blockquote>
+<p>可以参考官方blog<img src="https://blog.golang.org/context" alt="context blog"></p>
+<p>整体提供了：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Context <span class="keyword">interface</span></div></pre></td></tr></table></figure></p>
+<p>cancelCtx,timerCtx,valueCtx  </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjx69n8r70000s3ugex61uziq" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjxag8146000d4uugijsb073m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -176,11 +186,11 @@
           </li>
         
           <li>
-            <a href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
+            <a href="/2019/06/05/java/Java-Class/">class loading</a>
           </li>
         
           <li>
-            <a href="/2019/06/05/java/Java-Class/">class loading</a>
+            <a href="/2019/06/05/java/Java-constantPool/">Java String constatn pool</a>
           </li>
         
       </ul>
