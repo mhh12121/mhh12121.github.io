@@ -17,7 +17,8 @@
 <meta property="og:image" content="https://mhh12121.github.io/Concurrency">
 <meta property="og:image" content="https://blog.golang.org/context">
 <meta property="og:image" content="https://mhh12121.github.io/img/go_context.png">
-<meta property="og:updated_time" content="2019-06-29T08:18:05.677Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/valueCtx.png">
+<meta property="og:updated_time" content="2019-06-29T08:20:11.300Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang Context">
 <meta name="twitter:description" content="Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用">
@@ -157,7 +158,7 @@
 </ol>
 <h5 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h5><ol>
 <li>判断key是否为空，key的类型是否合法</li>
-<li>返回一个有parent指针的valueCtx;所以，创建valueCtx是可以从parent开始一级一级往下创建，如下图：<br>！<a href="/img/valueCtx.png">valueCtx</a></li>
+<li>返回一个有parent指针的valueCtx;所以，创建valueCtx是可以从parent开始一级一级往下创建，如下图：<br><img src="/img/valueCtx.png" alt="valueCtx"></li>
 </ol>
 <h4 id="timerCtx"><a href="#timerCtx" class="headerlink" title="timerCtx"></a>timerCtx</h4><p>结构体：<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// A timerCtx carries a timer and a deadline. It embeds a cancelCtx to</span></div><div class="line"><span class="comment">// implement Done and Err. It implements cancel by stopping its timer then</span></div><div class="line"><span class="comment">// delegating to cancelCtx.cancel.</span></div><div class="line"><span class="keyword">type</span> timerCtx <span class="keyword">struct</span> &#123;</div><div class="line">	cancelCtx</div><div class="line">	timer *time.Timer <span class="comment">// Under cancelCtx.mu.</span></div><div class="line"></div><div class="line">	deadline time.Time</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>它的cancel方法<br><figure class="highlight go"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *timerCtx)</span> <span class="title">cancel</span><span class="params">(removeFromParent <span class="keyword">bool</span>, err error)</span></span> &#123;</div><div class="line">	c.cancelCtx.cancel(<span class="literal">false</span>, err)</div><div class="line">	<span class="keyword">if</span> removeFromParent &#123;</div><div class="line">		<span class="comment">// Remove this timerCtx from its parent cancelCtx's children.</span></div><div class="line">		removeChild(c.cancelCtx.Context, c)</div><div class="line">	&#125;</div><div class="line">	c.mu.Lock()</div><div class="line">	<span class="keyword">if</span> c.timer != <span class="literal">nil</span> &#123;</div><div class="line">		c.timer.Stop()</div><div class="line">		c.timer = <span class="literal">nil</span></div><div class="line">	&#125;</div><div class="line">	c.mu.Unlock()</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
@@ -188,7 +189,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjxh96xj7000i3ougnazycfls" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjxh99ji4000g8yugf13hqdfh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
