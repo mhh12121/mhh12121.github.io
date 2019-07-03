@@ -5,18 +5,18 @@
   
   <title>Something in gRPC | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
+  <meta name="description" content="常用的rpc框架，我们先从它的proto开始了解吧">
 <meta name="keywords" content="golang">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something in gRPC">
 <meta property="og:url" content="https://mhh12121.github.io/2019/06/29/Go/gRPC/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
+<meta property="og:description" content="常用的rpc框架，我们先从它的proto开始了解吧">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-01T15:02:56.754Z">
+<meta property="og:updated_time" content="2019-07-03T07:25:08.739Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something in gRPC">
-<meta name="twitter:description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
+<meta name="twitter:description" content="常用的rpc框架，我们先从它的proto开始了解吧">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -92,18 +92,19 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>常用的rpc框架，我们先从它的proto开始了解吧</p>
+<a id="more"></a>
 <p>我们这里只讨论go语法，语言方面其他都是大同小异</p>
 <h2>proto</h2>
-<p>创建proto文件 <strong>data.proto</strong>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto2"</span>;</span><br><span class="line"></span><br><span class="line">service Authenticate&#123;</span><br><span class="line">	rpc login(toServerData) returns (ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc home(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc logout(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message toServerData&#123;</span><br><span class="line">    required <span class="keyword">int32</span> ctype = <span class="number">1</span>;</span><br><span class="line">    optional bytes httpdata=<span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line">message ResponseFromServer &#123;</span><br><span class="line">	required <span class="keyword">bool</span> Success=<span class="number">1</span>;</span><br><span class="line">	optional bytes tcpData=<span class="number">2</span>;</span><br><span class="line">	<span class="comment">// Errcode int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>用安装的protoc插件生成
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</span><br></pre></td></tr></table></figure></p>
+<p>创建proto文件 <strong>data.proto</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto2"</span>;</span><br><span class="line"></span><br><span class="line">service Authenticate&#123;</span><br><span class="line">	rpc login(toServerData) returns (ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc home(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc logout(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message toServerData&#123;</span><br><span class="line">    required <span class="keyword">int32</span> ctype = <span class="number">1</span>;</span><br><span class="line">    optional bytes httpdata=<span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line">message ResponseFromServer &#123;</span><br><span class="line">	required <span class="keyword">bool</span> Success=<span class="number">1</span>;</span><br><span class="line">	optional bytes tcpData=<span class="number">2</span>;</span><br><span class="line">	<span class="comment">// Errcode int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用安装的protoc插件生成</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</span><br></pre></td></tr></table></figure>
 <p>生成 <strong>data.pb.proto</strong></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxmwz4t8000qaeug3ij9grd1" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxmx4h56000oj5ugfa96th3x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

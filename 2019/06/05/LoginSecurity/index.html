@@ -5,13 +5,13 @@
   
   <title>Something about authentication and authorization | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: &amp;lt;!--more--&amp;gt; Oauth2 流程 主要流程如图：  四种验证方法  JWT header.payload.signature 1234&amp;#123;    &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot;,    &amp;quot;alg&amp;qu">
+  <meta name="description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
 <meta name="keywords" content="security">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something about authentication and authorization">
 <meta property="og:url" content="https://mhh12121.github.io/2019/06/05/LoginSecurity/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: &amp;lt;!--more--&amp;gt; Oauth2 流程 主要流程如图：  四种验证方法  JWT header.payload.signature 1234&amp;#123;    &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot;,    &amp;quot;alg&amp;qu">
+<meta property="og:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/OauthProcess.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/Oauth4Methods.png">
@@ -20,7 +20,7 @@
 <meta property="og:updated_time" content="2019-07-03T06:59:32.797Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
-<meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes: &amp;lt;!--more--&amp;gt; Oauth2 流程 主要流程如图：  四种验证方法  JWT header.payload.signature 1234&amp;#123;    &amp;quot;typ&amp;quot;: &amp;quot;JWT&amp;quot;,    &amp;quot;alg&amp;qu">
+<meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
 <meta name="twitter:image" content="https://mhh12121.github.io/img/OauthProcess.png">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -96,8 +96,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="noopener">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="noopener">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="noopener">HTTPS</a>??? Followings are my notes:
-&lt;!--more--&gt;</p>
+        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="noopener">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="noopener">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="noopener">HTTPS</a>??? Followings are my notes:</p>
+<a id="more"></a>
 <h2>Oauth2</h2>
 <h3>流程</h3>
 <p>主要流程如图：
@@ -106,15 +106,15 @@
 <p><img src="/img/Oauth4Methods.png" alt="Oauth4method" title="four ways of identification"></p>
 <h2>JWT</h2>
 <p>header.payload.signature</p>
-<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims），例如iss(Issuer), sub(Subject), exp(Expiration time)，也可以塞入自定义的字段，比如 userId:
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims），例如iss(Issuer), sub(Subject), exp(Expiration time)，也可以塞入自定义的字段，比如 userId:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Signature</p>
-<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">secret=&quot;mhh12121&quot;//存在服务器上的密钥</span><br><span class="line">data = base64( header ) + “.” + base64( payload )</span><br><span class="line">signature = Hash( data, secret )//这里我们用HMACSHA256</span><br></pre></td></tr></table></figure></p>
-<p>假设我们的header 和paylaod如下
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//header</span><br><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br><span class="line">//payload</span><br><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br><span class="line">//服务器上的secret</span><br><span class="line">secret=&quot;mhh12121&quot;</span><br></pre></td></tr></table></figure></p>
-<p>可以通过这个网站<img src="https://jwt.io/" alt="jwtio">验证你的signature准确性
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//我们的signature应该是这个</span><br><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5anF3ZXF3MDAxOS1hcSJ9.7jRvE_F8lriMHlTZPJulRPg_V66I6r-f7caMuI82u1o</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">secret=&quot;mhh12121&quot;//存在服务器上的密钥</span><br><span class="line">data = base64( header ) + “.” + base64( payload )</span><br><span class="line">signature = Hash( data, secret )//这里我们用HMACSHA256</span><br></pre></td></tr></table></figure>
+<p>假设我们的header 和paylaod如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//header</span><br><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br><span class="line">//payload</span><br><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br><span class="line">//服务器上的secret</span><br><span class="line">secret=&quot;mhh12121&quot;</span><br></pre></td></tr></table></figure>
+<p>可以通过这个网站<img src="https://jwt.io/" alt="jwtio">验证你的signature准确性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//我们的signature应该是这个</span><br><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5anF3ZXF3MDAxOS1hcSJ9.7jRvE_F8lriMHlTZPJulRPg_V66I6r-f7caMuI82u1o</span><br></pre></td></tr></table></figure>
 <h2>TLS (HTTPS)</h2>
 <p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
 <p>It provides securty over serverl aspects:</p>
@@ -143,10 +143,10 @@
 而且对于Alice和Bob每个人来说，这些都用不同的密钥才会更安全</p>
 <p>为此，可以让Alice和Bob各生成4个密钥</p>
 <ol>
-<li>E&lt;sub&gt;B&lt;/sub&gt; 指Bob发送到Alice的数据的会话加密密钥</li>
-<li>M&lt;sub&gt;B&lt;/sub&gt; 指Bob发送到Alice的数据的会话MAC密钥</li>
-<li>E&lt;sub&gt;A&lt;/sub&gt; 指Alice发送到Bob的数据的会话加密密钥</li>
-<li>M&lt;sub&gt;A&lt;/sub&gt; 指Alice发送到Bob的数据的会话MAC密钥</li>
+<li>E<sub>B</sub> 指Bob发送到Alice的数据的会话加密密钥</li>
+<li>M<sub>B</sub> 指Bob发送到Alice的数据的会话MAC密钥</li>
+<li>E<sub>A</sub> 指Alice发送到Bob的数据的会话加密密钥</li>
+<li>M<sub>A</sub> 指Alice发送到Bob的数据的会话MAC密钥</li>
 </ol>
 <p>每人通过MS生成4个密钥，其中两个用于加密数据，另外两个用于验证数据完整性</p>
 <h4>第三步</h4>
@@ -154,7 +154,7 @@
 <p>但在数据传输中，经过TCP链接后，开始发送数据，一次发送了加密的数据，但另一个用于验证数据完整性的MAC去哪里了呢？
 我们希望一次性就可以把加密数据和验证完整性的MAC都发送出去（即一次发送即可满足加密性和完整性）</p>
 <p>为了解决这个问题，SSL将数据流分割成 <a href="#SSL-%E8%AE%B0%E5%BD%95">记录</a> ，对每一个记录附加一个MAC用于完整性检查，然后加密 <strong>记录+MAC</strong> ：
-比如，从Bob发送开始， 产生这个MAC， Bob将数据连同密钥M&lt;sub&gt;B&lt;/sub&gt;放入一个hash函数，再用自己CA会话加密密钥 <strong>E&lt;sub&gt;B&lt;/sub&gt;</strong>,最后再传入TCP</p>
+比如，从Bob发送开始， 产生这个MAC， Bob将数据连同密钥M<sub>B</sub>放入一个hash函数，再用自己CA会话加密密钥 <strong>E<sub>B</sub></strong>,最后再传入TCP</p>
 <p>然而，数据完整性仍然得不到保证，万一有中间人能抓取Bob发送的两个报文段，颠倒它们的顺序，调整TCP报文段的序号(seq)，将两个次序颠倒的报文段发送给Alice，
 假设TCP报文段刚好封装一个记录（流式传输，所以不保证只含一个），Alice会这样做：</p>
 <ol>
@@ -167,7 +167,7 @@
 Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的计算中：即</p>
 <blockquote>
 <blockquote>
-<p>MAC=Hash(数据 + MAC密钥M&lt;sub&gt;B&lt;/sub&gt; + 当前序号)</p>
+<p>MAC=Hash(数据 + MAC密钥M<sub>B</sub> + 当前序号)</p>
 </blockquote>
 </blockquote>
 <p>这样一来，以上颠倒了两个报文段的顺序，Alice解码发现顺序不对，就不会处理这两个报文</p>
@@ -185,7 +185,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxmwz4ry0001aeugd04yut3v" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxmx4h3m0001j5ugbpf6rj82" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -196,19 +196,19 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Concurrency Problem
+          class loading
         
       </div>
     </a>
   
   
-    <a href="/2018/04/30/DesignPattern/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Slice/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Notes about Design Pattern</div>
+      <div class="article-nav-title">Something about Slice in Go</div>
     </a>
   
 </nav>

@@ -5,18 +5,18 @@
   
   <title>从DocumentFragment看到GUI渲染 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
+  <meta name="description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
 <meta name="keywords" content="css">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从DocumentFragment看到GUI渲染">
 <meta property="og:url" content="https://mhh12121.github.io/2017/02/05/js/gui_engine/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
+<meta property="og:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-20T02:23:02.562Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从DocumentFragment看到GUI渲染">
-<meta name="twitter:description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
+<meta name="twitter:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -91,8 +91,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这里主要说说&lt;span style=&quot;color:#f92672&quot;&gt;重绘(repaint)&lt;/span&gt;和&lt;span style=&quot;color:#f92672&quot;&gt;回流(reflow)&lt;/span&gt;的问题</p>
-<p>&lt;!--more--&gt;</p>
+        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
+<a id="more"></a>
 <h4>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4>
 <h4>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="noopener">MDN手册</a></h4>
 <p>先看下以下代码</p>
@@ -135,7 +135,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxmwz4tg000xaeugk32ya3yy" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxmx4h5h0010j5ug16kyv4a6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>

@@ -5,18 +5,18 @@
   
   <title>css-clip问题 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
+  <meta name="description" content="今天在网上看见一个很好玩的属性clip MDN手册">
 <meta name="keywords" content="css">
 <meta property="og:type" content="article">
 <meta property="og:title" content="css-clip问题">
 <meta property="og:url" content="https://mhh12121.github.io/2016/01/07/js/css-clip/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
+<meta property="og:description" content="今天在网上看见一个很好玩的属性clip MDN手册">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-04T16:09:48.380Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="css-clip问题">
-<meta name="twitter:description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
+<meta name="twitter:description" content="今天在网上看见一个很好玩的属性clip MDN手册">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -91,19 +91,19 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>今天在网上看见一个很好玩的属性&lt;span style=&quot;color:#f92672;font-weight: bold;font-size: 2rem;&quot;&gt;clip&lt;/span&gt; <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="noopener">MDN手册</a></p>
-<p>&lt;!--more--&gt;</p>
+        <p>今天在网上看见一个很好玩的属性<span style="color:#f92672;font-weight: bold;font-size: 2rem;">clip</span> <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="noopener">MDN手册</a></p>
+<a id="more"></a>
 <p>主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果</p>
 <h3>Summary:</h3>
 <blockquote>
 <p>The clip CSS property defines what portion of an element is visible. The clip property applies only to absolutely positioned elements, that is elements with position:absolute or position:fixed.</p>
 </blockquote>
-<h5>意思就是这玩意儿只能用在&lt;span style=&quot;color:#f92672&quot;&gt;绝对定位&lt;/span&gt;上面.</h5>
+<h5>意思就是这玩意儿只能用在<span style="color:#f92672">绝对定位</span>上面.</h5>
 <h4>语法:</h4>
-<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clip:rect(top right bottom left)</span><br></pre></td></tr></table></figure></p>
-<p>顺时针，是不是和<strong>margin</strong>、<strong>padding</strong>的一样呢？
-&lt;div style=&quot;color:#f92672&quot;&gt;注意：要满足 top &lt; bottom 和left &lt; right &lt;/div&gt;
-&lt;div style=&quot;color:#4d8fc0&quot;&gt;注意：其中bottom和top一样，是以上边缘为开始计算距离;同样，right是和left一样，都是从左边缘算起&lt;/div&gt;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clip:rect(top right bottom left)</span><br></pre></td></tr></table></figure>
+<p>顺时针，是不是和<strong>margin</strong>、<strong>padding</strong>的一样呢？</p>
+<div style="color:#f92672">注意：要满足 top < bottom 和left < right </div>
+<div style="color:#4d8fc0">注意：其中bottom和top一样，是以上边缘为开始计算距离;同样，right是和left一样，都是从左边缘算起</div>
 <p>同时，取值<strong>auto</strong>或不满足上面条件的时候，rect就不显示。</p>
 <p>从以上特性看来，好像是可以实现css sprite的效果，而且不用background-position，兼容性得到大幅度提升!</p>
 <p>然而我并不想做那个，我自己做了一个图片切换的demo:
@@ -113,7 +113,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2016/01/07/js/css-clip/" data-id="cjxmwz4tj0012aeug0l8k8bzl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2016/01/07/js/css-clip/" data-id="cjxmx4h5f000yj5ugxlgfa9nq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>

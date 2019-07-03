@@ -5,19 +5,19 @@
   
   <title>Something about Networking | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
+  <meta name="description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
 <meta name="keywords" content="networking">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something about Networking">
 <meta property="og:url" content="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
+<meta property="og:description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
-<meta property="og:updated_time" content="2019-07-03T07:19:40.014Z">
+<meta property="og:updated_time" content="2019-07-03T07:25:13.774Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about Networking">
-<meta name="twitter:description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
+<meta name="twitter:description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
 <meta name="twitter:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -93,7 +93,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3>为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
+        <h3>1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
 <p>一开始看见，这不是显而易见的吗？？？</p>
 <p>后来发现，其实他想听到的答案是：</p>
 <ol>
@@ -125,18 +125,16 @@
 <p>一个tcp连接很可能不能把当前路由的带宽都用完（），所以要多个tcp连接，这样才能最大保证速率</p>
 <h3>总结</h3>
 <p>回答问题，要从特么原理开始一步步推导来說，不能想当然</p>
-<h3>各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点）</h3>
+<h3>2. 各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点）</h3>
 <p>TCP连接</p>
-<ol start="3">
-<li>DNS协议</li>
-</ol>
+<h3>3. DNS协议</h3>
 <p>首先这🐔是<strong>应用层</strong>协议！！！
 :smile:</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxmwz4sw000faeugkc4f6v0t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxmx4h4w000fj5ugdmys09dl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>

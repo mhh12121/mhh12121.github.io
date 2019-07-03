@@ -5,18 +5,18 @@
   
   <title>Notes about Design Pattern | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
+  <meta name="description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
 <meta name="keywords" content="Design Pattern">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Notes about Design Pattern">
 <meta property="og:url" content="https://mhh12121.github.io/2018/04/30/DesignPattern/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
+<meta property="og:description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-04T07:54:05.123Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Design Pattern">
-<meta name="twitter:description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
+<meta name="twitter:description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -91,15 +91,15 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>&lt;!--more--&gt;
-For reviewing some most likely used design pattern:</p>
+        <a id="more"></a>
+<p>For reviewing some most likely used design pattern:</p>
 <h2><strong>Singleton</strong></h2>
-<p>Most commonly
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//other method</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Most commonly</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//other method</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Pros:</p>
 <ol>
 <li>
-<p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can't be optimized, Singleton pattern is the best choice.</p>
+<p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
 </li>
 <li>
 <p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
@@ -108,7 +108,7 @@ For reviewing some most likely used design pattern:</p>
 </ol>
 <p>Cons:</p>
 <ol>
-<li>Obviously, because singleton has instatiated itself, so it's impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
+<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
 </ol>
 <p>Scenes:</p>
 <ol>
@@ -118,12 +118,12 @@ For reviewing some most likely used design pattern:</p>
 </ol>
 <h2><strong>Proxy</strong></h2>
 <h3><strong>dynamic proxy</strong></h3>
-<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">     <span class="comment">//被代理者</span></span><br><span class="line">     Class cls =<span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//被代理的实例</span></span><br><span class="line">     Object obj = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//我要代理谁</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</span><br><span class="line">             <span class="keyword">this</span>.obj = _obj;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//调用被代理的方法</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></span><br><span class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</span><br><span class="line">             <span class="keyword">return</span> result;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">     <span class="comment">//被代理者</span></span><br><span class="line">     Class cls =<span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//被代理的实例</span></span><br><span class="line">     Object obj = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//我要代理谁</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</span><br><span class="line">             <span class="keyword">this</span>.obj = _obj;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//调用被代理的方法</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></span><br><span class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</span><br><span class="line">             <span class="keyword">return</span> result;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxmwz4rr0000aeugtbzfizhl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxmx4h3f0000j5ugl6ilzjf9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -134,11 +134,11 @@ For reviewing some most likely used design pattern:</p>
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/LoginSecurity/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Something about authentication and authorization
+          Concurrency Problem
         
       </div>
     </a>
