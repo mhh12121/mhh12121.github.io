@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>Notes about Design Pattern | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
+  <meta name="description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
 <meta name="keywords" content="Design Pattern">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Notes about Design Pattern">
 <meta property="og:url" content="https://mhh12121.github.io/2018/04/30/DesignPattern/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
+<meta property="og:description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-04T07:54:05.123Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Design Pattern">
-<meta name="twitter:description" content="For reviewing some most likely used design pattern: SingletonMost commonly123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singlet">
+<meta name="twitter:description" content="&amp;lt;!--more--&amp;gt; For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -30,7 +30,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -91,20 +91,24 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <a id="more"></a>
-<p>For reviewing some most likely used design pattern:</p>
-<h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+        <p>&lt;!--more--&gt;
+For reviewing some most likely used design pattern:</p>
+<h2><strong>Singleton</strong></h2>
+<p>Most commonly
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//other method</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>Pros:</p>
 <ol>
-<li><p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
+<li>
+<p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can't be optimized, Singleton pattern is the best choice.</p>
 </li>
-<li><p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
+<li>
+<p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
 </li>
 <li></li>
 </ol>
 <p>Cons:</p>
 <ol>
-<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
+<li>Obviously, because singleton has instatiated itself, so it's impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
 </ol>
 <p>Scenes:</p>
 <ol>
@@ -112,12 +116,14 @@
 <li>IO;</li>
 <li>global stored in memory for calculating purpose.For exmaple, Spring Bean is set as a singleton by default so that spring can manage this bean life cycle(but if Bean use non-singleton like prototype pattern,after the initialization of Bean, it will be transfered to J2EE container,Spring no longer manages this Bean)</li>
 </ol>
-<h2 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a><strong>Proxy</strong></h2><h3 id="dynamic-proxy"><a href="#dynamic-proxy" class="headerlink" title="dynamic proxy"></a><strong>dynamic proxy</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">     <span class="comment">//被代理者</span></div><div class="line">     Class cls =<span class="keyword">null</span>;</div><div class="line">     <span class="comment">//被代理的实例</span></div><div class="line">     Object obj = <span class="keyword">null</span>;</div><div class="line">     <span class="comment">//我要代理谁</span></div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</div><div class="line">             <span class="keyword">this</span>.obj = _obj;</div><div class="line">     &#125;</div><div class="line">     <span class="comment">//调用被代理的方法</span></div><div class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">     &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2><strong>Proxy</strong></h2>
+<h3><strong>dynamic proxy</strong></h3>
+<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">     <span class="comment">//被代理者</span></span><br><span class="line">     Class cls =<span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//被代理的实例</span></span><br><span class="line">     Object obj = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//我要代理谁</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</span><br><span class="line">             <span class="keyword">this</span>.obj = _obj;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//调用被代理的方法</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></span><br><span class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</span><br><span class="line">             <span class="keyword">return</span> result;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxh99jgn00008yug593vxl8l" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxmwz4rr0000aeugtbzfizhl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -159,7 +165,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -169,7 +175,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -178,7 +184,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -189,6 +195,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -204,10 +214,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>兜的破烂</title>
@@ -25,7 +25,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -66,6 +66,129 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-LoginSecurity" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/LoginSecurity/" class="article-date">
+  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/06/05/LoginSecurity/">Something about authentication and authorization</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="noopener">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="noopener">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="noopener">HTTPS</a>??? Followings are my notes:
+&lt;!--more--&gt;</p>
+<h2>Oauth2</h2>
+<h3>流程</h3>
+<p>主要流程如图：
+<img src="/img/OauthProcess.png" alt="OauthProcess" title="Process"></p>
+<h3>四种验证方法</h3>
+<p><img src="/img/Oauth4Methods.png" alt="Oauth4method" title="four ways of identification"></p>
+<h2>JWT</h2>
+<p>header.payload.signature</p>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims），例如iss(Issuer), sub(Subject), exp(Expiration time)，也可以塞入自定义的字段，比如 userId:
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Signature</p>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">secret=&quot;mhh12121&quot;//存在服务器上的密钥</span><br><span class="line">data = base64( header ) + “.” + base64( payload )</span><br><span class="line">signature = Hash( data, secret )//这里我们用HMACSHA256</span><br></pre></td></tr></table></figure></p>
+<p>假设我们的header 和paylaod如下
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//header</span><br><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br><span class="line">//payload</span><br><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br><span class="line">//服务器上的secret</span><br><span class="line">secret=&quot;mhh12121&quot;</span><br></pre></td></tr></table></figure></p>
+<p>可以通过这个网站<img src="https://jwt.io/" alt="jwtio">验证你的signature准确性
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//我们的signature应该是这个</span><br><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5anF3ZXF3MDAxOS1hcSJ9.7jRvE_F8lriMHlTZPJulRPg_V66I6r-f7caMuI82u1o</span><br></pre></td></tr></table></figure></p>
+<h2>TLS (HTTPS)</h2>
+<p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
+<p>It provides securty over serverl aspects:</p>
+<ol>
+<li>encryption(加密性)：指提交的数据不被获得</li>
+<li>data Integerity(数据完整性)：指提交的的订单不被修改</li>
+<li>Port Identification (端点鉴别，包括服务端和客户端)：指提交和接收的两边能互相确认身份</li>
+</ol>
+<p>至于流程验证，为了方便了解，我们先简化SSL：</p>
+<p>举例用Bob和Alice</p>
+<h4>第一步：</h4>
+<h5>握手</h5>
+<p>一、 因为这是在TCP之上，所以先进行TCP链接,Bob发起链接，Alice接收，这里略过</p>
+<p>二、 要验证Alice是真正的Alice：
+1. Bob会发送一个 SSL 验证报文，,下图是 <strong>SSL hello</strong>报文
+2. Alice 则用她的 <strong>证书</strong>进行回应，证书中包含了她的公钥
+3. Bob收到证书，因为 证书被 <strong>CA</strong> 证实过了，所以Bob会知道Alice的真实性
+4. 如果证书是真的，Bob会产生一个 <strong>主密钥（MS）</strong> 该密钥只用于这个SSL会话</p>
+<p>三、 双方生成共同的密钥：
+1. Bob会用 Alice的公钥加密这个 <strong>主密钥MS</strong> 生成 <strong>加密的主密钥(EMS)</strong>
+2. Bob发送 <strong>EMS</strong> 给Alice
+3. Alice收到 <strong>EMS</strong> 并用自己的 <strong>私钥</strong> 解开得到 <strong>密钥（MS）</strong>，这样双方都有一个共同的<strong>密钥</strong></p>
+<h4>第二步：</h4>
+<h5>密钥导出</h5>
+<p>现在双方有一个共同的密钥，已经可以用作通信，但前面说到，要保证3点加密性，数据完整性，端点鉴别
+而且对于Alice和Bob每个人来说，这些都用不同的密钥才会更安全</p>
+<p>为此，可以让Alice和Bob各生成4个密钥</p>
+<ol>
+<li>E&lt;sub&gt;B&lt;/sub&gt; 指Bob发送到Alice的数据的会话加密密钥</li>
+<li>M&lt;sub&gt;B&lt;/sub&gt; 指Bob发送到Alice的数据的会话MAC密钥</li>
+<li>E&lt;sub&gt;A&lt;/sub&gt; 指Alice发送到Bob的数据的会话加密密钥</li>
+<li>M&lt;sub&gt;A&lt;/sub&gt; 指Alice发送到Bob的数据的会话MAC密钥</li>
+</ol>
+<p>每人通过MS生成4个密钥，其中两个用于加密数据，另外两个用于验证数据完整性</p>
+<h4>第三步</h4>
+<h5>数据传输</h5>
+<p>但在数据传输中，经过TCP链接后，开始发送数据，一次发送了加密的数据，但另一个用于验证数据完整性的MAC去哪里了呢？
+我们希望一次性就可以把加密数据和验证完整性的MAC都发送出去（即一次发送即可满足加密性和完整性）</p>
+<p>为了解决这个问题，SSL将数据流分割成 <a href="#SSL-%E8%AE%B0%E5%BD%95">记录</a> ，对每一个记录附加一个MAC用于完整性检查，然后加密 <strong>记录+MAC</strong> ：
+比如，从Bob发送开始， 产生这个MAC， Bob将数据连同密钥M&lt;sub&gt;B&lt;/sub&gt;放入一个hash函数，再用自己CA会话加密密钥 <strong>E&lt;sub&gt;B&lt;/sub&gt;</strong>,最后再传入TCP</p>
+<p>然而，数据完整性仍然得不到保证，万一有中间人能抓取Bob发送的两个报文段，颠倒它们的顺序，调整TCP报文段的序号(seq)，将两个次序颠倒的报文段发送给Alice，
+假设TCP报文段刚好封装一个记录（流式传输，所以不保证只含一个），Alice会这样做：</p>
+<ol>
+<li>Alice端运行的TCP认为一切正常，传递这两个记录给SSL子层</li>
+<li>SSL解密这两个记录</li>
+<li>SSL会用每个记录中的MAC来验证完整性</li>
+<li>SSL将解密的两条记录的字节流传给应用层，但实际上因为颠倒了报文，次序不正确。</li>
+</ol>
+<p>解决如上问题，主要就要解决TCP的序号问题，所以就可以自己使用一个<strong>序号计数器</strong>：
+Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的计算中：即</p>
+<blockquote>
+<blockquote>
+<p>MAC=Hash(数据 + MAC密钥M&lt;sub&gt;B&lt;/sub&gt; + 当前序号)</p>
+</blockquote>
+</blockquote>
+<p>这样一来，以上颠倒了两个报文段的顺序，Alice解码发现顺序不对，就不会处理这两个报文</p>
+<h3>SSL 记录</h3>
+<p>该记录如下图所示：
+<img src="/img/SSL.png" alt="SSL记录格式"></p>
+<p>主要由类型字段，版本字段，长度字段，数据字段和MAC构成，但其前三个字段是不加密的
+类型字段：指出是握手报文还是有数据的报文，还被用于关闭SSL连接上（后面说到）</p>
+<h3>连接关闭时注意的问题</h3>
+<p>一般来讲，关闭连接就会由Client端，即Bob发起TCP FIN报文请求断开，但这个易遭到截断攻击（truncation attack)：
+如果中间人过早地发送TCP FIN报文，Server端（Alice）会认为已经收到所有Bob的数据。</p>
+<p>解决方案：SSL记录中的<strong>类型字段</strong>指明这个记录是否用于关闭连接。这里还要注意，虽然这个字段是明文，但接收方仍然可以用记录的MAC对它进行鉴别</p>
+<p>***参考 《计算机网络自顶向下》 ***</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxmwz4ry0001aeugd04yut3v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-DesignPattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/04/30/DesignPattern/" class="article-date">
@@ -88,20 +211,24 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <a id="more"></a>
-<p>For reviewing some most likely used design pattern:</p>
-<h2 id="Singleton"><a href="#Singleton" class="headerlink" title="Singleton"></a><strong>Singleton</strong></h2><p>Most commonly<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="comment">//other method</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+        <p>&lt;!--more--&gt;
+For reviewing some most likely used design pattern:</p>
+<h2><strong>Singleton</strong></h2>
+<p>Most commonly
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//other method</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>Pros:</p>
 <ol>
-<li><p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
+<li>
+<p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can't be optimized, Singleton pattern is the best choice.</p>
 </li>
-<li><p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
+<li>
+<p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
 </li>
 <li></li>
 </ol>
 <p>Cons:</p>
 <ol>
-<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
+<li>Obviously, because singleton has instatiated itself, so it's impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
 </ol>
 <p>Scenes:</p>
 <ol>
@@ -109,12 +236,14 @@
 <li>IO;</li>
 <li>global stored in memory for calculating purpose.For exmaple, Spring Bean is set as a singleton by default so that spring can manage this bean life cycle(but if Bean use non-singleton like prototype pattern,after the initialization of Bean, it will be transfered to J2EE container,Spring no longer manages this Bean)</li>
 </ol>
-<h2 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a><strong>Proxy</strong></h2><h3 id="dynamic-proxy"><a href="#dynamic-proxy" class="headerlink" title="dynamic proxy"></a><strong>dynamic proxy</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">     <span class="comment">//被代理者</span></div><div class="line">     Class cls =<span class="keyword">null</span>;</div><div class="line">     <span class="comment">//被代理的实例</span></div><div class="line">     Object obj = <span class="keyword">null</span>;</div><div class="line">     <span class="comment">//我要代理谁</span></div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</div><div class="line">             <span class="keyword">this</span>.obj = _obj;</div><div class="line">     &#125;</div><div class="line">     <span class="comment">//调用被代理的方法</span></div><div class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</div><div class="line">             <span class="keyword">return</span> result;</div><div class="line">     &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2><strong>Proxy</strong></h2>
+<h3><strong>dynamic proxy</strong></h3>
+<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">     <span class="comment">//被代理者</span></span><br><span class="line">     Class cls =<span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//被代理的实例</span></span><br><span class="line">     Object obj = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//我要代理谁</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</span><br><span class="line">             <span class="keyword">this</span>.obj = _obj;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//调用被代理的方法</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></span><br><span class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</span><br><span class="line">             <span class="keyword">return</span> result;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxh99jgn00008yug593vxl8l" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/DesignPattern/" data-id="cjxmwz4rr0000aeugtbzfizhl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -148,16 +277,37 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Actually we’ve learned the concept about multithread and the problem may cause.For instance, deadlock.</p>
-        
-          <p class="article-more-link">
-            <a href="/2018/03/07/java/Java-Concurrency/#more">Read More</a>
-          </p>
-        
+        <p>Actually we've learned the concept about multithread and the problem may cause.For instance, deadlock.</p>
+<p>&lt;!--more--&gt;
+Following is some notes about the avoiding or solving the deadlock.</p>
+<h2>**Monitor **</h2>
+<p>At the beginning, we can look at a picture:
+<img src="/img/java-monitor-associate-with-object.jpg" alt="Monitor"></p>
+<p>而一个锁就像一种任何时候只允许一个线程拥有的特权.<br>
+一个线程可以允许多次对同一对象上锁.对于每一个对象来说,java虚拟机维护一个计数器,记录对象被加了多少次锁,没被锁的对象的计数器是0,线程每加锁一次,计数器就加1,每释放一次,计数器就减1.当计数器跳到0的  时候,锁就被完全释放了.</p>
+<p>java虚拟机中的一个线程在它到达监视区域开始处的时候请求一个锁.JAVA程序中每一个监视区域都和一个对象引用相关联.<br>
+The program is like a building. And it stores some data meanwhile. But every time this building can only be occupied by only &lt;span style=&quot;color:#f92672&quot;&gt;<strong>one</strong>&lt;/div&gt; thread.
+If the thread enter this building, it's called <strong>enter monitor</strong>;
+If the thread enter the special room in this building, it's called <strong>get monitor</strong>;
+If the thread occupy the room, it's called <strong>occupy monitor</strong>;
+If the thread leave the room, it's called <strong>release monitor</strong>;
+If the thread leave the building, it's called <strong>exit monitor</strong>;</p>
+<p>Then,a <strong>LOCK</strong> is an authority only for single thread in every time.
+Single thread is allowed to multiplically add the lock to the same object.As for an object, JVM maintain a counter to record how many times the object was added lock.</p>
+<p>In Java, to implement a monitor, we're supposed to use <strong>Lock</strong> and <strong>Condition</strong> class,</p>
+<h2><strong>Semaphore</strong></h2>
+<p>In *** official docs ***:</p>
+<p>A counting semaphore. Conceptually, a semaphore maintains a set of permits.
+Each acquire() blocks if necessary until a permit is available, and then takes it.
+Each release() adds a permit, potentially releasing a blocking acquirer.
+However, no actual permit objects are used; the Semaphore just keeps a count of the number available and acts accordingly.</p>
+<p>Semaphores are often used to restrict the number of threads than can access some (physical or logical) resource. For example, here is a class that uses a semaphore to control access to a pool of items:</p>
+<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAX_AVAILABLE = <span class="number">100</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Semaphore available = <span class="keyword">new</span> Semaphore(MAX_AVAILABLE, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> Object <span class="title">getItem</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    available.acquire();</span><br><span class="line">    <span class="keyword">return</span> getNextAvailableItem();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putItem</span><span class="params">(Object x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (markAsUnused(x))</span><br><span class="line">      available.release();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Not a particularly efficient data structure; just for demo</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> Object[] items = ... <span class="comment">//whatever kinds of items being managed</span></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">boolean</span>[] used = <span class="keyword">new</span> <span class="keyword">boolean</span>[MAX_AVAILABLE];</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> Object <span class="title">getNextAvailableItem</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_AVAILABLE; ++i) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!used[i]) &#123;</span><br><span class="line">         used[i] = <span class="keyword">true</span>;</span><br><span class="line">         <span class="keyword">return</span> items[i];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>; <span class="comment">// not reached</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">boolean</span> <span class="title">markAsUnused</span><span class="params">(Object item)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_AVAILABLE; ++i) &#123;</span><br><span class="line">      <span class="keyword">if</span> (item == items[i]) &#123;</span><br><span class="line">         <span class="keyword">if</span> (used[i]) &#123;</span><br><span class="line">           used[i] = <span class="keyword">false</span>;</span><br><span class="line">           <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">         &#125; <span class="keyword">else</span></span><br><span class="line">           <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="cjxh99jim000t8yug27mw3ga4" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="cjxmwz4ti0010aeugb3f6v2xu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -191,16 +341,26 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Following is the summarize of the Java Collections://todo<br>
-        
-          <p class="article-more-link">
-            <a href="/2018/01/07/java/Java-Collection/#more">Read More</a>
-          </p>
-        
+        <p>Following is the summarize of the Java Collections://todo
+&lt;!--more--&gt;</p>
+<p>##Wildcard</p>
+<p>Lets look at an interesting stuff:&lt;div style=&quot;color:#f92672&quot;&gt;Collections&lt;/div&gt;
+the &lt;mark&gt;supertype&lt;/mark&gt; of all kinds of collections is Collection&lt;?&gt;(? is called &quot;unknown&quot;)</p>
+<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Collection&lt;?&gt; c = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">c.add(<span class="keyword">new</span> Object());<span class="comment">//Compile time error;</span></span><br></pre></td></tr></table></figure></p>
+<h2>HashMap</h2>
+<h3>LinkedHashMap</h3>
+<p>首先我们来看下LinkedHashMap的结构（这里盗一张别人的图）
+<img src="/img/linkedHashMap.jpg" alt="linkedhashmap"></p>
+<p>由此知道 LinkedHashMap是继承于HashMap的，所以hash算法，红黑树这些玩意儿都会有，但这里主要是它特殊的性质：</p>
+<ol>
+<li>其底层是双向链表，<strong>保证了遍历顺序和插入顺序一致的情况</strong></li>
+<li>实现了LRU (即对访问顺序有相关实现)</li>
+</ol>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="cjxh99jil000r8yug0r2v7gzv" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="cjxmwz4t7000oaeugkj9nljm0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -235,16 +395,99 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~</p>
-<p>这里的正则表达式就暂时在javascript上讨论吧。<br>
-        
-          <p class="article-more-link">
-            <a href="/2018/01/05/Regexp/#more">Read More</a>
-          </p>
-        
+<p>这里的正则表达式就暂时在javascript上讨论吧。
+&lt;!--more--&gt;
+参考<a href="http://www.runoob.com/jsref/jsref-obj-regexp.html" target="_blank" rel="noopener">网上随便找的中文教程</a></p>
+<p>这就不得不提到&lt;span style=&quot;color:#f92672;font-size:2rem&quot;&gt;RegExp&lt;/span&gt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp" target="_blank" rel="noopener">MDN手册</a>这个对象</p>
+<h3>语法：</h3>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> patt = <span class="keyword">new</span> <span class="built_in">RegExp</span>(pattern[, flags])</span><br><span class="line"><span class="keyword">var</span> patt = <span class="regexp">/pattern/</span>flags;</span><br></pre></td></tr></table></figure></p>
+<p><strong>pattern:就是写正则的地方</strong>
+<strong>flags取值(可以是下面的任意组合):</strong></p>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">g:global match //查找所有匹配而不是在找到第一个匹配后停止</span><br><span class="line">i:ignore case //忽略大小写</span><br><span class="line">m:multiline;treat begining and end characters(^ and $)as working over multiple lines </span><br><span class="line">//多行匹配,用这个属性后$会匹配&apos;\n&apos;或&apos;\r&apos;.要匹配$本身，用\$</span><br></pre></td></tr></table></figure></p>
+<h3>特殊字符</h3>
+<p>| 特殊字符      | 简单说明(无特殊说明，匹配本身都是用\转义)                   |
+|------:--------|--::----------------------------------------------------------|
+|     $         | 匹配输入字符串的结尾位置。                                         |
+|    ()         | 标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。     |
+|    *          | (限定符)匹配前面的子表达式零次或多次。     |
+|    +          | (限定符)匹配前面的子表达式一次或多次。     |
+|    .          | 匹配除换行符\n之外的任何单字符;匹配本身用\。     |
+| ?             | 匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。     |
+| [             | 标记一个中括号表达式的开始。     |
+| ^             | 匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。     |
+| {             | 标记限定符表达式的开始。     |
+| ¦      | 很明显，&quot;或&quot;符号。     |
+&lt;!--&lt;table&gt;
+&lt;tr&gt;&lt;th&gt;特殊字符&lt;/th&gt;&lt;th&gt;简单说明（没特殊说明的，匹配本身都是直接用\转义）&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;匹配输入字符串的结尾位置。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;()&lt;/td&gt;&lt;td&gt;标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;(限定符)匹配前面的子表达式零次或多次。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;+&lt;/td&gt;&lt;td&gt;(限定符)匹配前面的子表达式一次或多次。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;.&lt;/td&gt;&lt;td&gt;匹配除换行符\n之外的任何单字符;匹配本身用\。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;?&lt;/td&gt;&lt;td&gt;匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;[&lt;/td&gt;&lt;td&gt;标记一个中括号表达式的开始。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;^&lt;/td&gt;&lt;td&gt;匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;{&lt;/td&gt;&lt;td&gt;标记限定符表达式的开始&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;|&lt;/td&gt;&lt;td&gt;很明显，&quot;或&quot;符号&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;--&gt;</p>
+<h3>限定符</h3>
+<p>| 字符          | 简单说明                   |
+|-------------- |--::----------------------------------------------------------|
+|    ()         |标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。    |
+|    *          | (限定符)匹配前面的子表达式零次或多次。   |
+|    +          | (限定符)匹配前面的子表达式一次或多次。     |
+|    ?          | 匹配前面的子表达式零次或一次，或指明一个非贪婪限定符。     |</p>
+<p>&lt;div style=&quot;color:#f92672;&quot;&gt;这里顺带说一声，如果在markdown中直接用table标签的话要所有html代码压缩才可以，要不会多出很多&lt;br/&gt;&lt;/div&gt;</p>
+<h3>其他元字符</h3>
+<p>| 字符     | 简单说明                                                                            |
+|----------|--::----------------------------------------------------------------------------------|
+|  [xyz]   |字符集合。匹配所包含的任意一个字符。例如， '[abc]' 可以匹配 &quot;plain&quot; 中的 'a'。       |
+|  [^xyz]  |负值字符集合。匹配未包含的任意字符。例如， '[^abc]' 可以匹配 &quot;plain&quot; 中的'p'、'l'、'i'、'n'。|
+|  \b      |匹配一个单词边界，也就是指单词和空格间的位置。'er\b' 可以匹配&quot;never&quot; 中的 'er'，但不能匹配 &quot;verb&quot; 中的 'er'。    |
+|  \B      | 匹配非单词边界。'er\B' 能匹配 &quot;verb&quot; 中的 'er'，但不能匹配 &quot;never&quot; 中的 'er'。      |
+|  \d      | 匹配一个数字字符。等价于 [0-9]。 \D同上。                                           |
+|  \s      |匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。\S同上。       |
+|  \w      |	匹配包括下划线的任何单词字符。等价于'[A-Za-z0-9_]'。\W同上。                     |
+|  x{n}    |n 是一个非负整数。匹配x的 n 次。例如，'o{2}' 不能匹配 &quot;Bob&quot; 中的 'o'，但是能匹配 &quot;food&quot; 中的两个 o。|
+|  x{n,}   |	n 是一个非负整数。至少匹配x的n 次。例如，'o{2,}' 不能匹配 &quot;Bob&quot; 中的 'o'，但能匹配 &quot;foooood&quot; 中的所有 o。'o{1,}' 等价于 'o+'。'o{0,}' 则等价于 'o*'。|
+&lt;!--&lt;table&gt;
+	&lt;thead&gt;
+		&lt;tr&gt;
+			&lt;th&gt;字符&lt;/th&gt;
+			&lt;th&gt;简单说明&lt;/th&gt;
+		&lt;/tr&gt;
+	&lt;/thead&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td&gt;()&lt;/td&gt;
+			&lt;td&gt;标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;*&lt;/td&gt;
+			&lt;td&gt;(限定符)匹配前面的子表达式零次或多次。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;+&lt;/td&gt;
+			&lt;td&gt;(限定符)匹配前面的子表达式一次或多次。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;?&lt;/td&gt;
+			&lt;td&gt;匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;--&gt;</p>
+<h3>使用正则的方法:</h3>
+<h4>1. exec</h4>
+<p>搜索字符串制定的值，返回找到的值，如果没有匹配，返回Null
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myRe = <span class="regexp">/d(b+)d/g</span>;<span class="comment">//使用g全局匹配,符合d开始,d结尾</span></span><br><span class="line"><span class="keyword">var</span> myArray = myRe.exec(<span class="string">"cdbbdbsbz"</span>);<span class="comment">/*["dbbd", "bb"]*/</span></span><br><span class="line"><span class="keyword">var</span> myArray2 = myRe.exec(<span class="string">"a"</span>);<span class="comment">/*null*/</span></span><br></pre></td></tr></table></figure></p>
+<h4>2. test()</h4>
+<p>搜索字符串指定的值，返回真假
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myRe = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="string">"e"</span>);</span><br><span class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"The best"</span>));<span class="comment">/*true*/</span></span><br><span class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"a"</span>));<span class="comment">/*false*/</span></span><br></pre></td></tr></table></figure></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="cjxh99jh300048yugdp1z3oo3" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="cjxmwz4s70005aeugdy06pjsj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
@@ -278,16 +521,51 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-        
-          <p class="article-more-link">
-            <a href="/2017/02/05/js/gui_engine/#more">Read More</a>
-          </p>
-        
+        <p>这里主要说说&lt;span style=&quot;color:#f92672&quot;&gt;重绘(repaint)&lt;/span&gt;和&lt;span style=&quot;color:#f92672&quot;&gt;回流(reflow)&lt;/span&gt;的问题</p>
+<p>&lt;!--more--&gt;</p>
+<h4>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4>
+<h4>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="noopener">MDN手册</a></h4>
+<p>先看下以下代码</p>
+<pre><code class="language-javascript">window.onload = function(){/*一个大致的ajax动态获取信息并添加到DOM中的代码*/
+	/*ajax*/
+	var xhr;
+	if(window.XMLHttpRequest){
+		xhr = new window.XMLHttpRequest();
+	}else{
+		xhr = new ActiveXObject('Microsoft.XMLHttp');/*IE6没什么X用*/
+	}
+	xhr.open('get',this.getAtrribute('data-url'),true);
+	xhr.send(null);
+	xhr.onreadystatechange = function(){
+		if(xhr.readyState == 4 &amp;&amp; xhr.status == 200){
+			/*核心*/
+			var frag = document.createDocumentFragment();/*创建一个文档节点，其实和用一串字符串存储在一个变量中一样*/
+			for(var x = 0; x&lt;10;x++){
+				var li = document.createElement(&quot;li&quot;);
+				li.innerHTML = &quot;List item&quot;+x;
+				frag.appendChild(li);
+			}
+			Node.appendChild(frag);
+
+			frag = null;/*清空Documentfragment缓存*/
+		}
+	}	
+}
+</code></pre>
+<p>上面这样写的好处就是：创建一个DocumentFragment(),这样在appendChild()的时候就只会触发一次reflow</p>
+<p>因为暂时没有现成网站，暂时先当作一个笔记吧：</p>
+<h3>回流(reflow)</h3>
+<p>Render Tree中一部分或全部因为元素尺寸、布局、隐藏等改变而需要重新构建，每个页面在一开始加载的时候都会回流，以下一些建议：
+	1. 如要修改，尽量修改DOM中下层的class，避免上层父级class改变
+	2. 避免使用table（一开始接触就听说这玩意有问题）
+	3. 避免在html中设置style，尽量在外部css设置style，跟documentFragment()是一个道理</p>
+<h3>重绘(repaint)</h3>
+<p>Render Tree中一些只影响颜色、风格，最重要跟以上reflow不同的关键就是不影响DOM结构，比如一些absolute或者fixed定位元素就基本可以随便移动（假设他们的父元素不变啦）</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxh99jis000z8yugvdh4cdys" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxmwz4tg000xaeugk32ya3yy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -321,16 +599,120 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>很久不用，今天就从这里开始重新学习吧！<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/02/01/markdown/#more">Read More</a>
-          </p>
-        
+        <p>很久不用，今天就从这里开始重新学习吧！
+&lt;!--more--&gt;
+&lt;div style=&quot;color:#f92672&quot;&gt;注意：Markdown是可以内嵌html的，所以忘了或有特殊样式就直接套html吧,比如这个&lt;/div&gt;
+&lt;div style=&quot;color:#4d8fc0&quot;&gt;注意：内嵌了html标签的，要空一行才可以接markdown,否则会出问题&lt;/div&gt;</p>
+<h2><strong>标题</strong></h2>
+<h3>有两种：</h3>
+<h3>①Setext类：</h3>
+<h4>写法:</h4>
+<pre><code>This is an H1
+=============
+This is an H2
+-------------
+</code></pre>
+<h4>效果:</h4>
+<h1>This is an H1</h1>
+<h2>This is an H2</h2>
+<h3>②ATX类：</h3>
+<h4>写法：行首插入1到6个#,注意#后面要加<strong>一个空格</strong>!</h4>
+<pre><code># 这个是一级标题，前面一个`#`
+## 这个是二级标题，前面两个`##`
+</code></pre>
+<h4>效果:</h4>
+<h1>这个是一级标题，前面一个<code>#</code></h1>
+<h2>这个是二级标题，前面两个<code>##</code></h2>
+<h2><strong>列表</strong></h2>
+<h3>无序列表</h3>
+<h4>写法：前面用星号或加号或减号来标记</h4>
+<h4>效果：</h4>
+<ul>
+<li>Red</li>
+<li>Green</li>
+<li>Blue</li>
+</ul>
+<h3>有序列表</h3>
+<h4>写法:</h4>
+<pre><code>1. Red
+2. Green
+3. Blue
+</code></pre>
+<h4>效果:</h4>
+<ol>
+<li>Red</li>
+<li>Green</li>
+<li>Blue</li>
+</ol>
+<h2><strong>图片</strong></h2>
+<h4>写法:</h4>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">![Alt text](/path/to/img.jpg)</span><br><span class="line">![Alt text](/path/to/img.jpg &quot;Optional title&quot;)</span><br></pre></td></tr></table></figure></p>
+<h4>即：</h4>
+<ul>
+<li>一个惊叹号 !</li>
+<li>接着一个方括号，里面放上图片的替代文字</li>
+<li>接着一个普通括号，里面放上图片的网址，最后还可以用引号包住并加上 选择性的 'title' 文字。</li>
+</ul>
+<p>这里的图片是基于这个hexo固定文件生成结构的,位于&lt;span style=&quot;color:#f92672&quot;&gt;public/Year/Month/Day/article_title/&lt;/span&gt;中，所以，我只能用相对路径找到public内的css/images/图片&lt;span style=&quot;color:#f92672&quot;&gt;../../../../css/images/图片&lt;/span&gt;</p>
+<h4>效果:</h4>
+<p><img src="../../../../css/images/mp1.jpg" alt="显示在下面的文字"></p>
+<h2><strong>代码</strong></h2>
+<h4>写法:</h4>
+<p>1、可以用三个```包裹一段代码,第一个```后面加个&lt;span style=&quot;color:#f92672&quot;&gt;空格&lt;/span&gt;，再加上代码类型：比如javascript、python等,可以高亮</p>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;div style=<span class="string">"color:#eee;"</span>&gt;foo&lt;<span class="regexp">/div&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span></span><br></pre></td></tr></table></figure></p>
+<p>2、可以用一个`包裹一段代码
+<code>&lt;div style=&quot;color:#eee;&quot;&gt;foo&lt;/div&gt;</code></p>
+<p>&lt;div style=&quot;text-decoration:line-through&quot;&gt;&lt;h4&gt; 3、可以用4空格缩进&lt;/h4&gt;&lt;/div&gt;
+&lt;div style=&quot;color:#f92672&quot;&gt;这里很奇怪,不知道为啥↑,初步估计是html标签是不能直接tab的,如下&lt;span style=&quot;color: #4d8fc0&quot;&gt;链接&lt;/span&gt;写法就可以&lt;/div&gt;</p>
+<h2><strong>引用</strong></h2>
+<h4>写法:</h4>
+<p>加上 &gt;&gt;</p>
+<blockquote>
+<blockquote>
+<p>This is a quote</p>
+</blockquote>
+</blockquote>
+<h2><strong>链接</strong></h2>
+<h4>写法:</h4>
+<p>1、文字连接:
+	<a href="http://xn--ses510ahtve0t" target="_blank" rel="noopener">链接文字</a>
+2、网址链接:
+	<a href="http://xn--ses510ahtve0t" target="_blank" rel="noopener">http://链接网址</a>
+3、链接到本页锚处:
+	<a href="#anchor_lowercase_name">link</a></p>
+<p>&lt;span style=&quot;color:#f92672&quot;&gt;PS:一般只对header有用,还会遵循以下原则（不清楚为什么部分不生效）:</p>
+<ol>
+<li>标点符号会被丢弃</li>
+<li>首空格会被丢弃</li>
+<li>大写字母会被转换为小写字母（并不会。。。）</li>
+<li>字母之间的空格会被转换为 -  (实际上.也会被转化)&lt;/span&gt;</li>
+</ol>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[link1](#hello)</span><br><span class="line">[link2](#new-hello)</span><br><span class="line"></span><br><span class="line">#Hello or &lt;a name=&quot;hello&quot;&gt;&lt;/a&gt;</span><br><span class="line">#New Hello</span><br></pre></td></tr></table></figure></p>
+<h4>效果:</h4>
+<p><a href="https://www.baidu.com" target="_blank" rel="noopener">百度</a>
+<a href="https://www.baidu.com" target="_blank" rel="noopener">https://www.baidu.com</a></p>
+<p><a href="#1-12-Test">GoToTest</a>
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+.
+test</p>
+<h3>1.12 Test</h3>
+<p>&lt;div style=&quot;color: #f92672&quot;&gt;暂时记录到这里吧，差不多够用了，这些都是从网上找的教程，在此感谢那些博客主Orz&lt;/div&gt;</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/01/markdown/" data-id="cjxh99jh400058yuga7q4s5vl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/01/markdown/" data-id="cjxmwz4s30003aeugcjan8h5l" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Markdown/">Markdown</a></li></ul>
@@ -364,16 +746,28 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Personal comprehension about ES6 promise,including simulated promise implementation<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/01/07/js/js-Promise/#more">Read More</a>
-          </p>
-        
+        <p>Personal comprehension about ES6 promise,including simulated promise implementation
+&lt;!--more--&gt;</p>
+<h2>For a stupid Instance</h2>
+<p>There's a scene that you're going to order a cup of coffee.The pretty waitress may say 'Please come to get your coffee later'.So this is a &lt;div style=&quot;color:#f92672&quot;&gt;Promise&lt;/div&gt;.She promised that you can get a coffee soon.Besides, your waiting process is called &lt;div style=&quot;color:#4d8fc0&quot;&gt;pending&lt;/div&gt;.After you sucessfully get your coffee from the waitress,this's called &lt;div style=&quot;color:#4d8fc0&quot;&gt;resolved(fulfilled)&lt;/div&gt;.But it's possible that her coffee beans are out of stock.As a result you can't get your coffee,so this is &lt;div style=&quot;color:#4d8fc0&quot;&gt;rejected&lt;/div&gt;.Furthermore,after you got the promise,the following operation is called  &lt;div style=&quot;color:#f92672&quot;&gt;then&lt;/div&gt;;</p>
+<h2>Definition</h2>
+<p>The Promise object represents the eventual completion (or failure) of an asynchronous operation, and its resulting value.<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise" target="_blank" rel="noopener">MDN</a></p>
+<p>Essentially, a promise is a returned object to which you attach callbacks, instead of passing callbacks into a function.(That's why it can avoid callback hell,once you call then() method,it will implicitly &lt;div style=&quot;color:#f92672&quot;&gt;create a new promise object and return it;&lt;/div&gt; ) <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises" target="_blank" rel="noopener">MDN</a></p>
+<h3>More advantages:</h3>
+<p>Unlike old-style passed-in callbacks, a promise comes with some guarantees:</p>
+<pre><code>1. Callbacks will never be called before the completion of the current run of the JavaScript event loop.
+2. Callbacks added with .then even after the success or failure of the asynchronous operation, will be called, as above.
+3. Multiple callbacks may be added by calling .then several times, to be executed independently in insertion order.
+</code></pre>
+<p>But the most immediate benefit of promises is chaining.</p>
+<p>For more detail:<a href="https://promisesaplus.com/" target="_blank" rel="noopener">Promise A+</a></p>
+<p>Following my code about a simple promise implementation:</p>
+<pre><code class="language-javascript"></code></pre>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/01/07/js/js-Promise/" data-id="cjxh99jit00118yugdrh09jrp" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/01/07/js/js-Promise/" data-id="cjxmwz4tp001caeugo28269hp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
@@ -407,16 +801,49 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>There’s a chinese word ‘温故而知新’.<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/01/01/js/js-Scope/#more">Read More</a>
-          </p>
-        
+        <p>There's a chinese word '温故而知新'.
+&lt;!--more--&gt;
+Today I saw a code:
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;=<span class="number">5</span>;i++)&#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line"></span><br><span class="line">    &#125;,i*<span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>And the result is:</p>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">34//a random number,it&apos;s different any time after u reopen your browser</span><br><span class="line">6//run 5 times</span><br></pre></td></tr></table></figure></p>
+<p>Directly go to <a href="#The-1stQ-solution">Solution</a> !!!!!</p>
+<p>To explain above,We begin with some of the characteristics of <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout" target="_blank" rel="noopener">setTimeout</a>
+##Syntax
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var timeoutID = scope.setTimeout(function[,delay,param1,param2]);</span><br></pre></td></tr></table></figure></p>
+<h2>Return value</h2>
+<p>we should know about the setTimeout() return a <strong>timeoutID</strong>.</p>
+<ol>
+<li>this is an positive integer value</li>
+<li>this value identifies the timer created by setTimeout()(this is the reason why it's different all the time)</li>
+<li>setTimeout() and setInterval() share the same pool of IDs,which means setInterval() may effect the timer if u use them at the same object(window or a worker);</li>
+</ol>
+<h2>&quot;This&quot; problem</h2>
+<p>Let's first see a simpler example:
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.fuck = <span class="literal">false</span>;</span><br><span class="line">    Console.log(<span class="string">"OMG!"</span>);</span><br><span class="line">    <span class="keyword">var</span> timer = setTimeout((<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.fuck = <span class="literal">true</span>;</span><br><span class="line">        Console.log(<span class="string">"timeout Fuck!"</span>);</span><br><span class="line">    &#125;),<span class="number">3000</span>);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>The problem of above example is :
+The &lt;span style=&quot;color:#f92672&quot;&gt;this&lt;/span&gt; always refers to the
+&lt;span style=&quot;color:#f92672&quot;&gt;this&lt;/span&gt; of the current scope,which changes any time I wrap something in &lt;span style=&quot;color:#f92672&quot;&gt;function(){}&lt;/span&gt;</p>
+<p>So there is
+###one solution:
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> symbol = <span class="keyword">this</span>;<span class="comment">//now refers to the Window object </span></span><br><span class="line">    symbol.fuck = <span class="literal">false</span>;</span><br><span class="line">    Console.log(<span class="string">"OMG!"</span>);</span><br><span class="line">    <span class="keyword">var</span> timer = setTimeout((<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        symbol.fuck = <span class="literal">true</span>;<span class="comment">//still refers to the Window Object</span></span><br><span class="line">        Console.log(<span class="string">"timeout Fuck!"</span>);</span><br><span class="line">    &#125;),<span class="number">3000</span>);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>###Second
+ES5 Function.prototype.bind()
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.fuck = <span class="literal">false</span>;</span><br><span class="line">    Console.log(<span class="string">"OMG!"</span>);</span><br><span class="line">    <span class="keyword">var</span> timer = setTimeout((<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.fuck = <span class="literal">true</span>;</span><br><span class="line">        Console.log(<span class="string">"timeout Fuck!"</span>);</span><br><span class="line">    &#125;).bind(<span class="keyword">this</span>),<span class="number">3000</span>);<span class="comment">//bind the scope</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>###Third
+ES6 [Arrow Function()]
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.fuck = <span class="literal">false</span>;</span><br><span class="line">    Console.log(<span class="string">"OMG!"</span>);</span><br><span class="line">    <span class="keyword">var</span> timer = setTimeout(<span class="function"><span class="params">()</span>=&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.fuck = <span class="literal">true</span>;</span><br><span class="line">        Console.log(<span class="string">"timeout Fuck!"</span>);</span><br><span class="line">    &#125;,<span class="number">3000</span>);<span class="comment">//no binding in Arrow Functions!!!</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>I think now it's clear that why the first code resulted in that,
+The solution:</p>
+<p>###The 1stQ solution
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;=<span class="number">5</span>;i++)&#123;</span><br><span class="line">    </span><br><span class="line">    (<span class="function"><span class="keyword">function</span>(<span class="params">i</span>)</span>&#123;<span class="comment">//1.set the self-invoking anonymous function to set the scope</span></span><br><span class="line">        setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;,i*<span class="number">1000</span>);</span><br><span class="line">    &#125;)(i)<span class="comment">//2.Then call the value of i </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Also u can try this,result is the same:
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;=<span class="number">5</span>;i++)&#123;</span><br><span class="line">    setTimeout((<span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params">i</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;<span class="comment">//set return value as an anonymous function</span></span><br><span class="line">            <span class="built_in">console</span>.log(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)(i),i*<span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-Scope/" data-id="cjxh99jiv00138yugh1m4ive7" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-Scope/" data-id="cjxmwz4tl0015aeug02rf4f75" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
@@ -450,62 +877,42 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>很久以前就很混乱对这个，最近实习的时候突然要用到，现在来做个总结<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/01/01/js/js-time/#more">Read More</a>
-          </p>
-        
+        <p>很久以前就很混乱对这个，最近实习的时候突然要用到，现在来做个总结
+&lt;!--more--&gt;
+总结之前先说明几个名词:</p>
+<h4>1、&lt;span style=&quot;color:#f92672&quot;&gt;时间戳&lt;/span&gt;</h4>
+<p>指的是&lt;div style=&quot;color:#f92672&quot;&gt;格林威治时间1970年01月01日00时00分00秒(北京时间1970年01月01日08时00分00秒)起至现在的总秒数。&lt;/div&gt;
+而这个东西的用处挺大的，比如：在书面合同中，文件签署的日期和签名一样均是十分重要的防止文件被伪造和篡改的关键性内容。数字时间戳服务（DTS：digital time stamp service）是网上电子商务安全服务项目之一，能提供电子文件的日期和时间信息的安全保护等等。</p>
+<h4>2、&lt;span style=&quot;color:#f92672&quot;&gt;UTC&lt;/span&gt;</h4>
+<p>协调世界时（英：Coordinated Universal Time ，法：Temps Universel Coordonné），又称世界统一时间，世界标准时间，国际协调时间。英文（CUT）和法文（TUC）的缩写不同，作为妥协，简称UTC。
+中国大陆、中国香港、中国澳门、中国台湾、蒙古国、新加坡、马来西亚、菲律宾、西澳大利亚州的时间与UTC的时差均为+8，也就是UTC+8。</p>
+<h4>3、&lt;span style=&quot;color:#f92672&quot;&gt;GMT&lt;/span&gt;</h4>
+<p>格林尼治标准时间（Greenwich Mean Time，GMT）是指位于伦敦郊区的皇家格林尼治天文台的标准时间，因为本初子午线被定义在通过那里的经线。</p>
+<p>说了那么多，现在就先来看看javascript中&lt;span style=&quot;color:#f92672&quot;&gt;Date&lt;/span&gt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date" target="_blank" rel="noopener">MDN手册</a>这个对象吧。</p>
+<h4><strong>创建对象</strong></h4>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myDate = <span class="keyword">new</span> <span class="built_in">Date</span>();<span class="comment">//返回当天的日期和时间</span></span><br></pre></td></tr></table></figure></p>
+<h5>语法</h5>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Date</span>(year, month[, day[, hour[, minutes[, seconds[, milliseconds]]]]]);</span><br><span class="line"><span class="keyword">var</span> myDate = <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="number">2016</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">10</span>)<span class="comment">//for example</span></span><br></pre></td></tr></table></figure></p>
+<h5>结果：</h5>
+<pre><code>Tue Mar 01 2016 01:10:00 GMT+0800 (ä¸­å½æ åæ¶é´)
+</code></pre>
+<p>&lt;span style=&quot;color:#f92672&quot;&gt;你可能已经注意到&lt;strong&gt;月份&lt;/strong&gt;中是要加1，才是最终的时间,因为原本的Date的月份是从0开始算的&lt;/span&gt;</p>
+<p>有趣的是：溢出了也可以用，比如：
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myDate = <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="number">2016</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">70</span>)<span class="comment">//Second overflow</span></span><br><span class="line"><span class="keyword">var</span> myDate2 = <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="number">2015</span>,<span class="number">14</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">10</span>)<span class="comment">//Month overflow</span></span><br></pre></td></tr></table></figure></p>
+<p>结果和上面的是一模一样</p>
+<h4>常用方法:</h4>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Date1 = <span class="keyword">new</span> <span class="built_in">Date</span>();</span><br><span class="line">Date1.getDate();<span class="comment">//返回一个月中的某一天(1~31)</span></span><br><span class="line">Date1.getDay();<span class="comment">//返回一周中的某一天(0~6)</span></span><br><span class="line">Date1.getMonth();<span class="comment">//返回月份(0~11)</span></span><br><span class="line">Date1.getFullYear();<span class="comment">//四位数返回年份</span></span><br><span class="line"><span class="comment">/*还可以根据世界时返回时间*/</span></span><br><span class="line">Date1.getUTCDate();<span class="comment">//同上，多余就不写了</span></span><br></pre></td></tr></table></figure></p>
+<h4>重要方法:</h4>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Date2 = <span class="keyword">new</span> <span class="built_in">Date</span>();</span><br><span class="line">Date2.parse();<span class="comment">//这个主要用来计算时间戳,得出单位是ms</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> d = <span class="built_in">Date</span>.UTC(<span class="number">2005</span>,<span class="number">7</span>,<span class="number">8</span>);</span><br><span class="line"><span class="comment">//这个Date.UTC()是静态方法，不可以通过Date对象调用</span></span><br><span class="line"><span class="comment">//只能用构造函数Date()调用</span></span><br><span class="line"><span class="comment">//也是计算时间戳，得出单位也是ms</span></span><br><span class="line"></span><br><span class="line">Date2.toString();<span class="comment">//挺明显的，转换成string</span></span><br><span class="line">Date2.toLocaleString();<span class="comment">//根据本地时间，转换成字符串</span></span><br><span class="line"><span class="comment">//举例:</span></span><br><span class="line"><span class="comment">//var born = new Date("July 21, 1983 01:15:00");</span></span><br><span class="line"><span class="comment">//结果:</span></span><br><span class="line"><span class="comment">//1983/7/21 上午1:15:00</span></span><br></pre></td></tr></table></figure></p>
+<h5>&lt;div style=&quot;color:#f92672&quot;&gt;  其实实际工作运用中就很少用到原生的方法，一般直接套用别人的format函数，而这些format函数中用到一些&lt;strong&gt;正则匹配&lt;/strong&gt;，这个下次再说...&lt;/div&gt;</h5>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-time/" data-id="cjxh99jiz00178yugt1zm5ohw" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-time/" data-id="cjxmwz4tm0017aeugnitdfsv7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js/css-clip" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/01/07/js/css-clip/" class="article-date">
-  <time datetime="2016-01-07T15:48:00.000Z" itemprop="datePublished">2016-01-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/07/js/css-clip/">css-clip问题</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>今天在网上看见一个很好玩的属性<span style="color:#f92672;font-weight: bold;font-size: 2rem;">clip</span> <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="external">MDN手册</a></p>
-        
-          <p class="article-more-link">
-            <a href="/2016/01/07/js/css-clip/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2016/01/07/js/css-clip/" data-id="cjxh99jiq000x8yug0q1tim44" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
 
     </footer>
   </div>
@@ -530,7 +937,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -540,7 +947,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -549,7 +956,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -560,6 +967,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -575,10 +986,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

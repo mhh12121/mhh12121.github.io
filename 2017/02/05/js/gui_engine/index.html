@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>从DocumentFragment看到GUI渲染 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+  <meta name="description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
 <meta name="keywords" content="css">
 <meta property="og:type" content="article">
 <meta property="og:title" content="从DocumentFragment看到GUI渲染">
 <meta property="og:url" content="https://mhh12121.github.io/2017/02/05/js/gui_engine/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+<meta property="og:description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-20T02:23:02.562Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从DocumentFragment看到GUI渲染">
-<meta name="twitter:description" content="这里主要说说重绘(repaint)和回流(reflow)的问题">
+<meta name="twitter:description" content="这里主要说说&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;重绘(repaint)&amp;lt;/span&amp;gt;和&amp;lt;span style=&amp;quot;color:#f92672&amp;quot;&amp;gt;回流(reflow)&amp;lt;/span&amp;gt;的问题 &amp;lt;!--more--&amp;gt; 犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -30,7 +30,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -91,47 +91,51 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这里主要说说<span style="color:#f92672">重绘(repaint)</span>和<span style="color:#f92672">回流(reflow)</span>的问题</p>
-<a id="more"></a>
-<h4 id="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"><a href="#犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；" class="headerlink" title="犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；"></a>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4><h4 id="其中要使用DocumentFragmentMDN手册"><a href="#其中要使用DocumentFragmentMDN手册" class="headerlink" title="其中要使用DocumentFragmentMDN手册"></a>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="external">MDN手册</a></h4><p>先看下以下代码</p>
-<pre><code class="javascript"><span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{<span class="comment">/*一个大致的ajax动态获取信息并添加到DOM中的代码*/</span>
-    <span class="comment">/*ajax*/</span>
-    <span class="keyword">var</span> xhr;
-    <span class="keyword">if</span>(<span class="built_in">window</span>.XMLHttpRequest){
-        xhr = <span class="keyword">new</span> <span class="built_in">window</span>.XMLHttpRequest();
-    }<span class="keyword">else</span>{
-        xhr = <span class="keyword">new</span> ActiveXObject(<span class="string">'Microsoft.XMLHttp'</span>);<span class="comment">/*IE6没什么X用*/</span>
-    }
-    xhr.open(<span class="string">'get'</span>,<span class="keyword">this</span>.getAtrribute(<span class="string">'data-url'</span>),<span class="literal">true</span>);
-    xhr.send(<span class="literal">null</span>);
-    xhr.onreadystatechange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>{
-        <span class="keyword">if</span>(xhr.readyState == <span class="number">4</span> &amp;&amp; xhr.status == <span class="number">200</span>){
-            <span class="comment">/*核心*/</span>
-            <span class="keyword">var</span> frag = <span class="built_in">document</span>.createDocumentFragment();<span class="comment">/*创建一个文档节点，其实和用一串字符串存储在一个变量中一样*/</span>
-            <span class="keyword">for</span>(<span class="keyword">var</span> x = <span class="number">0</span>; x&lt;<span class="number">10</span>;x++){
-                <span class="keyword">var</span> li = <span class="built_in">document</span>.createElement(<span class="string">"li"</span>);
-                li.innerHTML = <span class="string">"List item"</span>+x;
-                frag.appendChild(li);
-            }
-            Node.appendChild(frag);
+        <p>这里主要说说&lt;span style=&quot;color:#f92672&quot;&gt;重绘(repaint)&lt;/span&gt;和&lt;span style=&quot;color:#f92672&quot;&gt;回流(reflow)&lt;/span&gt;的问题</p>
+<p>&lt;!--more--&gt;</p>
+<h4>犹记得某个项目要求使用经典的下拉刷新功能，其中就有ajax在后面添加某些信息；</h4>
+<h4>其中要使用DocumentFragment<a href="https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment" target="_blank" rel="noopener">MDN手册</a></h4>
+<p>先看下以下代码</p>
+<pre><code class="language-javascript">window.onload = function(){/*一个大致的ajax动态获取信息并添加到DOM中的代码*/
+	/*ajax*/
+	var xhr;
+	if(window.XMLHttpRequest){
+		xhr = new window.XMLHttpRequest();
+	}else{
+		xhr = new ActiveXObject('Microsoft.XMLHttp');/*IE6没什么X用*/
+	}
+	xhr.open('get',this.getAtrribute('data-url'),true);
+	xhr.send(null);
+	xhr.onreadystatechange = function(){
+		if(xhr.readyState == 4 &amp;&amp; xhr.status == 200){
+			/*核心*/
+			var frag = document.createDocumentFragment();/*创建一个文档节点，其实和用一串字符串存储在一个变量中一样*/
+			for(var x = 0; x&lt;10;x++){
+				var li = document.createElement(&quot;li&quot;);
+				li.innerHTML = &quot;List item&quot;+x;
+				frag.appendChild(li);
+			}
+			Node.appendChild(frag);
 
-            frag = <span class="literal">null</span>;<span class="comment">/*清空Documentfragment缓存*/</span>
-        }
-    }    
+			frag = null;/*清空Documentfragment缓存*/
+		}
+	}	
 }
 </code></pre>
 <p>上面这样写的好处就是：创建一个DocumentFragment(),这样在appendChild()的时候就只会触发一次reflow</p>
 <p>因为暂时没有现成网站，暂时先当作一个笔记吧：</p>
-<h3 id="回流-reflow"><a href="#回流-reflow" class="headerlink" title="回流(reflow)"></a>回流(reflow)</h3><p>Render Tree中一部分或全部因为元素尺寸、布局、隐藏等改变而需要重新构建，每个页面在一开始加载的时候都会回流，以下一些建议：</p>
-<pre><code>1. 如要修改，尽量修改DOM中下层的class，避免上层父级class改变
-2. 避免使用table（一开始接触就听说这玩意有问题）
-3. 避免在html中设置style，尽量在外部css设置style，跟documentFragment()是一个道理
-</code></pre><h3 id="重绘-repaint"><a href="#重绘-repaint" class="headerlink" title="重绘(repaint)"></a>重绘(repaint)</h3><p>Render Tree中一些只影响颜色、风格，最重要跟以上reflow不同的关键就是不影响DOM结构，比如一些absolute或者fixed定位元素就基本可以随便移动（假设他们的父元素不变啦）</p>
+<h3>回流(reflow)</h3>
+<p>Render Tree中一部分或全部因为元素尺寸、布局、隐藏等改变而需要重新构建，每个页面在一开始加载的时候都会回流，以下一些建议：
+	1. 如要修改，尽量修改DOM中下层的class，避免上层父级class改变
+	2. 避免使用table（一开始接触就听说这玩意有问题）
+	3. 避免在html中设置style，尽量在外部css设置style，跟documentFragment()是一个道理</p>
+<h3>重绘(repaint)</h3>
+<p>Render Tree中一些只影响颜色、风格，最重要跟以上reflow不同的关键就是不影响DOM结构，比如一些absolute或者fixed定位元素就基本可以随便移动（假设他们的父元素不变啦）</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxh99jis000z8yugvdh4cdys" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="cjxmwz4tg000xaeugk32ya3yy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -173,7 +177,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -183,7 +187,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -192,7 +196,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -203,6 +207,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -218,10 +226,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>Something in gRPC | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="keywords" content="golang">
+  <meta name="description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
+<meta name="keywords" content="golang">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something in gRPC">
 <meta property="og:url" content="https://mhh12121.github.io/2019/06/29/Go/gRPC/index.html">
 <meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-29T06:11:24.620Z">
+<meta property="og:updated_time" content="2019-07-01T15:02:56.754Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something in gRPC">
+<meta name="twitter:description" content="常用的rpc框架，我们先从它的proto开始了解吧 我们这里只讨论go语法，语言方面其他都是大同小异 proto 创建proto文件 data.proto 1234567891011121314151617syntax = &quot;proto2&quot;;service Authenticate&amp;#123;	rpc login(toServerData) returns (ResponseFromServer)">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -27,7 +30,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -88,11 +91,19 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>常用的rpc框架，我们先从它的proto开始了解吧</p>
+<p>我们这里只讨论go语法，语言方面其他都是大同小异</p>
+<h2>proto</h2>
+<p>创建proto文件 <strong>data.proto</strong>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto2"</span>;</span><br><span class="line"></span><br><span class="line">service Authenticate&#123;</span><br><span class="line">	rpc login(toServerData) returns (ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc home(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc logout(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message toServerData&#123;</span><br><span class="line">    required <span class="keyword">int32</span> ctype = <span class="number">1</span>;</span><br><span class="line">    optional bytes httpdata=<span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line">message ResponseFromServer &#123;</span><br><span class="line">	required <span class="keyword">bool</span> Success=<span class="number">1</span>;</span><br><span class="line">	optional bytes tcpData=<span class="number">2</span>;</span><br><span class="line">	<span class="comment">// Errcode int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>用安装的protoc插件生成
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</span><br></pre></td></tr></table></figure></p>
+<p>生成 <strong>data.pb.proto</strong></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxh99jid000n8yugyxqv6fry" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxmwz4t8000qaeug3ij9grd1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -102,6 +113,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/07/02/Comcon/somethingAboutTcp/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Something about Networking
+        
+      </div>
+    </a>
   
   
     <a href="/2019/06/26/ToMyLover/" id="article-nav-older" class="article-nav-link-wrap">
@@ -125,7 +145,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -135,7 +155,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -144,7 +164,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -155,6 +175,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -170,10 +194,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

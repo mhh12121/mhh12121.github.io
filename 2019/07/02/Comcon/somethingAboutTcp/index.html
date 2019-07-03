@@ -3,15 +3,22 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
-  <title>归档: 2018 | 兜的破烂</title>
+  <title>Something about Networking | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="兜的破烂">
-<meta property="og:url" content="https://mhh12121.github.io/archives/2018/index.html">
+  <meta name="description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
+<meta name="keywords" content="networking">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Something about Networking">
+<meta property="og:url" content="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/index.html">
 <meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
+<meta property="og:updated_time" content="2019-07-03T07:19:40.014Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="兜的破烂">
+<meta name="twitter:title" content="Something about Networking">
+<meta name="twitter:description" content="为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent） 发">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -64,96 +71,92 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/04/30/DesignPattern/" class="archive-article-date">
-  <time datetime="2018-04-30T15:48:00.000Z" itemprop="datePublished">4月 30</time>
+        <section id="main"><article id="post-Comcon/somethingAboutTcp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/02/Comcon/somethingAboutTcp/" class="article-date">
+  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/04/30/DesignPattern/">Notes about Design Pattern</a>
+    <h1 class="article-title" itemprop="name">
+      Something about Networking
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/03/07/java/Java-Concurrency/" class="archive-article-date">
-  <time datetime="2018-03-07T03:00:00.000Z" itemprop="datePublished">3月 7</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/03/07/java/Java-Concurrency/">Java-Concurrency</a>
-    </h1>
-  
+        <h3>为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
+<p>一开始看见，这不是显而易见的吗？？？</p>
+<p>后来发现，其实他想听到的答案是：</p>
+<ol>
+<li>tcp的流量窗口（拥塞控制）
+如下图：
+<img src="/img/tcpWindow.jpg" alt="tcpwindow">盗图
+绿色为 发送者发送，且接收者acked
+黄色为 发送者发送，接收者未确认（in-flight）
+蓝色为 可用但为发送</li>
+</ol>
+<p>cwnd= width（in-flight）+width（not sent）</p>
+<p>发送速率：
+<strong>rate = cwnd / RTT byte/sec</strong>
+即发送速率在RTT（往返时延）一定的情况下，只受cwnd影响</p>
+<ol start="2">
+<li>慢启动</li>
+</ol>
+<p>tcp会进行<strong>慢启动</strong>直到丢包,每接到一个ack就会把窗口（cwnd）×2，当出现丢包的，有以下两种状况：</p>
+<ol>
+<li>接收者发送给发送者的ACK丢失，会导致 timeout</li>
+<li>发送者发送给接收者的数据丢失，发送者会收到接受者的重复ACK，如果收到三个重复的ACK，可以确认为丢包</li>
+</ol>
+<ol start="3">
+<li>路由器（多个TCP有拥塞控制）
+给出带宽为R，有K个连接经过
+最后每个连接平均分的都会是 R/K</li>
+</ol>
+<p>终上：</p>
+<p>一个tcp连接很可能不能把当前路由的带宽都用完（），所以要多个tcp连接，这样才能最大保证速率</p>
+<h3>总结</h3>
+<p>回答问题，要从特么原理开始一步步推导来說，不能想当然</p>
+<h3>各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点）</h3>
+<p>TCP连接</p>
+<ol start="3">
+<li>DNS协议</li>
+</ol>
+<p>首先这🐔是<strong>应用层</strong>协议！！！
+:smile:</p>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/01/07/java/Java-Collection/" class="archive-article-date">
-  <time datetime="2018-01-07T15:48:00.000Z" itemprop="datePublished">1月 7</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/01/07/java/Java-Collection/">Java-Collections</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/01/05/Regexp/" class="archive-article-date">
-  <time datetime="2018-01-05T04:48:00.000Z" itemprop="datePublished">1月 5</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxmwz4sw000faeugkc4f6v0t" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/01/05/Regexp/">正则表达式</a>
-    </h1>
-  
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/06/29/Go/gRPC/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Something in gRPC</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
 
 </section>
         

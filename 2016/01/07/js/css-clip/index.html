@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>css-clip问题 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="今天在网上看见一个很好玩的属性clip MDN手册">
+  <meta name="description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
 <meta name="keywords" content="css">
 <meta property="og:type" content="article">
 <meta property="og:title" content="css-clip问题">
 <meta property="og:url" content="https://mhh12121.github.io/2016/01/07/js/css-clip/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="今天在网上看见一个很好玩的属性clip MDN手册">
+<meta property="og:description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-04T16:09:48.380Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="css-clip问题">
-<meta name="twitter:description" content="今天在网上看见一个很好玩的属性clip MDN手册">
+<meta name="twitter:description" content="今天在网上看见一个很好玩的属性&amp;lt;span style=&amp;quot;color:#f92672;font-weight: bold;font-size: 2rem;&amp;quot;&amp;gt;clip&amp;lt;/span&amp;gt; MDN手册 &amp;lt;!--more--&amp;gt; 主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果 Summary:  The clip CSS propert">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -30,7 +30,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -91,24 +91,29 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>今天在网上看见一个很好玩的属性<span style="color:#f92672;font-weight: bold;font-size: 2rem;">clip</span> <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="external">MDN手册</a></p>
-<a id="more"></a>
+        <p>今天在网上看见一个很好玩的属性&lt;span style=&quot;color:#f92672;font-weight: bold;font-size: 2rem;&quot;&gt;clip&lt;/span&gt; <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/clip" target="_blank" rel="noopener">MDN手册</a></p>
+<p>&lt;!--more--&gt;</p>
 <p>主要是看见这个东西可以用在图片切换上面，实现一个简单的裁剪切换效果</p>
-<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary:"></a>Summary:</h3><blockquote>
+<h3>Summary:</h3>
+<blockquote>
 <p>The clip CSS property defines what portion of an element is visible. The clip property applies only to absolutely positioned elements, that is elements with position:absolute or position:fixed.</p>
-<h5 id="意思就是这玩意儿只能用在绝对定位上面"><a href="#意思就是这玩意儿只能用在绝对定位上面" class="headerlink" title="意思就是这玩意儿只能用在绝对定位上面."></a>意思就是这玩意儿只能用在<span style="color:#f92672">绝对定位</span>上面.</h5></blockquote>
-<h4 id="语法"><a href="#语法" class="headerlink" title="语法:"></a>语法:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">clip:rect(top right bottom left)</div></pre></td></tr></table></figure>
-<p>顺时针，是不是和<strong>margin</strong>、<strong>padding</strong>的一样呢？</p>
-<div style="color:#f92672">注意：要满足 top &lt; bottom 和left &lt; right </div><br><div style="color:#4d8fc0">注意：其中bottom和top一样，是以上边缘为开始计算距离;同样，right是和left一样，都是从左边缘算起</div>
-
+</blockquote>
+<h5>意思就是这玩意儿只能用在&lt;span style=&quot;color:#f92672&quot;&gt;绝对定位&lt;/span&gt;上面.</h5>
+<h4>语法:</h4>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clip:rect(top right bottom left)</span><br></pre></td></tr></table></figure></p>
+<p>顺时针，是不是和<strong>margin</strong>、<strong>padding</strong>的一样呢？
+&lt;div style=&quot;color:#f92672&quot;&gt;注意：要满足 top &lt; bottom 和left &lt; right &lt;/div&gt;
+&lt;div style=&quot;color:#4d8fc0&quot;&gt;注意：其中bottom和top一样，是以上边缘为开始计算距离;同样，right是和left一样，都是从左边缘算起&lt;/div&gt;</p>
 <p>同时，取值<strong>auto</strong>或不满足上面条件的时候，rect就不显示。</p>
 <p>从以上特性看来，好像是可以实现css sprite的效果，而且不用background-position，兼容性得到大幅度提升!</p>
-<p>然而我并不想做那个，我自己做了一个图片切换的demo:<br><a href="https://codepen.io/doujohner/pen/QNrGZw" target="_blank" rel="external">点我</a></p>
-<h5 id="原理很简单，就是从横截面减少right值。"><a href="#原理很简单，就是从横截面减少right值。" class="headerlink" title="原理很简单，就是从横截面减少right值。"></a>原理很简单，就是从横截面减少right值。</h5>
+<p>然而我并不想做那个，我自己做了一个图片切换的demo:
+<a href="https://codepen.io/doujohner/pen/QNrGZw" target="_blank" rel="noopener">点我</a></p>
+<h5>原理很简单，就是从横截面减少right值。</h5>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2016/01/07/js/css-clip/" data-id="cjxh99jiq000x8yug0q1tim44" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2016/01/07/js/css-clip/" data-id="cjxmwz4tj0012aeug0l8k8bzl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -150,7 +155,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -160,7 +165,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -169,7 +174,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -180,6 +185,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -195,10 +204,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

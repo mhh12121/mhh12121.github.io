@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>正则表达式 | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。">
+  <meta name="description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。 &amp;lt;!--more--&amp;gt; 参考网上随便找的中文教程 这就不得不提到&amp;lt;span style=&amp;quot;color:#f92672;font-size:2rem&amp;quot;&amp;gt;RegExp&amp;lt;/span&amp;gt;MD">
 <meta name="keywords" content="Regular Expression">
 <meta property="og:type" content="article">
 <meta property="og:title" content="正则表达式">
 <meta property="og:url" content="https://mhh12121.github.io/2018/01/05/Regexp/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。">
+<meta property="og:description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。 &amp;lt;!--more--&amp;gt; 参考网上随便找的中文教程 这就不得不提到&amp;lt;span style=&amp;quot;color:#f92672;font-size:2rem&amp;quot;&amp;gt;RegExp&amp;lt;/span&amp;gt;MD">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-06-17T09:26:26.973Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="正则表达式">
-<meta name="twitter:description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。">
+<meta name="twitter:description" content="曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~ 这里的正则表达式就暂时在javascript上讨论吧。 &amp;lt;!--more--&amp;gt; 参考网上随便找的中文教程 这就不得不提到&amp;lt;span style=&amp;quot;color:#f92672;font-size:2rem&amp;quot;&amp;gt;RegExp&amp;lt;/span&amp;gt;MD">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -30,7 +30,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -92,182 +92,99 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>曾经认为，这玩意儿要匹配的话扔网上工具转换就行，但现在感觉还是记住一些比较重要的好一点，所以就当练打字吧~</p>
-<p>这里的正则表达式就暂时在javascript上讨论吧。<br><a id="more"></a><br>参考<a href="http://www.runoob.com/jsref/jsref-obj-regexp.html" target="_blank" rel="external">网上随便找的中文教程</a></p>
-<p>这就不得不提到<span style="color:#f92672;font-size:2rem">RegExp</span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp" target="_blank" rel="external">MDN手册</a>这个对象</p>
-<h3 id="语法："><a href="#语法：" class="headerlink" title="语法："></a>语法：</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> patt = <span class="keyword">new</span> <span class="built_in">RegExp</span>(pattern[, flags])</div><div class="line"><span class="keyword">var</span> patt = <span class="regexp">/pattern/</span>flags;</div></pre></td></tr></table></figure>
-<p><strong>pattern:就是写正则的地方</strong><br><strong>flags取值(可以是下面的任意组合):</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">g:global match //查找所有匹配而不是在找到第一个匹配后停止</div><div class="line">i:ignore case //忽略大小写</div><div class="line">m:multiline;treat begining and end characters(^ and $)as working over multiple lines </div><div class="line">//多行匹配,用这个属性后$会匹配&apos;\n&apos;或&apos;\r&apos;.要匹配$本身，用\$</div></pre></td></tr></table></figure>
-<h3 id="特殊字符"><a href="#特殊字符" class="headerlink" title="特殊字符"></a>特殊字符</h3><table>
-<thead>
-<tr>
-<th>特殊字符</th>
-<th>简单说明(无特殊说明，匹配本身都是用\转义)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>$</td>
-<td>匹配输入字符串的结尾位置。</td>
-</tr>
-<tr>
-<td>()</td>
-<td>标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。</td>
-</tr>
-<tr>
-<td>*</td>
-<td>(限定符)匹配前面的子表达式零次或多次。</td>
-</tr>
-<tr>
-<td>+</td>
-<td>(限定符)匹配前面的子表达式一次或多次。</td>
-</tr>
-<tr>
-<td>.</td>
-<td>匹配除换行符\n之外的任何单字符;匹配本身用\。</td>
-</tr>
-<tr>
-<td>?</td>
-<td>匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。</td>
-</tr>
-<tr>
-<td>[</td>
-<td>标记一个中括号表达式的开始。</td>
-</tr>
-<tr>
-<td>^</td>
-<td>匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。</td>
-</tr>
-<tr>
-<td>{</td>
-<td>标记限定符表达式的开始。</td>
-</tr>
-<tr>
-<td>&brvbar;</td>
-<td>很明显，”或”符号。</td>
-</tr>
-</tbody>
-</table>
-<!--<table>
-<tr><th>特殊字符</th><th>简单说明（没特殊说明的，匹配本身都是直接用\转义）</th></tr>
-<tr><td>$</td><td>匹配输入字符串的结尾位置。</td></tr>
-<tr><td>()</td><td>标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。</td></tr>
-<tr><td>*</td><td>(限定符)匹配前面的子表达式零次或多次。</td></tr>
-<tr><td>+</td><td>(限定符)匹配前面的子表达式一次或多次。</td></tr>
-<tr><td>.</td><td>匹配除换行符\n之外的任何单字符;匹配本身用\。</td></tr>
-<tr><td>?</td><td>匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。</td></tr>
-<tr><td>[</td><td>标记一个中括号表达式的开始。</td></tr>
-<tr><td>^</td><td>匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。</td></tr>
-<tr><td>{</td><td>标记限定符表达式的开始</td></tr>
-<tr><td>|</td><td>很明显，"或"符号</td></tr>
-</table>-->
-<h3 id="限定符"><a href="#限定符" class="headerlink" title="限定符"></a>限定符</h3><table>
-<thead>
-<tr>
-<th>字符</th>
-<th>简单说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>()</td>
-<td>标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。</td>
-</tr>
-<tr>
-<td>*</td>
-<td>(限定符)匹配前面的子表达式零次或多次。</td>
-</tr>
-<tr>
-<td>+</td>
-<td>(限定符)匹配前面的子表达式一次或多次。</td>
-</tr>
-<tr>
-<td>?</td>
-<td>匹配前面的子表达式零次或一次，或指明一个非贪婪限定符。</td>
-</tr>
-</tbody>
-</table>
-<div style="color:#f92672;">这里顺带说一声，如果在markdown中直接用table标签的话要所有html代码压缩才可以，要不会多出很多&lt;br/&gt;</div>
-
-
-<h3 id="其他元字符"><a href="#其他元字符" class="headerlink" title="其他元字符"></a>其他元字符</h3><table>
-<thead>
-<tr>
-<th>字符</th>
-<th>简单说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>[xyz]</td>
-<td>字符集合。匹配所包含的任意一个字符。例如， ‘[abc]’ 可以匹配 “plain” 中的 ‘a’。</td>
-</tr>
-<tr>
-<td>[^xyz]</td>
-<td>负值字符集合。匹配未包含的任意字符。例如， ‘[^abc]’ 可以匹配 “plain” 中的’p’、’l’、’i’、’n’。</td>
-</tr>
-<tr>
-<td>\b</td>
-<td>匹配一个单词边界，也就是指单词和空格间的位置。’er\b’ 可以匹配”never” 中的 ‘er’，但不能匹配 “verb” 中的 ‘er’。</td>
-</tr>
-<tr>
-<td>\B</td>
-<td>匹配非单词边界。’er\B’ 能匹配 “verb” 中的 ‘er’，但不能匹配 “never” 中的 ‘er’。</td>
-</tr>
-<tr>
-<td>\d</td>
-<td>匹配一个数字字符。等价于 [0-9]。 \D同上。</td>
-</tr>
-<tr>
-<td>\s</td>
-<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。\S同上。</td>
-</tr>
-<tr>
-<td>\w</td>
-<td>匹配包括下划线的任何单词字符。等价于’[A-Za-z0-9_]’。\W同上。</td>
-</tr>
-<tr>
-<td>x{n}</td>
-<td>n 是一个非负整数。匹配x的 n 次。例如，’o{2}’ 不能匹配 “Bob” 中的 ‘o’，但是能匹配 “food” 中的两个 o。</td>
-</tr>
-<tr>
-<td>x{n,}</td>
-<td>n 是一个非负整数。至少匹配x的n 次。例如，’o{2,}’ 不能匹配 “Bob” 中的 ‘o’，但能匹配 “foooood” 中的所有 o。’o{1,}’ 等价于 ‘o+’。’o{0,}’ 则等价于 ‘o*’。</td>
-</tr>
-</tbody>
-</table>
-<!--<table>
-    <thead>
-        <tr>
-            <th>字符</th>
-            <th>简单说明</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>()</td>
-            <td>标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。</td>
-        </tr>
-        <tr>
-            <td>*</td>
-            <td>(限定符)匹配前面的子表达式零次或多次。</td>
-        </tr>
-        <tr>
-            <td>+</td>
-            <td>(限定符)匹配前面的子表达式一次或多次。</td>
-        </tr>
-        <tr>
-            <td>?</td>
-            <td>匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。</td>
-        </tr>
-    </tbody>
-</table>-->
-<h3 id="使用正则的方法"><a href="#使用正则的方法" class="headerlink" title="使用正则的方法:"></a>使用正则的方法:</h3><h4 id="1-exec"><a href="#1-exec" class="headerlink" title="1. exec"></a>1. exec</h4><p>搜索字符串制定的值，返回找到的值，如果没有匹配，返回Null<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> myRe = <span class="regexp">/d(b+)d/g</span>;<span class="comment">//使用g全局匹配,符合d开始,d结尾</span></div><div class="line"><span class="keyword">var</span> myArray = myRe.exec(<span class="string">"cdbbdbsbz"</span>);<span class="comment">/*["dbbd", "bb"]*/</span></div><div class="line"><span class="keyword">var</span> myArray2 = myRe.exec(<span class="string">"a"</span>);<span class="comment">/*null*/</span></div></pre></td></tr></table></figure></p>
-<h4 id="2-test"><a href="#2-test" class="headerlink" title="2. test()"></a>2. test()</h4><p>搜索字符串指定的值，返回真假<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> myRe = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="string">"e"</span>);</div><div class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"The best"</span>));<span class="comment">/*true*/</span></div><div class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"a"</span>));<span class="comment">/*false*/</span></div></pre></td></tr></table></figure></p>
+<p>这里的正则表达式就暂时在javascript上讨论吧。
+&lt;!--more--&gt;
+参考<a href="http://www.runoob.com/jsref/jsref-obj-regexp.html" target="_blank" rel="noopener">网上随便找的中文教程</a></p>
+<p>这就不得不提到&lt;span style=&quot;color:#f92672;font-size:2rem&quot;&gt;RegExp&lt;/span&gt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp" target="_blank" rel="noopener">MDN手册</a>这个对象</p>
+<h3>语法：</h3>
+<p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> patt = <span class="keyword">new</span> <span class="built_in">RegExp</span>(pattern[, flags])</span><br><span class="line"><span class="keyword">var</span> patt = <span class="regexp">/pattern/</span>flags;</span><br></pre></td></tr></table></figure></p>
+<p><strong>pattern:就是写正则的地方</strong>
+<strong>flags取值(可以是下面的任意组合):</strong></p>
+<p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">g:global match //查找所有匹配而不是在找到第一个匹配后停止</span><br><span class="line">i:ignore case //忽略大小写</span><br><span class="line">m:multiline;treat begining and end characters(^ and $)as working over multiple lines </span><br><span class="line">//多行匹配,用这个属性后$会匹配&apos;\n&apos;或&apos;\r&apos;.要匹配$本身，用\$</span><br></pre></td></tr></table></figure></p>
+<h3>特殊字符</h3>
+<p>| 特殊字符      | 简单说明(无特殊说明，匹配本身都是用\转义)                   |
+|------:--------|--::----------------------------------------------------------|
+|     $         | 匹配输入字符串的结尾位置。                                         |
+|    ()         | 标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。     |
+|    *          | (限定符)匹配前面的子表达式零次或多次。     |
+|    +          | (限定符)匹配前面的子表达式一次或多次。     |
+|    .          | 匹配除换行符\n之外的任何单字符;匹配本身用\。     |
+| ?             | 匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。     |
+| [             | 标记一个中括号表达式的开始。     |
+| ^             | 匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。     |
+| {             | 标记限定符表达式的开始。     |
+| ¦      | 很明显，&quot;或&quot;符号。     |
+&lt;!--&lt;table&gt;
+&lt;tr&gt;&lt;th&gt;特殊字符&lt;/th&gt;&lt;th&gt;简单说明（没特殊说明的，匹配本身都是直接用\转义）&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;匹配输入字符串的结尾位置。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;()&lt;/td&gt;&lt;td&gt;标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;(限定符)匹配前面的子表达式零次或多次。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;+&lt;/td&gt;&lt;td&gt;(限定符)匹配前面的子表达式一次或多次。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;.&lt;/td&gt;&lt;td&gt;匹配除换行符\n之外的任何单字符;匹配本身用\。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;?&lt;/td&gt;&lt;td&gt;匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;[&lt;/td&gt;&lt;td&gt;标记一个中括号表达式的开始。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;^&lt;/td&gt;&lt;td&gt;匹配输入字符串的开始位置，除非在方括号表达式中使用，此时它表示不接受该字符集合。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;{&lt;/td&gt;&lt;td&gt;标记限定符表达式的开始&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;|&lt;/td&gt;&lt;td&gt;很明显，&quot;或&quot;符号&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;--&gt;</p>
+<h3>限定符</h3>
+<p>| 字符          | 简单说明                   |
+|-------------- |--::----------------------------------------------------------|
+|    ()         |标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。    |
+|    *          | (限定符)匹配前面的子表达式零次或多次。   |
+|    +          | (限定符)匹配前面的子表达式一次或多次。     |
+|    ?          | 匹配前面的子表达式零次或一次，或指明一个非贪婪限定符。     |</p>
+<p>&lt;div style=&quot;color:#f92672;&quot;&gt;这里顺带说一声，如果在markdown中直接用table标签的话要所有html代码压缩才可以，要不会多出很多&lt;br/&gt;&lt;/div&gt;</p>
+<h3>其他元字符</h3>
+<p>| 字符     | 简单说明                                                                            |
+|----------|--::----------------------------------------------------------------------------------|
+|  [xyz]   |字符集合。匹配所包含的任意一个字符。例如， '[abc]' 可以匹配 &quot;plain&quot; 中的 'a'。       |
+|  [^xyz]  |负值字符集合。匹配未包含的任意字符。例如， '[^abc]' 可以匹配 &quot;plain&quot; 中的'p'、'l'、'i'、'n'。|
+|  \b      |匹配一个单词边界，也就是指单词和空格间的位置。'er\b' 可以匹配&quot;never&quot; 中的 'er'，但不能匹配 &quot;verb&quot; 中的 'er'。    |
+|  \B      | 匹配非单词边界。'er\B' 能匹配 &quot;verb&quot; 中的 'er'，但不能匹配 &quot;never&quot; 中的 'er'。      |
+|  \d      | 匹配一个数字字符。等价于 [0-9]。 \D同上。                                           |
+|  \s      |匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。\S同上。       |
+|  \w      |	匹配包括下划线的任何单词字符。等价于'[A-Za-z0-9_]'。\W同上。                     |
+|  x{n}    |n 是一个非负整数。匹配x的 n 次。例如，'o{2}' 不能匹配 &quot;Bob&quot; 中的 'o'，但是能匹配 &quot;food&quot; 中的两个 o。|
+|  x{n,}   |	n 是一个非负整数。至少匹配x的n 次。例如，'o{2,}' 不能匹配 &quot;Bob&quot; 中的 'o'，但能匹配 &quot;foooood&quot; 中的所有 o。'o{1,}' 等价于 'o+'。'o{0,}' 则等价于 'o*'。|
+&lt;!--&lt;table&gt;
+	&lt;thead&gt;
+		&lt;tr&gt;
+			&lt;th&gt;字符&lt;/th&gt;
+			&lt;th&gt;简单说明&lt;/th&gt;
+		&lt;/tr&gt;
+	&lt;/thead&gt;
+	&lt;tbody&gt;
+		&lt;tr&gt;
+			&lt;td&gt;()&lt;/td&gt;
+			&lt;td&gt;标记一个子表达式的开始和结束位置。子表达式可以获取供以后使用。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;*&lt;/td&gt;
+			&lt;td&gt;(限定符)匹配前面的子表达式零次或多次。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;+&lt;/td&gt;
+			&lt;td&gt;(限定符)匹配前面的子表达式一次或多次。&lt;/td&gt;
+		&lt;/tr&gt;
+		&lt;tr&gt;
+			&lt;td&gt;?&lt;/td&gt;
+			&lt;td&gt;匹配前面的子表达式零次或一次，或知名一个非贪婪限定符。&lt;/td&gt;
+		&lt;/tr&gt;
+	&lt;/tbody&gt;
+&lt;/table&gt;--&gt;</p>
+<h3>使用正则的方法:</h3>
+<h4>1. exec</h4>
+<p>搜索字符串制定的值，返回找到的值，如果没有匹配，返回Null
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myRe = <span class="regexp">/d(b+)d/g</span>;<span class="comment">//使用g全局匹配,符合d开始,d结尾</span></span><br><span class="line"><span class="keyword">var</span> myArray = myRe.exec(<span class="string">"cdbbdbsbz"</span>);<span class="comment">/*["dbbd", "bb"]*/</span></span><br><span class="line"><span class="keyword">var</span> myArray2 = myRe.exec(<span class="string">"a"</span>);<span class="comment">/*null*/</span></span><br></pre></td></tr></table></figure></p>
+<h4>2. test()</h4>
+<p>搜索字符串指定的值，返回真假
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myRe = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="string">"e"</span>);</span><br><span class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"The best"</span>));<span class="comment">/*true*/</span></span><br><span class="line"><span class="built_in">console</span>.log(myRe.test(<span class="string">"a"</span>));<span class="comment">/*false*/</span></span><br></pre></td></tr></table></figure></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="cjxh99jh300048yugdp1z3oo3" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="cjxmwz4s70005aeugdy06pjsj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
@@ -309,7 +226,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -319,7 +236,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -328,7 +245,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -339,6 +256,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -354,10 +275,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>

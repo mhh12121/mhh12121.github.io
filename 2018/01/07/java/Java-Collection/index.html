@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>Java-Collections | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Following is the summarize of the Java Collections://todo">
+  <meta name="description" content="Following is the summarize of the Java Collections://todo &amp;lt;!--more--&amp;gt; ##Wildcard Lets look at an interesting stuff:&amp;lt;div style=&amp;quot;color:#f92672&amp;quot;&amp;gt;Collections&amp;lt;/div&amp;gt; the &amp;lt;mark">
 <meta name="keywords" content="Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java-Collections">
 <meta property="og:url" content="https://mhh12121.github.io/2018/01/07/java/Java-Collection/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Following is the summarize of the Java Collections://todo">
+<meta property="og:description" content="Following is the summarize of the Java Collections://todo &amp;lt;!--more--&amp;gt; ##Wildcard Lets look at an interesting stuff:&amp;lt;div style=&amp;quot;color:#f92672&amp;quot;&amp;gt;Collections&amp;lt;/div&amp;gt; the &amp;lt;mark">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/linkedHashMap.jpg">
 <meta property="og:updated_time" content="2019-06-20T12:19:10.544Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java-Collections">
-<meta name="twitter:description" content="Following is the summarize of the Java Collections://todo">
+<meta name="twitter:description" content="Following is the summarize of the Java Collections://todo &amp;lt;!--more--&amp;gt; ##Wildcard Lets look at an interesting stuff:&amp;lt;div style=&amp;quot;color:#f92672&amp;quot;&amp;gt;Collections&amp;lt;/div&amp;gt; the &amp;lt;mark">
 <meta name="twitter:image" content="https://mhh12121.github.io/img/linkedHashMap.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -32,7 +32,7 @@
   
 
 </head>
-
+</html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -93,11 +93,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Following is the summarize of the Java Collections://todo<br><a id="more"></a> </p>
+        <p>Following is the summarize of the Java Collections://todo
+&lt;!--more--&gt;</p>
 <p>##Wildcard</p>
-<p>Lets look at an interesting stuff:<div style="color:#f92672">Collections</div><br>the <mark>supertype</mark> of all kinds of collections is Collection&lt;?&gt;(? is called “unknown”)</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Collection&lt;?&gt; c = <span class="keyword">new</span> ArrayList&lt;String&gt;();</div><div class="line">c.add(<span class="keyword">new</span> Object());<span class="comment">//Compile time error;</span></div></pre></td></tr></table></figure>
-<h2 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h2><h3 id="LinkedHashMap"><a href="#LinkedHashMap" class="headerlink" title="LinkedHashMap"></a>LinkedHashMap</h3><p>首先我们来看下LinkedHashMap的结构（这里盗一张别人的图）<br><img src="/img/linkedHashMap.jpg" alt="linkedhashmap"></p>
+<p>Lets look at an interesting stuff:&lt;div style=&quot;color:#f92672&quot;&gt;Collections&lt;/div&gt;
+the &lt;mark&gt;supertype&lt;/mark&gt; of all kinds of collections is Collection&lt;?&gt;(? is called &quot;unknown&quot;)</p>
+<p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Collection&lt;?&gt; c = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">c.add(<span class="keyword">new</span> Object());<span class="comment">//Compile time error;</span></span><br></pre></td></tr></table></figure></p>
+<h2>HashMap</h2>
+<h3>LinkedHashMap</h3>
+<p>首先我们来看下LinkedHashMap的结构（这里盗一张别人的图）
+<img src="/img/linkedHashMap.jpg" alt="linkedhashmap"></p>
 <p>由此知道 LinkedHashMap是继承于HashMap的，所以hash算法，红黑树这些玩意儿都会有，但这里主要是它特殊的性质：</p>
 <ol>
 <li>其底层是双向链表，<strong>保证了遍历顺序和插入顺序一致的情况</strong></li>
@@ -107,7 +112,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="cjxh99jil000r8yug0r2v7gzv" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="cjxmwz4t7000oaeugkj9nljm0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -149,7 +154,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -159,7 +164,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -168,7 +173,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -179,6 +184,10 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
         
           <li>
             <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
@@ -194,10 +203,6 @@
         
           <li>
             <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
           </li>
         
       </ul>
