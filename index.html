@@ -120,16 +120,73 @@
 <p>一个tcp连接很可能不能把当前路由的带宽都用完（），所以要多个tcp连接，这样才能最大保证速率</p>
 <h3>总结</h3>
 <p>回答问题，要从特么原理开始一步步推导来說，不能想当然</p>
-<h3>2. 各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点）</h3>
-<p>TCP连接</p>
+<h3>2. 各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点点）</h3>
+<h4>TCP三次握手连接(three-way handshake)</h4>
+<p>直接上他🐎图：
+<img src="/img/TCPshakeFhand.png" alt="tcpconn"></p>
+<ol>
+<li>client发送server<br>
+<strong>SYN=1</strong>（同步位，这种报文不能携带数据，但要<strong>消耗一个序号</strong>）
+自己的序号 <strong>Seq=client_w</strong> 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）</li>
+<li>server收到报文，把确认报文段中的SYN和ACK都设为1
+<strong>SYN=1</strong>(同理<strong>要消耗一个序号</strong>) 和 <strong>ACK=1</strong>
+自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）</li>
+<li>client收到确认报文后，还要给server发送确认收到。
+把<strong>确认ACK=1</strong>,ack=server_w+1(之前SYN消耗了序号)
+自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,<strong>但如果不携带数据则不消耗序号</strong>，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）</li>
+<li>server收到确认报文后，进入established状态，全部连接完成</li>
+</ol>
+<h5>三次握手能避免啥🐔儿东西呢（为啥两次不行？）</h5>
+<p>我们假设client给server发了个连接请求，但是请求丢失，然后client再发一个，server收到这个然后建立连接，这里面client发送了两个请求
+会有以下情况出现：</p>
+<p>client发出的第一个请求没有丢，只是网络阻塞;
+但接下来，server收到后以为是新的一个连接，server返回一个确认报文，但client收到server确认报文会发现自己并没有建立连接请求，所以会忽视server的确认报文，也不会向server发送数据
+但server会<strong>一直开着连接等client的数据，白白浪费资源!</strong>
+（但采用三次握手的话就没得事，server端没有接到client的第三次确认，就知道client没有要建立连接）</p>
+<h4>TCP四次挥手</h4>
+<ol>
+<li>
+<p>client 发送
+<strong>FIN=1</strong>（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，<strong>无论带不带数据，这厮都要消耗一个序号！</strong>）
+<strong>seq=client_u</strong> （这里序号是<strong>前面一个传送过的数据最后一个字节的序号+1</strong>）;(client进入FIN-WAIT-1状态)</p>
+</li>
+<li>
+<p>server收到释放报文返回
+<strong>ACK=1</strong>
+<strong>Seq=server_u</strong>(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server-&gt;client方向的连接保持，但client-&gt;server已经没有<strong>数据</strong>要传输了)</p>
+</li>
+<li>
+<p>client收到server的确认后，进入FIN-WAIT2状态，等待server的连接释放报文</p>
+</li>
+<li>
+<p>如果server没有数据要发给client了（server持续发送数据到client，也可以不发），
+携带报文 <strong>FIN=1</strong>， ACK=1
+<strong>seq=server_u2</strong>(新，可能发送了一些数据)
+<strong>ack=client_u+1</strong>（重复上次已发送的确认号）
+(server进入LAST-ACK状态)</p>
+</li>
+<li>
+<p>(紧接3)client收到释放报文后，返回确认报文：
+ACK=1
+确认号<strong>ack=server_u2+1</strong>
+序号<strong>seq=client_u+1</strong> （前面1的FIN报文消耗了一个序号client_u）
+然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值）再进入CLOSED状态
+client撤销相应的TCB（传输控制块）后，结束连接</p>
+</li>
+</ol>
+<h5>为啥要等2MSL</h5>
+<ol>
+<li></li>
+</ol>
+<h5>keepalive timer</h5>
+<p>2MSL是被client的一个TIME-WAIT timer设置的，实际上TCP还有一个keepalive timer</p>
 <h3>3. DNS协议</h3>
-<p>首先这🐔是<strong>应用层</strong>协议！！！
-:smile:</p>
+<p>首先这🐔是<strong>应用层</strong>协议！！！</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxmx4h4w000fj5ugdmys09dl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxn1by9t000f0rug8frc0m3i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -172,7 +229,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxmx4h56000oj5ugfa96th3x" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="cjxn1bya3000o0rugctuky63m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -212,7 +269,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="cjxmx4h3s0004j5ug297vtt2h" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="cjxn1by8s00030rugfqoo26hv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Love/">Love</a></li></ul>
@@ -255,7 +312,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjxmx4h4z000ij5ug4cjrly31" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="cjxn1by9v000i0rugrn3pk5og" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -302,7 +359,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="cjxmx4h55000nj5ugcg40udss" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="cjxn1bya1000n0rugvgcl5o4t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -346,7 +403,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="cjxmx4h50000jj5ugxvbemd3j" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="cjxn1by9x000j0rugbqf71vmc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -388,7 +445,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-Class/" data-id="cjxmx4h58000qj5ugvw77ervw" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-Class/" data-id="cjxn1bya6000q0rugeflzt4mk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -431,7 +488,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxmx4h3m0001j5ugbpf6rj82" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxn1by8n00010ruguy94mx5t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -474,7 +531,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjxmx4h53000kj5ugdstcrbo8" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="cjxn1by9z000k0ruggl8qeiig" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -516,7 +573,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/" data-id="cjxmx4h5e000wj5ugkmbp9qa6" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/" data-id="cjxn1byae000w0rugu93u9680" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
