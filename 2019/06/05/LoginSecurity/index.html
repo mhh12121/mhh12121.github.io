@@ -15,9 +15,12 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/OauthProcess.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/Oauth4Methods.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/JWT.png">
 <meta property="og:image" content="https://jwt.io/">
 <meta property="og:image" content="https://mhh12121.github.io/img/SSL.png">
-<meta property="og:updated_time" content="2019-07-04T03:28:21.668Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/HTTPS.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/CA.jpeg">
+<meta property="og:updated_time" content="2019-07-04T06:31:03.437Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
 <meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
@@ -105,11 +108,17 @@
 <h3>四种验证方法</h3>
 <p><img src="/img/Oauth4Methods.png" alt="Oauth4method" title="four ways of identification"></p>
 <h2>JWT</h2>
-<p>header.payload.signature</p>
+<p>主要流程(盗图)：<img src="/img/JWT.png" alt="jwt"></p>
+<h3>主要格式</h3>
+<pre><code>header.payload.signature
+</code></pre>
+<p>header结构：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims），例如iss(Issuer), sub(Subject), exp(Expiration time)，也可以塞入自定义的字段，比如 userId:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Signature</p>
+<p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims）
+例如iss(Issuer签发者)，aud（接受jwt的一方），jti（jwt唯一身份标识，主要作为一次性token）, sub(Subject面向的用户), exp(Expiration time)</p>
+<p>也可以塞入自定义的字段，比如 userId:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;//但一般不要敏感信息，因为会被看见</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Signature结构</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">secret=&quot;mhh12121&quot;//存在服务器上的密钥</span><br><span class="line">data = base64( header ) + “.” + base64( payload )</span><br><span class="line">signature = Hash( data, secret )//这里我们用HMACSHA256</span><br></pre></td></tr></table></figure>
 <p>假设我们的header 和paylaod如下</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//header</span><br><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br><span class="line">//payload</span><br><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br><span class="line">//服务器上的secret</span><br><span class="line">secret=&quot;mhh12121&quot;</span><br></pre></td></tr></table></figure>
@@ -176,6 +185,39 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
 <img src="/img/SSL.png" alt="SSL记录格式"></p>
 <p>主要由类型字段，版本字段，长度字段，数据字段和MAC构成，但其前三个字段是不加密的
 类型字段：指出是握手报文还是有数据的报文，还被用于关闭SSL连接上（后面说到）</p>
+<h3>HTTPS（一般是443端口）</h3>
+<p>CA证书包含了：</p>
+<ol>
+<li>序号和过期时间</li>
+<li>姓名</li>
+<li>所有者公钥</li>
+</ol>
+<p>流程如图<img src="/img/HTTPS.png" alt="https"></p>
+<h4>问题：</h4>
+<ol>
+<li>那么每次client端生成的key放在哪里呢？</li>
+</ol>
+<p>改变环境变量SSLKEYLOGFILE，浏览器会从以下地址记录生成的对称密钥（linux）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export SSLKEYLOGFILE=~/tls/key.log</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>被劫持咋办？
+可以从图上的序号开始谈：</li>
+<li>首先3处，可能 <strong>有中间人拦截server端传去client端的请求吗，然后篡改证书？</strong>
+如果中间人模拟一个自签名证书：
+浏览器会把这个自签名证书和系统证书匹配，匹配不上，会失败<br>
+如果中间人假冒颁发机构颁发证书：
+因为没有颁发机构的私钥，所以证书指纹不能对上，也会失败</li>
+</ol>
+<p>所以，唯一破解就是用户自己安装了一个未知证书，这样系统会认为中间人证书是信任的</p>
+<ol start="2">
+<li>接着6 处，即是被拦截，中间人没有server的私钥，无法解开</li>
+</ol>
+<p>防止看不懂，还是新增一副图吧（盗图）：
+<img src="/img/CA.jpeg" alt="CA"></p>
+<ol start="3">
+<li>加密都用了啥？</li>
+</ol>
+<p>而下面client<strong>步骤4</strong>则用的是<strong>对称加密</strong>传输的数据，再用<strong>非对称加密</strong> 加密 这个<strong>经过对称加密的数据</strong>（太绕）</p>
 <h3>连接关闭时注意的问题</h3>
 <p>一般来讲，关闭连接就会由Client端，即Bob发起TCP FIN报文请求断开，但这个易遭到截断攻击（truncation attack)：
 如果中间人过早地发送TCP FIN报文，Server端（Alice）会认为已经收到所有Bob的数据。</p>
@@ -185,7 +227,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxo45fvu00017ruggsqfb34v" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxoakftr0001ujuggbyp2o54" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -196,11 +238,11 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Concurrency Problem
+          class loading
         
       </div>
     </a>
