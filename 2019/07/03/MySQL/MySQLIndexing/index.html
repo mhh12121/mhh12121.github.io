@@ -3,22 +3,20 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
-  <title>Java String constatn pool | 兜的破烂</title>
+  <title>Notes about MySQL indexing | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="//todo 字符串常量池 内存结构">
-<meta name="keywords" content="Java">
+  <meta name="description" content="一些注意事项">
+<meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java String constatn pool">
-<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/index.html">
+<meta property="og:title" content="Notes about MySQL indexing">
+<meta property="og:url" content="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="//todo 字符串常量池 内存结构">
+<meta property="og:description" content="一些注意事项">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/img/jvm_memStruct.jpg">
-<meta property="og:updated_time" content="2019-06-20T02:26:24.353Z">
+<meta property="og:updated_time" content="2019-07-04T15:02:32.744Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java String constatn pool">
-<meta name="twitter:description" content="//todo 字符串常量池 内存结构">
-<meta name="twitter:image" content="https://mhh12121.github.io/img/jvm_memStruct.jpg">
+<meta name="twitter:title" content="Notes about MySQL indexing">
+<meta name="twitter:description" content="一些注意事项">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -71,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-java/Java-constantPool" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-MySQL/MySQLIndexing" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/05/java/Java-constantPool/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+    <a href="/2019/07/03/MySQL/MySQLIndexing/" class="article-date">
+  <time datetime="2019-07-03T06:20:00.000Z" itemprop="datePublished">2019-07-03</time>
 </a>
     
   </div>
@@ -85,7 +83,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Java String constatn pool
+      Notes about MySQL indexing
     </h1>
   
 
@@ -93,18 +91,92 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>//todo</p>
-<p>字符串常量池</p>
-<h3>内存结构</h3>
-<p><img src="/img/jvm_memStruct.jpg" alt="Mem" title="jvm Memstruct"></p>
+        <p>一些注意事项</p>
+<a id="more"></a>
+<h2>主键的问题</h2>
+<h3>复合主键和单个主键</h3>
+<h4>复合主键</h4>
+<p>好处显而易见，可以依据多个列进行排序，但明显地，字符类的列相比int会比较复杂</p>
+<h3>自增主键和自定义主键</h3>
+<h4>自增主键</h4>
+<p>好处：</p>
+<ol>
+<li>由系统生成，顺序递增，速度肯定快</li>
+<li>int占用空间小，易排序</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>自增主键可能不连续</li>
+<li>水平分片架构会出问题，全局不能保证唯一</li>
+</ol>
+<h4>自定义主键</h4>
+<p>好处：</p>
+<ol>
+<li>水平分片</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>随机I/O，影响查找等操作</li>
+</ol>
+<h2>聚簇索引</h2>
+<p>当表有聚簇索引的时候，它的数据行实际上存放在索引的叶子页（leaf page）上
+聚簇代表了数据行和相邻的键值紧凑地存储在一起</p>
+<h2>大数据问题</h2>
+<h3>1. 一次性插入大量数据</h3>
+<p>MySQL官方文件给出的提示：</p>
+<blockquote>
+<blockquote>
+<p>To optimize insert speed, combine many small operations into a single large operation. Ideally, you make a single connection, send the data for many new rows at once, and delay all index updates and consistency checking until the very end.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>If you are inserting many rows from the same client at the same time, use INSERT statements with multiple VALUES lists to insert several rows at a time. This is considerably faster (many times faster in some cases) than using separate single-row INSERT statements. If you are adding data to a nonempty table, you can tune the bulk_insert_buffer_size variable to make data insertion even faster. See Section 5.1.7, “Server System Variables”.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>When loading a table from a text file, use LOAD DATA. This is usually 20 times faster than using INSERT statements. See Section 13.2.6, “LOAD DATA Syntax”.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>Take advantage of the fact that columns have default values. Insert values explicitly only when the value to be inserted differs from the default. This reduces the parsing that MySQL must do and improves the insert speed.</p>
+</blockquote>
+</blockquote>
+<h4>如果是从一个客户端同时插入多行</h4>
+<ol>
+<li>就是要合并多个插入操作成一个，如：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>开启 <strong>bulk_insert_buffer_size</strong> 更加加速插入</li>
+</ol>
+<h4>从文件中导入数据</h4>
+<p>使用 <strong>LOAD DATA</strong></p>
+<h4>利用default value</h4>
+<p>每当插入数据不同于default值的时候再插入，使用ignore</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">ignore</span> <span class="keyword">into</span> table1 <span class="keyword">values</span> (<span class="number">1</span>,<span class="string">'a'</span>，<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>甚至还区分了 InnoDB引擎和MyISAM引擎的做法：</p>
+<h4>InnoDB：</h4>
+<ol>
+<li>关闭autocommit，因为每次插入，InnoDB都会写log;</li>
+<li>如果有unqiue 限制插入的列，可以暂时关闭 unique_checks;</li>
+<li>如果有外键在列，可以暂时关闭外键约束foreign_key_checks;</li>
+<li>插入数据的时候，如果数据能按照primary key的顺序插入，会大大加快速度（因为主键是聚簇索引）</li>
+</ol>
+<h4>MyISAM</h4>
+<p>//todo</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/" data-id="cjxotrsmo000yu8uge5f22qkl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="cjxotrsmc000ku8uglb0tg6ex" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
 
     </footer>
   </div>
@@ -112,19 +184,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Go/Slice/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Something about Slice in Go
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/07/02/Comcon/somethingAboutTcp/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">class loading</div>
+      <div class="article-nav-title">Something about Networking</div>
     </a>
   
 </nav>

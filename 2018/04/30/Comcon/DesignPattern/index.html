@@ -3,22 +3,20 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
-  <title>Java String constatn pool | 兜的破烂</title>
+  <title>Notes about Design Pattern | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="//todo 字符串常量池 内存结构">
-<meta name="keywords" content="Java">
+  <meta name="description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
+<meta name="keywords" content="Design Pattern">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java String constatn pool">
-<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/index.html">
+<meta property="og:title" content="Notes about Design Pattern">
+<meta property="og:url" content="https://mhh12121.github.io/2018/04/30/Comcon/DesignPattern/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="//todo 字符串常量池 内存结构">
+<meta property="og:description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/img/jvm_memStruct.jpg">
-<meta property="og:updated_time" content="2019-06-20T02:26:24.353Z">
+<meta property="og:updated_time" content="2019-07-04T08:32:52.907Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java String constatn pool">
-<meta name="twitter:description" content="//todo 字符串常量池 内存结构">
-<meta name="twitter:image" content="https://mhh12121.github.io/img/jvm_memStruct.jpg">
+<meta name="twitter:title" content="Notes about Design Pattern">
+<meta name="twitter:description" content="For reviewing some most likely used design pattern: Singleton Most commonly 123456789101112public class Singleton&amp;#123;    private static final Singleton singleton = new Singleton();    private Singl">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -71,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-java/Java-constantPool" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Comcon/DesignPattern" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/05/java/Java-constantPool/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+    <a href="/2018/04/30/Comcon/DesignPattern/" class="article-date">
+  <time datetime="2018-04-30T15:48:00.000Z" itemprop="datePublished">2018-04-30</time>
 </a>
     
   </div>
@@ -85,7 +83,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Java String constatn pool
+      Notes about Design Pattern
     </h1>
   
 
@@ -93,18 +91,42 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>//todo</p>
-<p>字符串常量池</p>
-<h3>内存结构</h3>
-<p><img src="/img/jvm_memStruct.jpg" alt="Mem" title="jvm Memstruct"></p>
+        <a id="more"></a>
+<p>For reviewing some most likely used design pattern:</p>
+<h2><strong>Singleton</strong></h2>
+<p>Most commonly</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton singleton = <span class="keyword">new</span> Singleton();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;&#125;<span class="comment">//in case of creating a new object</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> singleton;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">other</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//other method</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Pros:</p>
+<ol>
+<li>
+<p>Because only one instance exists in memory, it greatly decrease the usage of memory.Especially in the case that an object needs to be initialized and deleted frequently,while the instantiation and deletion can’t be optimized, Singleton pattern is the best choice.</p>
+</li>
+<li>
+<p>Prevent multiple domination towards the same source.For example, an operation of writing in a file.</p>
+</li>
+<li></li>
+</ol>
+<p>Cons:</p>
+<ol>
+<li>Obviously, because singleton has instatiated itself, so it’s impossible to extend interface to it (abstract class,interface will not be instantiated )</li>
+</ol>
+<p>Scenes:</p>
+<ol>
+<li>generate unique key;</li>
+<li>IO;</li>
+<li>global stored in memory for calculating purpose.For exmaple, Spring Bean is set as a singleton by default so that spring can manage this bean life cycle(but if Bean use non-singleton like prototype pattern,after the initialization of Bean, it will be transfered to J2EE container,Spring no longer manages this Bean)</li>
+</ol>
+<h2><strong>Proxy</strong></h2>
+<h3><strong>dynamic proxy</strong></h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GamePlayIH</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">     <span class="comment">//被代理者</span></span><br><span class="line">     Class cls =<span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//被代理的实例</span></span><br><span class="line">     Object obj = <span class="keyword">null</span>;</span><br><span class="line">     <span class="comment">//我要代理谁</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> <span class="title">GamePlayIH</span><span class="params">(Object _obj)</span></span>&#123;</span><br><span class="line">             <span class="keyword">this</span>.obj = _obj;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">//调用被代理的方法</span></span><br><span class="line">     <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></span><br><span class="line"><span class="function">                    <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">             Object result = method.invoke(<span class="keyword">this</span>.obj, args);</span><br><span class="line">             <span class="keyword">return</span> result;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-constantPool/" data-id="cjxotrsmo000yu8uge5f22qkl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/Comcon/DesignPattern/" data-id="cjxotrslv000au8ugqw2iu29z" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
 
     </footer>
   </div>
@@ -112,19 +134,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Go/Slice/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Something about Slice in Go
+          class loading
         
       </div>
     </a>
   
   
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/03/07/java/Java-Concurrency/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">class loading</div>
+      <div class="article-nav-title">Java-Concurrency</div>
     </a>
   
 </nav>
