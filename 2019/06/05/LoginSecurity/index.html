@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://mhh12121.github.io/img/Oauth4Methods.png">
 <meta property="og:image" content="https://jwt.io/">
 <meta property="og:image" content="https://mhh12121.github.io/img/SSL.png">
-<meta property="og:updated_time" content="2019-07-03T06:59:32.797Z">
+<meta property="og:updated_time" content="2019-07-04T03:28:21.668Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
 <meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
@@ -115,7 +115,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//header</span><br><span class="line">&#123;</span><br><span class="line">    &quot;typ&quot;: &quot;JWT&quot;,</span><br><span class="line">    &quot;alg&quot;: &quot;HS256&quot;</span><br><span class="line">&#125;</span><br><span class="line">//payload</span><br><span class="line">&#123;</span><br><span class="line">    &quot;userId&quot;: &quot;yjqweqw0019-aq&quot;</span><br><span class="line">&#125;</span><br><span class="line">//服务器上的secret</span><br><span class="line">secret=&quot;mhh12121&quot;</span><br></pre></td></tr></table></figure>
 <p>可以通过这个网站<img src="https://jwt.io/" alt="jwtio">验证你的signature准确性</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//我们的signature应该是这个</span><br><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5anF3ZXF3MDAxOS1hcSJ9.7jRvE_F8lriMHlTZPJulRPg_V66I6r-f7caMuI82u1o</span><br></pre></td></tr></table></figure>
-<h2>TLS (HTTPS)</h2>
+<h2>TLS (HTTPS=HTTP+TLS，TLS1.2=SSL3.3)</h2>
 <p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
 <p>It provides securty over serverl aspects:</p>
 <ol>
@@ -185,7 +185,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxn1by8n00010ruguy94mx5t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/LoginSecurity/" data-id="cjxo45fvu00017ruggsqfb34v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -196,19 +196,19 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          class loading
+          Concurrency Problem
         
       </div>
     </a>
   
   
-    <a href="/2019/06/05/Go/Slice/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2018/04/30/DesignPattern/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Something about Slice in Go</div>
+      <div class="article-nav-title">Notes about Design Pattern</div>
     </a>
   
 </nav>
@@ -227,7 +227,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -237,7 +237,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -259,6 +259,10 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       <ul>
         
           <li>
+            <a href="/2019/07/02/SoftwareEngineer/">Something about Software Enginnering</a>
+          </li>
+        
+          <li>
             <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
@@ -272,10 +276,6 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
         
           <li>
             <a href="/2019/06/21/Go/Context/">Golang Context</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
           </li>
         
       </ul>

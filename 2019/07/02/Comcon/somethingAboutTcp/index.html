@@ -5,20 +5,21 @@
   
   <title>Something about Networking | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
+  <meta name="description" content="记录了一些很基础的但经常被问到的问题">
 <meta name="keywords" content="networking">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Something about Networking">
 <meta property="og:url" content="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
+<meta property="og:description" content="记录了一些很基础的但经常被问到的问题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
 <meta property="og:image" content="https://mhh12121.github.io/img/TCPshakeFhand.png">
-<meta property="og:updated_time" content="2019-07-03T09:24:48.256Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/TCPgoodbye.png">
+<meta property="og:updated_time" content="2019-07-04T03:31:20.388Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about Networking">
-<meta name="twitter:description" content="1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个） 一开始看见，这不是显而易见的吗？？？ 后来发现，其实他想听到的答案是：  tcp的流量窗口（拥塞控制） 如下图： 盗图 绿色为 发送者发送，且接收者acked 黄色为 发送者发送，接收者未确认（in-flight） 蓝色为 可用但为发送  cwnd= width（in-flight）+width（not sent">
+<meta name="twitter:description" content="记录了一些很基础的但经常被问到的问题">
 <meta name="twitter:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
@@ -94,13 +95,15 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3>1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
+        <p>记录了一些很基础的但经常被问到的问题</p>
+<a id="more"></a>
+<h3>1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
 <p>一开始看见，这不是显而易见的吗？？？</p>
 <p>后来发现，其实他想听到的答案是：</p>
 <ol>
 <li>tcp的流量窗口（拥塞控制）
-如下图：
-<img src="/img/tcpWindow.jpg" alt="tcpwindow">盗图
+如下图(盗图)：
+<img src="/img/tcpWindow.jpg" alt="tcpwindow">
 绿色为 发送者发送，且接收者acked
 黄色为 发送者发送，接收者未确认（in-flight）
 蓝色为 可用但为发送</li>
@@ -150,6 +153,7 @@
 但server会<strong>一直开着连接等client的数据，白白浪费资源!</strong>
 （但采用三次握手的话就没得事，server端没有接到client的第三次确认，就知道client没有要建立连接）</p>
 <h4>TCP四次挥手</h4>
+<p><img src="/img/TCPgoodbye.png" alt="tcpfour"></p>
 <ol>
 <li>
 <p>client 发送
@@ -182,17 +186,52 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
 </ol>
 <h5>为啥要等2MSL</h5>
 <ol>
-<li></li>
+<li>
+<p>保证client发送的最后一个ACK报文能够到达server;
+因为这个报文可能会丢失，然后处在LAST-ACK的server收不到已发送的FIN+ACK报文的确认。正常情况下，server会重传FIN+ACK报文，client接着重传最后一个ACK报文，重新计时;
+但如果client不等待，发送完ACK报文直接释放连接进入CLOSED，client就没法收到server重传的FIN+ACK报文，也不会再发送一次确认报文（因为关闭了啊！），这样server就不会正常进入CLOSED状态</p>
+</li>
+<li>
+<p>防止出现 ‘已失效的连接请求报文段’(如同三次握手时间的client第一次发出的报文);
+client发送完最后一个ACK报文段后，经过2MSL，可以确定本连接持续时间内的所有报文段都从网络消失，这样就不会出现旧的连接报文段了</p>
+</li>
 </ol>
+<p>PS：server的cclosed状态要比client的要早一点
+MSL&gt;=TTL</p>
+<p>连接当中如果用HTTPS，参考之前写的<a href="/2019/06/05/LoginSecurity/" title="https">https</a></p>
 <h5>keepalive timer</h5>
-<p>2MSL是被client的一个TIME-WAIT timer设置的，实际上TCP还有一个keepalive timer</p>
+<p>2MSL是被client的一个TIME-WAIT timer设置的，实际上TCP还有一个keepalive timer，存在header里面的keep-alive</p>
 <h3>3. DNS协议</h3>
-<p>首先这🐔是<strong>应用层</strong>协议！！！</p>
+<p>首先这🐔是<strong>应用层</strong>协议！！！
+功能主要就是<strong>把域名转换为IP地址</strong></p>
+<h3>4. URI 和 URL 和域名</h3>
+<p>URI（统一资源标识符） 包括 URL（统一资源定位符）和URN（统一资源名称）</p>
+<p>URI通用模式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scheme：[// [user：password @] host [：port]] [/] path [？查询] [#片段]</span><br></pre></td></tr></table></figure>
+<p>URL：主要用于连接网页或部分部件，借助访问的协议（http，ftp等）来检索定位资源位置
+URL包含了</p>
+<ol>
+<li>访问资源的协议</li>
+<li>服务器位置</li>
+<li>端口</li>
+<li>资源在服务器上的位置</li>
+<li>片段标识符（就是锚点#something）</li>
+</ol>
+<p>域名（domain name）指的是任一主机或路由器连接在因特网上都有<strong>唯一</strong>的 <strong>层次结构的名字</strong>,只是一个<strong>逻辑概念</strong></p>
+<h3>5. 浏览器输入url发生了什么 （个人感觉按照这个🐔来复习会比较好）</h3>
+<ol>
+<li>输入URL，浏览器会解析url，这里面是通过DNS域名解析，找到url对应的服务器地址，其中可能会从HOSTS文件找</li>
+<li>找到主机地址，就会连接主机，这里面tcp三次握手，发送HTTP请求
+然后封装发送的包，http包放在tcp包里，tcp包放在IP包里，层层往下，每一层会通过网管（gateway）</li>
+<li>到了IP协议处会将其通过ARP解析出相应的在链路层的物理地址（通过路由器），在网络层和以上使用都是IP地址，以下都是硬件地址了，所以数据链路层看不见IP地址了</li>
+<li>网络层通过物理地址找到路由器，把层层封装的包通过网桥（或桥接器等）等发送到链路层上，当前只能看见MAC帧，链路层负责开始传输数据了</li>
+<li>物理层只是把传输数据 变成电信号真正地传到网线上</li>
+</ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxn1by9t000f0rug8frc0m3i" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxo45fws000i7rugsbokn9ah" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -202,6 +241,15 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/07/02/SoftwareEngineer/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Something about Software Enginnering
+        
+      </div>
+    </a>
   
   
     <a href="/2019/06/29/Go/gRPC/" id="article-nav-older" class="article-nav-link-wrap">
@@ -225,7 +273,7 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -235,7 +283,7 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Golang/" style="font-size: 10px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -257,6 +305,10 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
       <ul>
         
           <li>
+            <a href="/2019/07/02/SoftwareEngineer/">Something about Software Enginnering</a>
+          </li>
+        
+          <li>
             <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
@@ -270,10 +322,6 @@ client撤销相应的TCB（传输控制块）后，结束连接</p>
         
           <li>
             <a href="/2019/06/21/Go/Context/">Golang Context</a>
-          </li>
-        
-          <li>
-            <a href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
           </li>
         
       </ul>
