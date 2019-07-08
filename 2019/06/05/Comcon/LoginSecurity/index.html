@@ -20,7 +20,7 @@
 <meta property="og:image" content="https://mhh12121.github.io/img/SSL.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/HTTPS.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/CA.jpeg">
-<meta property="og:updated_time" content="2019-07-04T08:32:38.171Z">
+<meta property="og:updated_time" content="2019-07-07T15:01:43.760Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
 <meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
@@ -185,12 +185,19 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
 <img src="/img/SSL.png" alt="SSL记录格式"></p>
 <p>主要由类型字段，版本字段，长度字段，数据字段和MAC构成，但其前三个字段是不加密的
 类型字段：指出是握手报文还是有数据的报文，还被用于关闭SSL连接上（后面说到）</p>
+<h3>连接关闭时注意的问题</h3>
+<p>一般来讲，关闭连接就会由Client端，即Bob发起TCP FIN报文请求断开，但这个易遭到截断攻击（truncation attack)：
+如果中间人过早地发送TCP FIN报文，Server端（Alice）会认为已经收到所有Bob的数据。</p>
+<p>解决方案：SSL记录中的<strong>类型字段</strong>指明这个记录是否用于关闭连接。这里还要注意，虽然这个字段是明文，但接收方仍然可以用记录的MAC对它进行鉴别</p>
+<p>***参考 《计算机网络自顶向下》 ***</p>
 <h3>HTTPS（一般是443端口）</h3>
 <p>CA证书包含了：</p>
 <ol>
 <li>序号和过期时间</li>
 <li>姓名</li>
 <li>所有者公钥</li>
+<li>域名</li>
+<li>签发机构</li>
 </ol>
 <p>流程如图<img src="/img/HTTPS.png" alt="https"></p>
 <h4>问题：</h4>
@@ -218,16 +225,11 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
 <li>加密都用了啥？</li>
 </ol>
 <p>而下面client<strong>步骤4</strong>则用的是<strong>对称加密</strong>传输的数据，再用<strong>非对称加密</strong> 加密 这个<strong>经过对称加密的数据</strong>（太绕）</p>
-<h3>连接关闭时注意的问题</h3>
-<p>一般来讲，关闭连接就会由Client端，即Bob发起TCP FIN报文请求断开，但这个易遭到截断攻击（truncation attack)：
-如果中间人过早地发送TCP FIN报文，Server端（Alice）会认为已经收到所有Bob的数据。</p>
-<p>解决方案：SSL记录中的<strong>类型字段</strong>指明这个记录是否用于关闭连接。这里还要注意，虽然这个字段是明文，但接收方仍然可以用记录的MAC对它进行鉴别</p>
-<p>***参考 《计算机网络自顶向下》 ***</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="cjxotrsm1000du8ugev7yhayr" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="cjxu0epq2000dhyugeaqjc1pp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -238,19 +240,19 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Slice/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Concurrency Problem
+          Something about Slice in Go
         
       </div>
     </a>
   
   
-    <a href="/2019/06/05/Go/Slice/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Something about Slice in Go</div>
+      <div class="article-nav-title">Concurrency Problem</div>
     </a>
   
 </nav>
@@ -305,11 +307,11 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
           <li>

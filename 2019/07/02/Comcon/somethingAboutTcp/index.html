@@ -16,7 +16,8 @@
 <meta property="og:image" content="https://mhh12121.github.io/img/tcpWindow.jpg">
 <meta property="og:image" content="https://mhh12121.github.io/img/TCPshakeFhand.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/TCPgoodbye.png">
-<meta property="og:updated_time" content="2019-07-04T15:02:39.023Z">
+<meta property="og:image" content="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS">
+<meta property="og:updated_time" content="2019-07-08T03:54:11.953Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about Networking">
 <meta name="twitter:description" content="记录了一些很基础的但经常被问到的问题">
@@ -203,7 +204,9 @@ MSL&gt;=TTL</p>
 <p>2MSL是被client的一个TIME-WAIT timer设置的，实际上TCP还有一个keepalive timer，存在header里面的keep-alive</p>
 <h3>3. DNS协议</h3>
 <p>首先这🐔是<strong>应用层</strong>协议！！！
-功能主要就是<strong>把域名转换为IP地址</strong></p>
+功能主要就是<strong>把域名转换为IP地址</strong>
+然后，主要是在<strong>UDP</strong>上面跑，端口<strong>53</strong>
+长度最多是<strong>512Bytes</strong>，若过多要用 <img src="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS" alt="EDNS"></p>
 <h3>4. URI 和 URL 和域名</h3>
 <p>URI（统一资源标识符） 包括 URL（统一资源定位符）和URN（统一资源名称）</p>
 <p>URI通用模式：</p>
@@ -231,7 +234,7 @@ URL包含了</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxotrsls0009u8ughwzgiqs5" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="cjxu0eppz000ahyug80mmpb9l" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -242,19 +245,19 @@ URL包含了</p>
     
 <nav id="article-nav">
   
-    <a href="/2019/07/03/MySQL/MySQLIndexing/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/07/02/Comcon/SoftwareEngineer/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Notes about MySQL indexing
+          Something about Software Enginnering
         
       </div>
     </a>
   
   
-    <a href="/2019/07/02/Comcon/SoftwareEngineer/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/29/Go/gRPC/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Something about Software Enginnering</div>
+      <div class="article-nav-title">Something in gRPC</div>
     </a>
   
 </nav>
@@ -309,11 +312,11 @@ URL包含了</p>
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
           <li>

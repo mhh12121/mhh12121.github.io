@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="一些注意事项">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-04T15:02:32.744Z">
+<meta property="og:updated_time" content="2019-07-07T07:09:54.942Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about MySQL indexing">
 <meta name="twitter:description" content="一些注意事项">
@@ -123,7 +123,9 @@
 聚簇代表了数据行和相邻的键值紧凑地存储在一起</p>
 <h2>大数据问题</h2>
 <h3>1. 一次性插入大量数据</h3>
-<p>MySQL官方文件给出的提示：</p>
+<p>MySQL 5.7 Refman官方文件给出的提示：
+8.2.4.1 Optimizing INSERT operation
+8.5.5 Bulk data loading in INNODB</p>
 <blockquote>
 <blockquote>
 <p>To optimize insert speed, combine many small operations into a single large operation. Ideally, you make a single connection, send the data for many new rows at once, and delay all index updates and consistency checking until the very end.</p>
@@ -166,6 +168,7 @@
 <li>如果有unqiue 限制插入的列，可以暂时关闭 unique_checks;</li>
 <li>如果有外键在列，可以暂时关闭外键约束foreign_key_checks;</li>
 <li>插入数据的时候，如果数据能按照primary key的顺序插入，会大大加快速度（因为主键是聚簇索引）</li>
+<li>数据有自增主键的时候，把innodb_autoinc_lock_mode从1改为2（14.6.1.4)</li>
 </ol>
 <h4>MyISAM</h4>
 <p>//todo</p>
@@ -173,7 +176,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="cjxotrsmc000ku8uglb0tg6ex" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="cjxu0epqj000ohyuggnau1xd0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
@@ -185,9 +188,9 @@
 <nav id="article-nav">
   
   
-    <a href="/2019/07/02/Comcon/somethingAboutTcp/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/07/02/Comcon/SoftwareEngineer/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Something about Networking</div>
+      <div class="article-nav-title">Something about Software Enginnering</div>
     </a>
   
 </nav>
@@ -242,11 +245,11 @@
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
           <li>
