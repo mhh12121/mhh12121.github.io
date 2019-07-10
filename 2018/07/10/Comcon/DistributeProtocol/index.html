@@ -13,13 +13,13 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html???">
+<meta property="og:image" content="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk">
 <meta property="og:image" content="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md">
-<meta property="og:updated_time" content="2019-07-10T08:53:16.541Z">
+<meta property="og:updated_time" content="2019-07-10T09:28:09.006Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Raft and Paxos">
 <meta name="twitter:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
-<meta name="twitter:image" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html???">
+<meta name="twitter:image" content="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -106,7 +106,7 @@
 <p>只是负责发起request到分布式系统并等待相应</p>
 <h5>Proposer</h5>
 <p>（发起者）
-它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行</p>
+它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行（propser可以不断发起提议，不用等提议完成）</p>
 <h5>Acceptor（Voter）</h5>
 <p>（投票者）
 多个Acceptor组成一个Quorums（法定多数），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？</p>
@@ -124,15 +124,15 @@ Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都�
 <h6>1a：Prepare</h6>
 <p>Proposer创建一个信息，我们称为Prepare，附带一个唯一标识数字 n 。而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
 然后，Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的<a href>跳到如何决定</a>)，
-如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos
-（这里面有至少两次网络连接，1是生成唯一标识需要多个proposer决定，2是</p>
+如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos</p>
 <h6>1b：Promise</h6>
 <p>（两个承诺，一个应答）</p>
 <p>每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：</p>
 <ol>
-<li>如果<strong>n比之前收到的所有proposal n都大</strong>（从任何Proposer收到的），这个Acceptor一定要返回一个信息Promise给对应的Proposer，
-然后会忽视所有未来的附带标识小于n的提议（信息）。如果这个Acceptor以前接收过同一个Proposer的信息，返回给这个Proposer的response一定要包含之前的提议数字m，和对应的值w;（这里Acceptor还会持久化提议）</li>
-<li>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong>，Acceptor能忽略这个提议，为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了</li>
+<li>如果<strong>n比之前收到的所有proposal n都大</strong>（从任何Proposer收到的），这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
+如果这个Acceptor以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会持久化提议）</li>
+<li>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong>，Acceptor能忽略这个提议;
+为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了</li>
 </ol>
 <h5>Phase 2：</h5>
 <h6>2a： Accept</h6>
@@ -140,7 +140,7 @@ Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都�
 <ol>
 <li>如果未超过一半的Acceptors同意，提议失败</li>
 <li>如果超过了一半：
-如果<strong>所有</strong>Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的<strong>proposal n</strong>，向所有Acceptor发送提议;
+如果<strong>所有</strong>Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的<strong>proposal n</strong>，向所有Acceptor再发送提议;
 如果有<strong>部分</strong>Acceptor接到过内容，会从所有接受过的内容中，<strong>选择proposal n最大</strong>的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;</li>
 </ol>
 <h6>2b：Accepted</h6>
@@ -219,9 +219,10 @@ X-----&gt;|             |  |  |       |  |  Request
 |&lt;---------------------------------X–X  Response
 |         |          |  |  |       |  |</p>
 <ol start="5">
-<li>多个Proposer冲突</li>
-</ol>
-<p>Client   Leader         Acceptor     Learner
+<li>多个Proposer冲突 ！！！！
+锁住了对方的Accept，导致prepare的值全部作废
+这里问题大了。。。。（其实就引出了multi-paxos）
+Client   Leader         Acceptor     Learner
 |      |             |  |  |       |  |
 X-----&gt;|             |  |  |       |  |  Request
 |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)
@@ -246,10 +247,11 @@ X-----&gt;|             |  |  |       |  |  Request
 |      |  |          |  |  |       |  |  !! OLD LEADER proposes, denied
 |      X------------&gt;|-&gt;|-&gt;|       |  |  Accept!(3,Vb)
 |      |&lt;------------X–X--X       |  |  Nack(4)
-|      |  |          |  |  |       |  |  … and so on …</p>
+|      |  |          |  |  |       |  |  … and so on …</li>
+</ol>
 <h3>Multi-Paxos</h3>
-<p>basic Paxos要持续的流</p>
-<p>以上参考 *** <img src="???" alt="wiki-Paxos"> ***//这两天不知道为啥上不去？只能看cached版（哭</p>
+<p>multi-Paxos将集群分为两种状态</p>
+<p>以上参考 *** <img src="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&amp;cd=2&amp;hl=en&amp;ct=clnk" alt="wiki-Paxos"> ***//这两天不知道为啥上不去？只能看cached版（哭</p>
 <h2>Raft</h2>
 <p>Raft可以看成是multi-paxos版本</p>
 <p><img src="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md" alt="大牛的证明（中文）"></p>
@@ -257,7 +259,7 @@ X-----&gt;|             |  |  |       |  |  Request
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="cjxx0adci0009wzug5o96onuy" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="cjxxgt4fc000cuvugneyjr57k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
@@ -268,11 +270,11 @@ X-----&gt;|             |  |  |       |  |  Request
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/Comcon/LoginSecurity/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Something about authentication and authorization
+          class loading
         
       </div>
     </a>
@@ -299,7 +301,7 @@ X-----&gt;|             |  |  |       |  |  Request
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -309,7 +311,7 @@ X-----&gt;|             |  |  |       |  |  Request
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 10px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 10px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -339,15 +341,15 @@ X-----&gt;|             |  |  |       |  |  Request
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
-          </li>
-        
-          <li>
             <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
           </li>
         
           <li>
-            <a href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/01/Comcon/ReentranceLock/">Something about LOCK</a>
           </li>
         
       </ul>
