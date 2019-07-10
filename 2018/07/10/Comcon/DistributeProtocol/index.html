@@ -5,18 +5,21 @@
   
   <title>Notes about Raft and Paxos | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="复习一些分布式理论: Raft和Paxos">
+  <meta name="description" content="复习一些分布式理论: Raft和Paxos： PAXOS paxos实际上是一系列的协议，有basic-paxos, multi-paxos 目的：让多个参与者达成一致 一个原则：参与者如果达成一致，这个一致的观点在传递中永不会改变 basic-Paxos 一些角色和名词 Processor 它负责发起client 请求，尝试让Acceptor来同意这个请求，也会在受到反对的时候作为一个合作者来使">
 <meta name="keywords" content="Distributed">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Notes about Raft and Paxos">
 <meta property="og:url" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="复习一些分布式理论: Raft和Paxos">
+<meta property="og:description" content="复习一些分布式理论: Raft和Paxos： PAXOS paxos实际上是一系列的协议，有basic-paxos, multi-paxos 目的：让多个参与者达成一致 一个原则：参与者如果达成一致，这个一致的观点在传递中永不会改变 basic-Paxos 一些角色和名词 Processor 它负责发起client 请求，尝试让Acceptor来同意这个请求，也会在受到反对的时候作为一个合作者来使">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-09T08:16:40.531Z">
+<meta property="og:image" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html???">
+<meta property="og:image" content="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md">
+<meta property="og:updated_time" content="2019-07-10T06:14:57.738Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Raft and Paxos">
-<meta name="twitter:description" content="复习一些分布式理论: Raft和Paxos">
+<meta name="twitter:description" content="复习一些分布式理论: Raft和Paxos： PAXOS paxos实际上是一系列的协议，有basic-paxos, multi-paxos 目的：让多个参与者达成一致 一个原则：参与者如果达成一致，这个一致的观点在传递中永不会改变 basic-Paxos 一些角色和名词 Processor 它负责发起client 请求，尝试让Acceptor来同意这个请求，也会在受到反对的时候作为一个合作者来使">
+<meta name="twitter:image" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html???">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -91,12 +94,44 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>复习一些分布式理论: Raft和Paxos</p>
+        <p>复习一些分布式理论: Raft和Paxos：</p>
+<h2>PAXOS</h2>
+<p>paxos实际上是一系列的协议，有basic-paxos, multi-paxos</p>
+<p>目的：让多个参与者达成一致</p>
+<p><strong>一个原则</strong>：参与者如果达成一致，这个一致的观点在传递中永不会改变</p>
+<h3>basic-Paxos</h3>
+<h4>一些角色和名词</h4>
+<h5>Processor</h5>
+<p>它负责发起client 请求，尝试让Acceptor来同意这个请求，也会在受到反对的时候作为一个合作者来使协议继续执行</p>
+<h5>Acceptor（Voter）</h5>
+<p>多个Acceptor组成一个Quorums（法定人），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？</p>
+<h4>基本流程</h4>
+<p>每个basic-paxos的实例（或执行者）决定于一个输出值。该协议在多轮通信中进行;
+成功的有两轮，每轮有a，b，我们假定是在一个异步模型里面，即一个processor可能在第一轮，另一个可能在第二轮</p>
+<p>Phase 1：
+1a：Prepare
+Processor创建一个信息，我们称为Prepare，附带一个数字n，这个数字只是作唯一标识这个信息而已。而且当前的n要大于这个Processor之前发的信息附带的所有nX;
+然后，Porcessor把这个带有n的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议值，这个会）发到合法的Acceptor上
+1b：Promise
+每一个Acceptor会等待Processor的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：</p>
+<ol>
+<li>如果n比之前收到的所有数字都大（从任何Processor收到的），这个Acceptor一定要返回一个信息Promise给对应的Processor，
+然后会忽视所有未来的附带标识小于n的提议（信息）。如果这个Acceptor以前接收过同一个Processor的信息，返回给这个Processor的信息一定要包含之前的提议数字m，和对应的值w;</li>
+<li>如果n&lt;=之前收到的任一数字，Acceptor能忽略这个提议，为了优化，还是可回一个denial响应，提示Processor可以停止创建带有n的提议了</li>
+</ol>
+<p>Phase 2：
+2a： Accept
+//todo</p>
+<p>2b：Accepted
+参考 *** <img src="???" alt="wiki-Paxos"> ***//这两天不知道为啥上不去？只能看cached版（哭</p>
+<h2>Raft</h2>
+<p>Raft可以看成是multi-paxos版本</p>
+<p><img src="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md" alt="大牛的证明（中文）"></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="cjxw0zh8j000aneug9g9uc5kj" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="cjxwumzke00095pugteyboxh8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
@@ -178,11 +213,11 @@
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
           </li>
         
           <li>
-            <a href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
           </li>
         
           <li>
