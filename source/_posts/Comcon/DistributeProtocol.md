@@ -186,10 +186,15 @@ multi-Paxos将集群分为两种状态
 ## Raft
 Raft可以看成是multi-paxos版本
 
+比较简单，主要分为**主从筛选**和
 
 
 
 
 ![大牛的证明（中文）](https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md)
+
+
+
+
 
 
