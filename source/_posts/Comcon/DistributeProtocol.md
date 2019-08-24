@@ -184,9 +184,11 @@ multi-Paxos将集群分为两种状态
 
 
 ## Raft
-Raft可以看成是multi-paxos版本
+Raft可以看成是multi-paxos版本(其实有很多实现，没有统一)
 
-比较简单，主要分为**主从筛选**和
+比较简单，可以从几个方面进行理解，为**主从筛选(leader election)**和 **日志复制(log replication)**,**安全性(Safety)**，**减少状态(state space reduction)**
+
+
 
 
 
