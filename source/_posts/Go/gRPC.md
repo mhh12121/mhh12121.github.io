@@ -20,8 +20,9 @@ service Authenticate{
 }
 
 message toServerData{
-    required int32 ctype = 1;
-    optional bytes httpdata=2;
+	required int32 ctype = 1;
+	required string name =2;
+    optional bytes httpdata=3;
 }
 message ResponseFromServer {
 	required bool Success=1;
@@ -37,5 +38,19 @@ protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路
 
 生成 **data.pb.proto**
 
+-----------这些就直接参照手册理解吧-----------------  
+这里还是记录下这厮的解码方式吧，参考
+>> 《数据密集型系统设计》
+
+protobuf的的编码其实跟 thrift的BinaryCompact编码有点相似
+就拿上面那个例子:
+
+```
+message toServerData{
+	required int32 ctype = 1;
+	required string name =2;
+    optional bytes httpdata=3;
+}
+```
 
 

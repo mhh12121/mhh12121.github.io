@@ -47,7 +47,7 @@ tcp会进行**慢启动**直到丢包,每接到一个ack就会把窗口（cwnd�
 #### TCP三次握手连接(three-way handshake)
 
 直接上他🐎图：
-![tcpconn](/img/TCPshakeFhand.png)
+![tcpconn](/img/TCPshakeFhand.jpg)
 
 1. client发送server  
 **SYN=1**（同步位，这种报文不能携带数据，但要**消耗一个序号**）
@@ -74,7 +74,7 @@ client发出的第一个请求没有丢，只是网络阻塞;
 
 #### TCP四次挥手
 
-![tcpfour](/img/TCPgoodbye.png)
+![tcpfour](/img/TCPgoodbye.jpg)
 1. client 发送 
 **FIN=1**（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，**无论带不带数据，这厮都要消耗一个序号！**）
 **seq=client_u** （这里序号是**前面一个传送过的数据最后一个字节的序号+1**）;(client进入FIN-WAIT-1状态)
@@ -105,6 +105,10 @@ client撤销相应的TCB（传输控制块）后，结束连接
 
 2. 防止出现 ‘已失效的连接请求报文段’(如同三次握手时间的client第一次发出的报文);
 client发送完最后一个ACK报文段后，经过2MSL，可以确定本连接持续时间内的所有报文段都从网络消失，这样就不会出现旧的连接报文段了
+
+##### 为啥连接用三次，断开要四次呢？
+- 主要区别还是在连接时，server收到连接请求后可以直接返回SYN+ACK报文；
+- 但是断开时，server收到了client的FIN报文后，可能还有数据没有传完，只能先发回一个ACK，等到最后数据都传完了才会发FIN，所以为了避免没传完数据就关闭了的情况，只能加多一次连接;
 
  
 PS：server的cclosed状态要比client的要早一点
