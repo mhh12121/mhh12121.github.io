@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Notes about Raft and Paxos | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
+<meta name="keywords" content="Distributed">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Notes about Raft and Paxos">
+<meta property="og:url" content="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk">
+<meta property="og:image" content="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md">
+<meta property="og:updated_time" content="2019-12-15T09:39:50.674Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Notes about Raft and Paxos">
+<meta name="twitter:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
+<meta name="twitter:image" content="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Comcon/DistributeProtocol" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/10/Comcon/DistributeProtocol/" class="article-date">
+  <time datetime="2018-07-10T08:50:00.000Z" itemprop="datePublished">2018-07-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Notes about Raft and Paxos
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)</p>
+<a id="more"></a>
+<h2>PAXOS</h2>
+<p>paxos实际上是一系列的协议，有basic-paxos, multi-paxos</p>
+<p>目的：让多个参与者达成一致</p>
+<p><strong>一个原则</strong>：参与者如果达成一致，这个一致的观点在传递中永不会改变</p>
+<h3>basic-Paxos</h3>
+<h4>一些角色和名词</h4>
+<h5>client</h5>
+<p>只是负责发起request到分布式系统并等待相应</p>
+<h5>Proposer</h5>
+<p>（发起者）
+它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行（propser可以不断发起提议，不用等提议完成）</p>
+<h5>Acceptor（Voter）</h5>
+<p>（投票者）
+多个Acceptor组成一个Quorums（法定多数），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？</p>
+<h5>Quorums</h5>
+<p>（多数派）
+Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都会有至少一个Acceptor交集，而且Quorums总会是包含大部分的Acceptor;比如：有一个Accetpros的集合{A，B，C，D}，大部分的Quorums可以是任意三个Acceptor组成：{A，B，C}，{A，C，D}等等
+而经常Acceptor还会携带不同的权值，但保证的是Quorums所包含的所有Acceptors的权值和都会<strong>大于</strong>总的权值和（所有的Acceptors）的一半;</p>
+<h5>Learner</h5>
+<p>只是作为协议的复制因素，一旦client的request被Acceptor同意，learner就会开始执行这个request以及返回给client一个响应;
+一般为了提高协议的可用性，可以额外增加多个learner</p>
+<h4>基本流程</h4>
+<p>每个basic-paxos的实例（或执行者）决定于一个输出值。该协议在多轮通信中进行;
+成功的有两轮，每轮有a，b，我们假定是在一个异步模型里面，即一个processor可能在第一轮，另一个可能在第二轮</p>
+<h5>Phase 1：</h5>
+<h6>1a：Prepare</h6>
+<p>Proposer创建一个信息，我们称为Prepare，附带一个唯一标识数字 n 。而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
+然后，Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的<a href>跳到如何决定</a>)，
+如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos</p>
+<h6>1b：Promise</h6>
+<p>（两个承诺，一个应答）</p>
+<p>每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：</p>
+<ol>
+<li>如果<strong>n比之前收到的所有proposal n都大</strong>（从任何Proposer收到的），这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
+如果这个Acceptor以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会持久化提议）</li>
+<li>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong>，Acceptor能忽略这个提议;
+为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了</li>
+</ol>
+<h5>Phase 2：</h5>
+<h6>2a： Accept</h6>
+<p>如果一个Proposer收到了的从Quorum返回的response，</p>
+<ol>
+<li>如果未超过一半的Acceptors同意，提议失败</li>
+<li>如果超过了一半：
+如果<strong>所有</strong>Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的<strong>proposal n</strong>，向所有Acceptor再发送提议;
+如果有<strong>部分</strong>Acceptor接到过内容，会从所有接受过的内容中，<strong>选择proposal n最大</strong>的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;</li>
+</ol>
+<h6>2b：Accepted</h6>
+<p>如果Acceptor接收到了提议后，他必须遵循：如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(持久化）<strong>当前proposal n 和内容</strong>;
+最后Proposer收到Quorum返回的Accept response后，形成决议</p>
+<h4>图解在算法异常的情况下（工程下更加复杂，先占坑）：</h4>
+<ol>
+<li>没有失败的情况下</li>
+</ol>
+<p>有一个client，1一个proposer，3个Acceptor，和两个learnner;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Client   Proposer      Acceptor     Learner</span><br><span class="line">   |         |          |  |  |       |  |</span><br><span class="line">   X--------&gt;|          |  |  |       |  |  Request</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |         |&lt;---------X--X--X       |  |  Promise(1,&#123;Va,Vb,Vc&#125;)</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Accept!(1,V)</span><br><span class="line">   |         |&lt;---------X--X--X------&gt;|-&gt;|  Accepted(1,V)</span><br><span class="line">   |&lt;---------------------------------X--X  Response</span><br><span class="line">   |         |          |  |  |       |  |</span><br><span class="line">Here, V is the last of (Va, Vb, Vc).</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>
+<p>Acceptor失败的情况</p>
+</li>
+<li>
+<p>Quorum里面有一个Acceptor失败了，所以整个Quorum大小会变成2，整个paxos还是成功的（此时Quorum数目&gt; Acceptors/2)</p>
+</li>
+<li>
+<p>如果有两个或三个失败，则直接返回失败;
+或Proposer重新发起提议（内容一样，提议号n+1）但是，对第一次已经成功接收的acceptor不会修改，其余上一次失败的acceptors才会接收提议</p>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Client   Proposer      Acceptor     Learner</span><br><span class="line">   |         |          |  |  |       |  |</span><br><span class="line">   X--------&gt;|          |  |  |       |  |  Request</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |         |          |  |  !       |  |  !! FAIL !!</span><br><span class="line">   |         |&lt;---------X--X          |  |  Promise(1,&#123;Va, Vb, null&#125;)</span><br><span class="line">   |         X---------&gt;|-&gt;|          |  |  Accept!(1,V)</span><br><span class="line">   |         |&lt;---------X--X---------&gt;|-&gt;|  Accepted(1,V)</span><br><span class="line">   |&lt;---------------------------------X--X  Response</span><br><span class="line">   |         |          |  |          |  |</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>Leaner也可能会失败</li>
+</ol>
+<p>虽然有一个learner失败了，但整个paxos还是成功的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Client Proposer         Acceptor     Learner</span><br><span class="line">   |         |          |  |  |       |  |</span><br><span class="line">   X--------&gt;|          |  |  |       |  |  Request</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |         |&lt;---------X--X--X       |  |  Promise(1,&#123;Va,Vb,Vc&#125;)</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Accept!(1,V)</span><br><span class="line">   |         |&lt;---------X--X--X------&gt;|-&gt;|  Accepted(1,V)</span><br><span class="line">   |         |          |  |  |       |  !  !! FAIL !!</span><br><span class="line">   |&lt;---------------------------------X     Response</span><br><span class="line">   |         |          |  |  |       |</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>Proposer失败</li>
+</ol>
+<p>在Proposer接收到proposal值（提议内容）之后，发回的Accept阶段失败了，只有一个Acceptor接到提议;
+同时，一个新的Proposer被选举出来：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Client  Proposer        Acceptor     Learner</span><br><span class="line">   |      |             |  |  |       |  |</span><br><span class="line">   X-----&gt;|             |  |  |       |  |  Request</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Promise(1,&#123;Va, Vb, Vc&#125;)</span><br><span class="line">   |      |             |  |  |       |  |</span><br><span class="line">   |      |             |  |  |       |  |  !! Leader fails during broadcast !!</span><br><span class="line">   |      X------------&gt;|  |  |       |  |  Accept!(1,V)</span><br><span class="line">   |      !             |  |  |       |  |</span><br><span class="line">   |         |          |  |  |       |  |  !! NEW LEADER !!</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(2)</span><br><span class="line">   |         |&lt;---------X--X--X       |  |  Promise(2,&#123;V, null, null&#125;)</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Accept!(2,V)</span><br><span class="line">   |         |&lt;---------X--X--X------&gt;|-&gt;|  Accepted(2,V)</span><br><span class="line">   |&lt;---------------------------------X--X  Response</span><br><span class="line">   |         |          |  |  |       |  |</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>多个Proposer冲突 ！！！！
+锁住了对方的Accept，导致prepare的值全部作废
+这里问题大了。。。。（其实就引出了multi-paxos）</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Client   Leader         Acceptor     Learner</span><br><span class="line">   |      |             |  |  |       |  |</span><br><span class="line">   X-----&gt;|             |  |  |       |  |  Request</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Promise(1,&#123;null,null,null&#125;)</span><br><span class="line">   |      !             |  |  |       |  |  !! LEADER FAILS</span><br><span class="line">   |         |          |  |  |       |  |  !! NEW LEADER (knows last number was 1)</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(2)</span><br><span class="line">   |         |&lt;---------X--X--X       |  |  Promise(2,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER recovers</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER tries 2, denied</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(2)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Nack(2)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER tries 3</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(3)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Promise(3,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! NEW LEADER proposes, denied</span><br><span class="line">   |      |  X---------&gt;|-&gt;|-&gt;|       |  |  Accept!(2,Va)</span><br><span class="line">   |      |  |&lt;---------X--X--X       |  |  Nack(3)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! NEW LEADER tries 4</span><br><span class="line">   |      |  X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(4)</span><br><span class="line">   |      |  |&lt;---------X--X--X       |  |  Promise(4,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER proposes, denied</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Accept!(3,Vb)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Nack(4)</span><br><span class="line">   |      |  |          |  |  |       |  |  ... and so on ...</span><br></pre></td></tr></table></figure>
+<h3>Multi-Paxos</h3>
+<p>multi-Paxos将集群分为两种状态</p>
+<p>以上参考 *** <img src="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&amp;cd=2&amp;hl=en&amp;ct=clnk" alt="wiki-Paxos"> ***//这两天不知道为啥上不去？只能看cached版（哭</p>
+<h2>Raft</h2>
+<p>Raft可以看成是multi-paxos版本(其实有很多实现，没有统一)</p>
+<p>比较简单，可以从几个方面进行理解，为**主从筛选(leader election)**和 <strong>日志复制(log replication)</strong>,<strong>安全性(Safety)</strong>，<strong>减少状态(state space reduction)</strong></p>
+<h3>安全性</h3>
+<h4>节点错误处理</h4>
+<h5>Followers 或 Candidates</h5>
+<p>Followers 或者candidates 崩溃, 解决办法只需要leader不断重试发送请求即可， 再不行就重启该崩溃的服务器，就能收到AppendEntriesRPC和Requestvotes请求</p>
+<h5>Leader</h5>
+<p>但是Leader 崩溃，如果直接重启服务器：
+在完成了一次RPC发送但没有接收response的时候重启，他会再次收到一个相同的RPC，但是因为Raft RPC是幂等的，所以这个没有关系，举个例子，
+如果一个follower接到了AppendEntries请求，而且发现这个请求的log entries已经在自己的log里面了，他会忽略这个请求</p>
+<h4>时间和可用性</h4>
+<p>时间指timing，这里尤其是leader的选举，是时间敏感的，
+Raft有个公式，可以保证能选举和维护一个稳定的leader:</p>
+<blockquote>
+<blockquote>
+<p>broadcastTime&lt;&lt; electionTimeout &lt;&lt; MTBF</p>
+</blockquote>
+</blockquote>
+<p>broadcastTime: 广播的平均时间（某个节点）
+electionTimeout: 选举的时间
+MTBF: 前一次失败和这一次失败间隔的平均时间（某个节点）</p>
+<p>broadcastTime&lt;&lt; electionTimeout 可以保证leader发送heartbeat给其他followers，防止他们开始选举</p>
+<p>electionTimeout&lt;&lt; MTBF 可以保证系统平稳进步？</p>
+<p>一般来说， broadcastTime只会在0.5ms ~ 20ms取决于持久化的技术，所以相应的，electionTimeout就会是在10ms~500ms之间， 比较重要的节点的MTBF则取几个月或更多</p>
+<h3>节点成员改变</h3>
+<p>我们之前都是假定节点配置是不变的，但实际上当有server crash的时候就需要替换他们
+虽然我们可以把所有接地都下线，更新配置，然后上线，但这明显有问题</p>
+<ol>
+<li>保证配置的安全， 一个term期间，在有可能有两个leader被选举的时候进行配置的传输，但在转移配置的时候，不能保证所有server都能第一时间拿到新的配置，
+可能会导致节点分裂成两部分，两个独立的大多数</li>
+</ol>
+<p>为了保证安全，只能分为 <strong>两步提交</strong>
+一些系统就会做 第一步：关闭旧的配置，第二开启新配置</p>
+<p>在raft里面，节点第一次切换到新的配置，我们称之为joint consensus（交叉共识），一旦交叉共识被commit，整个系统就都转到了新的配置上</p>
+<h4>Joint consensus</h4>
+<p>交叉共识包含
+log entries会被复制到新旧配置中的所有server
+任何节点在任一配置中都能被当做leader
+共识（这里针对选举和提交）要分开的大多数配置通过 （旧的大多数和新的大多数）</p>
+<p><img src="https://github.com/maemual/raft-zh_cn/blob/master/raft-zh_cn.md" alt="大牛的证明（中文）"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ck64wr0r7000sjx55qo8w5srj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/15/Comcon/HTTP2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Notes about HTTP2
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/04/30/Comcon/DesignPattern/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Notes about Design Pattern（java）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

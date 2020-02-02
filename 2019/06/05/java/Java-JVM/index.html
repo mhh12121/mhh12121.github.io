@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Notes about JVM | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="不得不说，特么这兄弟归纳的太好了">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Notes about JVM">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/java/Java-JVM/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="不得不说，特么这兄弟归纳的太好了">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://github.com/caison/java-knowledge-mind-map">
+<meta property="og:image" content="https://mhh12121.github.io/img/jvm_memStruct.jpg">
+<meta property="og:image" content="https://mhh12121.github.io/img/MemStruct.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/HeapStruct.png">
+<meta property="og:updated_time" content="2019-12-15T09:39:50.674Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Notes about JVM">
+<meta name="twitter:description" content="不得不说，特么这兄弟归纳的太好了">
+<meta name="twitter:image" content="https://github.com/caison/java-knowledge-mind-map">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/Java-JVM" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/java/Java-JVM/" class="article-date">
+  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Notes about JVM
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>不得不说，特么这兄弟归纳的太好了<img src="https://github.com/caison/java-knowledge-mind-map" alt="地址"></p>
+<a id="more"></a>
+<p>字符串常量池</p>
+<h2>内存结构</h2>
+<p><img src="/img/jvm_memStruct.jpg" alt="旧的图" title="jvm Memstruct"></p>
+<p><img src="/img/MemStruct.png" alt="更特么详细的">
+上面的线程共享区，因为所有对象都在这里分配内存，所以也是GC的主要区域</p>
+<p><img src="/img/HeapStruct.png" alt="堆结构"></p>
+<p>关于堆结构，上图是JDK8的示意图
+###堆</p>
+<h4>新生代：</h4>
+<p>所有新生成的对象首先都是存放在新生代</p>
+<h5>Eden区</h5>
+<p>最主要包含了刚创建的对象，该区域对象大部分都是短期内死亡，所以垃圾回收器主要用标记-整理算法回收该区域</p>
+<h5>Survivor区</h5>
+<p>又分为平等的两个区：</p>
+<ol>
+<li>From Survivor（s0）</li>
+<li>To Survivor（S1）
+采用复制算法，每次只使用其中一块;</li>
+</ol>
+<p>Eden：Survivor=8：1</p>
+<h4>老年代</h4>
+<p>一般在Survivor中没有被清除出去的对象才会进入该区域，主要使用标记-清除（mark-sweep）算法</p>
+<h4>操作</h4>
+<p>可-Xms 数字或-Xmx 数字 两个jvm参数来指定一个程序的堆内存大小，第一个是起始值，第二个是最大值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xms1M -Xmx2M helloworld</span><br></pre></td></tr></table></figure>
+<h3>方法区（method area）</h3>
+<p>用于存放已被加载的类信息，常量，静态变量，即时编译器编译（jit）后的代码等
+然而对其进行垃圾回收的话主要是对<strong>常量池</strong>和类的卸载</p>
+<p>Hotspot虚拟机把它当作永久代进行垃圾回收，但因为很少确定永久代的大小
+JDK1.8开始，把永久代移除，并把方法区移至元空间（位于本地内存，不是JVM内存）</p>
+<h4>运行时常量池</h4>
+<p>是方法区一部分，Class文件中的常量池（编译器生成的各种字面量和符号引用）会在类加载后被放入这个区域
+除了在编译期生成的常量，还允许动态生成，如string.Intern()
+PS：</p>
+<ol>
+<li>用双引号声明出来的String对象会被存储在常量池里</li>
+<li>如果不是用双引号，intern方法会<strong>从字符串常量池中查询字符串是否存在，如果不存在就会将当前字符串放入常量池</strong></li>
+</ol>
+<h5>常见面试题</h5>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String s=<span class="keyword">new</span> String(<span class="string">"abc"</span>);</span><br></pre></td></tr></table></figure>
+<p>如上创建了多少个对象？
+答案就是2个，一个是String在堆上的对象，一个是常量池里面的字符串”abc“</p>
+<h4>操作</h4>
+<p>-XX:PermSize最小空间
+-XX:MaxPermSize最大空间</p>
+<h4>异常</h4>
+<p>和heap一样不需要连续的内存，而且动态扩展，失败会抛出OutOfMemory异常</p>
+<h3>JVM stack</h3>
+<p>每个Java方法在执行的同时会创建一个栈帧用于存储局部变量表，操作数栈，常量池引用等信息;
+<strong>从调用到执行完成的过程，就对应了一个栈帧在jvm栈中的入栈和出栈</strong></p>
+<h4>操作</h4>
+<p>可以通过
+-Xss 设置jvm栈大小</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xss512M helloworld</span><br></pre></td></tr></table></figure>
+<h4>异常</h4>
+<p>当请求栈深度超过最大值，会抛出stackoverflow异常</p>
+<h3>本地方法栈</h3>
+<p>本地方法栈与JVM栈类似，只不过JVM栈为java方法（字节码）服务，本地方法为JVM的native方法服务
+本地方法一般由c++，汇编等编写</p>
+<h4>操作</h4>
+<p>Sun jdk中和jvm栈和本地方法栈是同一个，因此也可以用-Xss控制每个线程的大小</p>
+<h3>程序计数器</h3>
+<p>记录正在执行的虚拟机字节码指令的地址（如果正在执行的是本地方法则为空）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ck64wr0ri001ejx55bqvpt6jq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/06/05/java/Java-Class/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          class loading
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/15/Comcon/HTTP2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Notes about HTTP2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

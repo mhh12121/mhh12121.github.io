@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Concurrency Problem | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新">
+<meta name="keywords" content="Golang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Concurrency Problem">
+<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/Go/Concurrency/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://mhh12121.github.io/2019/06/05/Go/Java-Concurrency.html">
+<meta property="og:updated_time" content="2019-12-15T09:39:50.674Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Concurrency Problem">
+<meta name="twitter:description" content="其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新">
+<meta name="twitter:image" content="https://mhh12121.github.io/2019/06/05/Go/Java-Concurrency.html">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Go/Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/Go/Concurrency/" class="article-date">
+  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Concurrency Problem
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
+<a id="more"></a>
+<h2>1. Channel</h2>
+<p>1.1 互斥</p>
+<p>要先明白一句话</p>
+<blockquote>
+<blockquote>
+<p>Share memory by communication, do not communicate by sharing memory
+通过通信来分享内存，而不是靠分享内存来通信</p>
+</blockquote>
+</blockquote>
+<p>这句话应该见过无数遍了，但这就是golang channel的核心思想</p>
+<p>作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从而可以控制多个协程间的协作，达到互斥，同步等目的</p>
+<p>1.2 当把channel当作传入参数的时候要先确定一下箭头方向</p>
+<p>chan&lt;-string：指的是可以入可以出的channel
+&lt;-chan string：指的是receive-only channnel</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//gobyexample 例子</span></span><br><span class="line"><span class="comment">// This `ping` function only accepts a channel for sending</span></span><br><span class="line"><span class="comment">// values. It would be a compile-time error to try to</span></span><br><span class="line"><span class="comment">// receive on this channel.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ping</span><span class="params">(pings <span class="keyword">chan</span>&lt;- <span class="keyword">string</span>, msg <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    pings &lt;- msg</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The `pong` function accepts one channel for receives</span></span><br><span class="line"><span class="comment">// (`pings`) and a second for sends (`pongs`).</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">pong</span><span class="params">(pings &lt;-<span class="keyword">chan</span> <span class="keyword">string</span>, pongs <span class="keyword">chan</span>&lt;- <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    msg := &lt;-pings</span><br><span class="line">    pongs &lt;- msg</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    pings := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">1</span>)</span><br><span class="line">    pongs := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">1</span>)</span><br><span class="line">    ping(pings, <span class="string">"passed message"</span>)</span><br><span class="line">    pong(pings, pongs)</span><br><span class="line">    fmt.Println(&lt;-pongs)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3>Channel部分源码解析：</h3>
+<p>//todo</p>
+<h3>Happens-before问题</h3>
+<p>在<a href="https://golang.org/ref/mem" target="_blank" rel="noopener">goMemory</a>里面有提到这个happens-before问题,其实就是指令重排(特么终于解决我的疑问了)
+channel的一些问题：</p>
+<ol>
+<li>带缓冲的channel的写操作在其相应的读操作之前</li>
+<li>不带缓冲的channel发生在其相应的写操作之前</li>
+<li>如果你关闭channel，之后才会读其channel最后的返回值0(这个其实在Context里面发现过！)</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> temp=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>,<span class="number">10</span>)<span class="comment">//带缓冲</span></span><br><span class="line"><span class="keyword">var</span> a=<span class="string">"123"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span>&#123;</span><br><span class="line">    fmt.Println(<span class="string">"a:"</span>,a)<span class="comment">//1 </span></span><br><span class="line">    fmt.Ptemp&lt;<span class="number">-1</span><span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">go</span> foo()</span><br><span class="line">    &lt;-temp<span class="comment">//3</span></span><br><span class="line">    fmt.Println(<span class="string">"a main:"</span>,a)<span class="comment">//4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a: 123</span><br><span class="line">a main: 123</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> temp=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)<span class="comment">//不带缓冲</span></span><br><span class="line"><span class="keyword">var</span> a=<span class="string">"123"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span>&#123;</span><br><span class="line">    fmt.Println(<span class="string">"a:"</span>,a)<span class="comment">//1 </span></span><br><span class="line">    &lt;-temp<span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">go</span> foo()</span><br><span class="line">    temp&lt;<span class="number">-1</span><span class="comment">//3</span></span><br><span class="line">    fmt.Println(<span class="string">"a main:"</span>,a)<span class="comment">//4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果上面的temp改成有缓冲的，不能保证12 和 3 的发生顺序，就很有可能只输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a main: 123</span><br></pre></td></tr></table></figure>
+<blockquote>
+<blockquote>
+<p>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.
+一个容量为C的channel接到的第k个值会发生在 第K+C个值发出完成 之前</p>
+</blockquote>
+</blockquote>
+<p>用一个官方例子：
+下面这个例子限制了每时每刻最多有三个work在工作</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> limit = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> work &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(w <span class="keyword">func</span>()</span>)</span> &#123;</span><br><span class="line">			limit &lt;- <span class="number">1</span></span><br><span class="line">			w()</span><br><span class="line">			&lt;-limit</span><br><span class="line">		&#125;(w)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">select</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2>2. Mutex互斥量</h2>
+<p>2.1 01互斥量</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> sema=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">struct</span>&#123;&#125;,<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//每次使用前</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Deposit</span><span class="params">(amount <span class="keyword">int</span>)</span></span>&#123;</span><br><span class="line">    sema&lt;-<span class="keyword">struct</span>&#123;&#125;&#123;&#125;<span class="comment">//锁住，往里面加一个</span></span><br><span class="line">    balance+=amount</span><br><span class="line">    &lt;-sema<span class="comment">//释放</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2.2 Sync.Mutex 互斥量</p>
+<p>注意： golang的锁都不是可重入锁(ReentranLock),参考一下Java的 <img src="../Java-Concurrency.html" alt="可重入锁"></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mu Sync.Mutex</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Deposit</span><span class="params">(amount <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	mu.Lock()</span><br><span class="line">	balance = balance + amount</span><br><span class="line">	mu.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// func Withdraw() int &#123;</span></span><br><span class="line"><span class="comment">// 	return &lt;-balances</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Balance</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line"></span><br><span class="line">    mu.Lock()</span><br><span class="line">    <span class="keyword">defer</span> mu.Unlock</span><br><span class="line">	b := balance</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> b</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Withdraw</span><span class="params">(amount <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">    mu.Lock()</span><br><span class="line">    <span class="keyword">defer</span> mu.Unlock()</span><br><span class="line">	Deposit(-amount)<span class="comment">//这里，重用了mu的锁，但是，golang不支持重入锁，所以这里会进行阻塞</span></span><br><span class="line">	<span class="keyword">if</span> Balance() &lt; <span class="number">0</span> &#123;</span><br><span class="line">		Deposit(amount)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2.2.* RWMutex 读写互斥量</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mu Sync.RWMutex</span><br></pre></td></tr></table></figure>
+<p>*** 写操作 Lock(), UnLock() ***
+*** 读操作 RLock(), RUnlock() ***</p>
+<p>读锁即是 同一时间允许多个读的协程，但只允许一个写的协程</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//重写Balance()</span></span><br><span class="line"><span class="keyword">var</span> mu Sync.RWMutex</span><br><span class="line"><span class="keyword">var</span> balance <span class="keyword">int</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Balance</span><span class="params">()</span> <span class="title">int</span></span>&#123;</span><br><span class="line">    mu.RLock()</span><br><span class="line">    <span class="keyword">defer</span> mu.RUnlock()</span><br><span class="line">    b:=balance</span><br><span class="line">    <span class="keyword">return</span> b</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2>3. Sync.WaitGroup 等待组 (Java CountDownLatch)</h2>
+<p>Sync.WaitGroup
+有三个methods:</p>
+<ol>
+<li>Add(delta int):将你要等待的协程加入，delta即加入的数量</li>
+<li>Done() : 代表当前协程完成</li>
+<li>Wait() : 等待所有协程完成(调用Done())，完成后即返回，否则一直阻塞</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//举个例子：</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">(number <span class="keyword">int</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> wg Sync.WaitGroup</span><br><span class="line">    wg.Add(number)<span class="comment">//要同步的协程数</span></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;number;i++&#123;</span><br><span class="line">        <span class="keyword">go</span> doSth(&amp;wg,i)</span><br><span class="line">    &#125;</span><br><span class="line">    begin:=Time.Now()</span><br><span class="line">    wg.Wait()<span class="comment">//完成后继续往下跑</span></span><br><span class="line">    end:=Time.Now()<span class="comment">//这里还可以这样进行批量测试</span></span><br><span class="line">    dur:=Time.Duration(end-begin)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">doSth</span><span class="params">(wg *Sync.WaitGroup,num <span class="keyword">int</span>)</span></span>&#123;</span><br><span class="line">    fmt.Println(num)</span><br><span class="line">    wg.Done()<span class="comment">//完成就Done</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2>4. Sync.Once 单例（不知道怎么翻译。。。）</h2>
+<p>顾名思义，就是只运行一次的意思，很显然适合单例模式
+需要注意的是，Once只有一个Method
+Do（func(){}）: Do方法只接受 *** 无参无返回值的函数 ***</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> once Sync.Once</span><br><span class="line">    doOnce:=<span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</span><br><span class="line">        fmt.Println(<span class="string">"do ONCE!"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    done:=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++&#123;</span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</span><br><span class="line">            once.Do(doOnce)<span class="comment">//最终只输出一行 do ONCE！</span></span><br><span class="line">            done&lt;-<span class="literal">true</span></span><br><span class="line">        &#125;()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++&#123;</span><br><span class="line">        &lt;-done</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ck64wr0qx000ajx55njfz3h8r" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/06/08/Go/GolangMux/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Golang Mux
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/06/05/Go/Slice/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Something about Slice in Go</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+          </li>
+        
+          <li>
+            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
