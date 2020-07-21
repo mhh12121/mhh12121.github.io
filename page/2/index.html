@@ -66,10 +66,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Go/Context" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Go/timer" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/21/Go/Context/" class="article-date">
-  <time datetime="2019-06-21T03:40:00.000Z" itemprop="datePublished">2019-06-21</time>
+    <a href="/2020/02/03/Go/timer/" class="article-date">
+  <time datetime="2020-02-03T06:20:00.000Z" itemprop="datePublished">2020-02-03</time>
 </a>
     
   </div>
@@ -80,7 +80,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/21/Go/Context/">Golang Context</a>
+      <a class="article-title" href="/2020/02/03/Go/timer/">Golang timer</a>
     </h1>
   
 
@@ -88,150 +88,36 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Golang出色的协程为其增添不少色彩，而Context在协程间的协作，同步发挥了很大的作用</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/21/Go/Context/#more">Read More</a>
-          </p>
-        
+        <p>我们比较熟悉的时间包：</p>
+<h2>定义</h2>
+<ol>
+<li>timer.C 是 一个channel，在timer过期后，这个只读chan会有一个值</li>
+<li>除了AfterFunc方法外，一个timer一定要由NewTimer创建</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The Timer type represents a single event.</span></span><br><span class="line"><span class="comment">// When the Timer expires, the current time will be sent on C,</span></span><br><span class="line"><span class="comment">// unless the Timer was created by AfterFunc.</span></span><br><span class="line"><span class="comment">// A Timer must be created with NewTimer or AfterFunc.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Timer <span class="keyword">struct</span> &#123;</span><br><span class="line">	C &lt;-<span class="keyword">chan</span> Time <span class="comment">//一个channel，在timer过期后，这个只读chan会有一个值</span></span><br><span class="line">	r runtimeTimer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>runtimeTimer结构:
+是一个接口</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface to timers implemented in package runtime.</span></span><br><span class="line"><span class="comment">// Must be in sync with ../runtime/time.go:/^type timer</span></span><br><span class="line"><span class="keyword">type</span> runtimeTimer <span class="keyword">struct</span> &#123;</span><br><span class="line">	tb <span class="keyword">uintptr</span></span><br><span class="line">	i  <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line">	when   <span class="keyword">int64</span></span><br><span class="line">	period <span class="keyword">int64</span></span><br><span class="line">	f      <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">uintptr</span>)</span> // <span class="title">NOTE</span>: <span class="title">must</span> <span class="title">not</span> <span class="title">be</span> <span class="title">closure</span>,不能是闭包？？？，初始化计时器</span></span><br><span class="line"><span class="function">	<span class="title">arg</span>    <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line">	seq    <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>Reset(d Duration)方法</h4>
+<ol>
+<li>返回true，如果这个timer被激活；返回false如果这个timer被停止或者过期(返回值最主要用来保持兼容性)</li>
+<li>Reset只能被 停止或者过期的带有空(队列已经为空)channels的timers 调用</li>
+<li></li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Reset changes the timer to expire after duration d.</span></span><br><span class="line"><span class="comment">// It returns true if the timer had been active, false if the timer had</span></span><br><span class="line"><span class="comment">// expired or been stopped.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Reset should be invoked only on stopped or expired timers with drained channels.</span></span><br><span class="line"><span class="comment">// If a program has already received a value from t.C, the timer is known</span></span><br><span class="line"><span class="comment">// to have expired and the channel drained, so t.Reset can be used directly.</span></span><br><span class="line"><span class="comment">// If a program has not yet received a value from t.C, however,</span></span><br><span class="line"><span class="comment">// the timer must be stopped and—if Stop reports that the timer expired</span></span><br><span class="line"><span class="comment">// before being stopped—the channel explicitly drained:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// 	if !t.Stop() &#123;</span></span><br><span class="line"><span class="comment">// 		&lt;-t.C</span></span><br><span class="line"><span class="comment">// 	&#125;</span></span><br><span class="line"><span class="comment">// 	t.Reset(d)</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// This should not be done concurrent to other receives from the Timer's</span></span><br><span class="line"><span class="comment">// channel.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Note that it is not possible to use Reset's return value correctly, as there</span></span><br><span class="line"><span class="comment">// is a race condition between draining the channel and the new timer expiring.</span></span><br><span class="line"><span class="comment">// Reset should always be invoked on stopped or expired channels, as described above.</span></span><br><span class="line"><span class="comment">// The return value exists to preserve compatibility with existing programs.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Timer)</span> <span class="title">Reset</span><span class="params">(d Duration)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> t.r.f == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(<span class="string">"time: Reset called on uninitialized Timer"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	w := when(d)</span><br><span class="line">	active := stopTimer(&amp;t.r)</span><br><span class="line">	t.r.when = w</span><br><span class="line">	startTimer(&amp;t.r)</span><br><span class="line">	<span class="keyword">return</span> active</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2>引出</h2>
+<h3>Race Detector(竞态条件检测)</h3>
+<p>很简单:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run -race main.<span class="keyword">go</span> </span><br><span class="line"><span class="keyword">go</span> build -race mycmd   <span class="comment">// build the command</span></span><br><span class="line"><span class="keyword">go</span> install -race mypkg <span class="comment">// install the package</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//官网的例子：</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">     start := time.Now()</span><br><span class="line">    <span class="keyword">var</span> t *time.Timer</span><br><span class="line">     t = time.AfterFunc(randomDuration(), <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;<span class="comment">//这里的t是写入</span></span><br><span class="line">         fmt.Println(time.Now().Sub(start))</span><br><span class="line">         t.Reset(randomDuration()) <span class="comment">//这里的t是读取，可能在一定情况下，randomDuration使得在这里读取前将t置为nil，所以读取了空值，会报nil pointer错误</span></span><br><span class="line">     &#125;)</span><br><span class="line">     time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line"> &#125;</span><br><span class="line">  <span class="function"><span class="keyword">func</span> <span class="title">randomDuration</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Duration</span></span> &#123;</span><br><span class="line">     <span class="keyword">return</span> time.Duration(rand.Int63n(<span class="number">1e9</span>))</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>改成以下版本:
+主要是让t变量只能从main的goroutine中读取和写入</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    start := time.Now()</span><br><span class="line">    reset := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">    <span class="keyword">var</span> t *time.Timer</span><br><span class="line">    t = time.AfterFunc(randomDuration(), <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        fmt.Println(time.Now().Sub(start))</span><br><span class="line">        reset &lt;- <span class="literal">true</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">for</span> time.Since(start) &lt; <span class="number">5</span>*time.Second &#123;</span><br><span class="line">        &lt;-reset</span><br><span class="line">        t.Reset(randomDuration())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="ck64wr0qz000djx551rt8iicc" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/SortedMap" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/19/Go/SortedMap/" class="article-date">
-  <time datetime="2019-06-19T02:36:00.000Z" itemprop="datePublished">2019-06-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/19/Go/SortedMap/">Something should be noted in golang&#39;s map</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>There is <strong>SortedMap</strong> or <strong>LinkedHashMap</strong> in Java
-Both can ensure the inserted order of elements, but f ** k myself, I found that Go <strong>only supports basic HashMap</strong>
-which means you have to do SortedMap and LinkedHashMap by yourself.</p>
-<pre><code>                                ----From a damn interview test
-</code></pre>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/19/Go/SortedMap/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ck64wr0r2000ijx55dd9jxkvj" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/GolangMux" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/08/Go/GolangMux/" class="article-date">
-  <time datetime="2019-06-08T02:10:00.000Z" itemprop="datePublished">2019-06-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/08/Go/GolangMux/">Golang Mux</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>开始做笔记…
-(之前面试被怼了)</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/08/Go/GolangMux/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="ck64wr0qy000bjx55b23vr46n" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/Go/Concurrency/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Go/Concurrency/">Concurrency Problem</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/05/Go/Concurrency/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ck64wr0qx000ajx55njfz3h8r" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/03/Go/timer/" data-id="ckcw5ou7k00238d5544b5yj9y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -243,10 +129,10 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
 
 
   
-    <article id="post-Go/Slice" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Comcon/DesignIO" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/05/Go/Slice/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+    <a href="/2020/01/30/Comcon/DesignIO/" class="article-date">
+  <time datetime="2020-01-30T15:48:00.000Z" itemprop="datePublished">2020-01-30</time>
 </a>
     
   </div>
@@ -257,93 +143,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Go/Slice/">Something about Slice in Go</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Golang’s Slice is kinda diffrent===&gt;</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/05/Go/Slice/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ck64wr0r1000fjx554zy0ywpa" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/LoginSecurity" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/Comcon/LoginSecurity/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/Comcon/LoginSecurity/">Something about authentication and authorization</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Wat the hack is <a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="noopener">Oauth2</a>, <a href="https://tools.ietf.org/html/rfc7519" target="_blank" rel="noopener">JWT</a>, <a href="https://tools.ietf.org/html/rfc2818" target="_blank" rel="noopener">HTTPS</a>??? Followings are my notes:</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/05/Comcon/LoginSecurity/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ck64wr0ra000yjx55rrhmuf00" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-java/Java-Class" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/java/Java-Class/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/java/Java-Class/">class loading</a>
+      <a class="article-title" href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
     </h1>
   
 
@@ -352,38 +152,15 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
     <div class="article-entry" itemprop="articleBody">
       
         <a id="more"></a>
-<p>##类的加载</p>
-<h3>双亲委托模型</h3>
-<p>双亲委派指的就是
-类加载器需要加载类的时候，会先把请求委托给父类加载器，依次递归，如果父类能完成，就返回，只有父类或祖类等无法完成，才自己加载;</p>
-<p>JVM预定义的三个类型的加载器（classloader）</p>
-<ol>
-<li>Bootstrap加载器
-一般在&lt;JAVA_RUNTIME_HOME&gt;/lib下的类库加载到内存中，因为其涉及JVM本身实现细节，使用C++实现，所以开发者没法获得其引用</li>
-<li>Extension类加载器
-sun的ExtClassloader负责&lt;JAVA_RUNTIME_HOME&gt;/lib/ext下或由java.ext.dir指定位置中的类库加载到内存中;</li>
-<li>System类加载器
-AppClassloader实现，负责把classpath中指定的类加载;</li>
-</ol>
-<p>####目的
-防止内存出现多个同样的字节码，也能保证用到真正JDK里面提供的类;</p>
-<p>然而这个<strong>并不是强制模型</strong></p>
-<h4>需要注意：</h4>
-<ol>
-<li>加载的时候，会派出<strong>当前线程</strong>的类加载器（当前类加载器通过Thread.getContextClassLoader()，也可以通过setContextLoader()设置类加载器</li>
-<li>如果加载该类的时候，有其他类引用此类，其他类也会被该类加载器加载</li>
-<li>可直接调用Classloader.loadClass()指定某个类加载器</li>
-</ol>
-<p>SPI（service Provider Interface）
-//todo</p>
+<h2>I/O设计模式</h2>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-Class/" data-id="ck64wr0rf0018jx55kamtqn2r" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/01/30/Comcon/DesignIO/" data-id="ckcw5ou6w000j8d55uldwfcag" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
 
     </footer>
   </div>
@@ -392,10 +169,10 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
 
 
   
-    <article id="post-java/Java-JVM" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Comcon/IOModel" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/05/java/Java-JVM/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+    <a href="/2020/01/15/Comcon/IOModel/" class="article-date">
+  <time datetime="2020-01-15T04:00:00.000Z" itemprop="datePublished">2020-01-15</time>
 </a>
     
   </div>
@@ -406,7 +183,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/05/java/Java-JVM/">Notes about JVM</a>
+      <a class="article-title" href="/2020/01/15/Comcon/IOModel/">IO Model</a>
     </h1>
   
 
@@ -414,59 +191,28 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>不得不说，特么这兄弟归纳的太好了<img src="https://github.com/caison/java-knowledge-mind-map" alt="地址"></p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/05/java/Java-JVM/#more">Read More</a>
-          </p>
-        
+        <a id="more"></a>
+<h2>IO模型归纳</h2>
+<p>我们暂时只以网络IO为例子;
+我们先从硬件层面进行流程分析:</p>
+<h3>1. 硬件层面</h3>
+<h4>网卡</h4>
+<p>网卡等于一种可以接收外面数据流的一种设备；</p>
+<ol>
+<li>网卡会先从网线处（或者无线）接收里面的数据</li>
+<li>以某种方式<strong>写入到内存</strong>中</li>
+</ol>
+<p>其中涉及DMA，IO通路选择等硬件问题，我们暂时忽略</p>
+<h4>CPU</h4>
+<p>接着，我们都知道一般操作系统针对一些比较紧急的操作会进行<strong>中断(软，硬)</strong>，当网卡来数据的时候，明显就是比较紧急的事情（如果忽略不管，就会造成内存爆炸或者数据丢失）；</p>
+<p>所以，数据从网卡接收到，会立即发送一个信号到CPU，网卡的中断程序就会被调用去处理数据；</p>
+<h4>操作系统调度</h4>
+<h3>2. 模型选择</h3>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ck64wr0ri001ejx55bqvpt6jq" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/HTTP2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/15/Comcon/HTTP2/" class="article-date">
-  <time datetime="2018-07-15T04:00:00.000Z" itemprop="datePublished">2018-07-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/15/Comcon/HTTP2/">Notes about HTTP2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>HTTP2</p>
-        
-          <p class="article-more-link">
-            <a href="/2018/07/15/Comcon/HTTP2/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/15/Comcon/HTTP2/" data-id="ck64wr0r8000ujx55jr9l1j9f" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/01/15/Comcon/IOModel/" data-id="ckcw5ou6s000f8d55kkbp9tqx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -478,10 +224,36 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
 
 
   
-    <article id="post-Comcon/DistributeProtocol" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Go/Practice" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/07/10/Comcon/DistributeProtocol/" class="article-date">
-  <time datetime="2018-07-10T08:50:00.000Z" itemprop="datePublished">2018-07-10</time>
+    <a href="/2019/12/15/Go/Practice/" class="article-date">
+  <time datetime="2019-12-15T09:39:50.674Z" itemprop="datePublished">2019-12-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/12/15/Go/Practice/" data-id="ckcw5ou6b00098d555pc7waob" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/StringCompare" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/08/18/Comcon/StringCompare/" class="article-date">
+  <time datetime="2019-08-18T08:50:00.000Z" itemprop="datePublished">2019-08-18</time>
 </a>
     
   </div>
@@ -492,7 +264,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/10/Comcon/DistributeProtocol/">Notes about Raft and Paxos</a>
+      <a class="article-title" href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
     </h1>
   
 
@@ -500,19 +272,257 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)</p>
+        <p>今天改同事的代码，在匹配字符串方面发现了点东西：levenshtein算法</p>
         
           <p class="article-more-link">
-            <a href="/2018/07/10/Comcon/DistributeProtocol/#more">Read More</a>
+            <a href="/2019/08/18/Comcon/StringCompare/#more">Read More</a>
           </p>
         
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ck64wr0r7000sjx55qo8w5srj" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/08/18/Comcon/StringCompare/" data-id="ckcw5ou71000u8d55502tzcpc" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/String/">String</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/Goroutine" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/09/Go/Goroutine/" class="article-date">
+  <time datetime="2019-07-08T17:00:00.000Z" itemprop="datePublished">2019-07-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/07/09/Go/Goroutine/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckcw5ou83003f8d55x3g4uyj9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-MySQL/MySQLIndexing" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/03/MySQL/MySQLIndexing/" class="article-date">
+  <time datetime="2019-07-03T06:20:00.000Z" itemprop="datePublished">2019-07-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一些注意事项</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/07/03/MySQL/MySQLIndexing/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckcw5ou6o000a8d55qzhttxyj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/SoftwareEngineer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/02/Comcon/SoftwareEngineer/" class="article-date">
+  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>软件工程的通用概念！
+//todo留坑</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/07/02/Comcon/SoftwareEngineer/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/SoftwareEngineer/" data-id="ckcw5ou72000w8d55z395nz37" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/se/">se</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/somethingAboutTcp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/02/Comcon/somethingAboutTcp/" class="article-date">
+  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>记录了一些很基础的但经常被问到的问题</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/07/02/Comcon/somethingAboutTcp/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckcw5ou73000y8d55x4stxrri" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/ReentranceLock" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/01/Comcon/ReentranceLock/" class="article-date">
+  <time datetime="2019-06-30T16:48:00.000Z" itemprop="datePublished">2019-07-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/01/Comcon/ReentranceLock/">Something about LOCK</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2>可重入锁（ReentranceLock）</h2>
+<p>可以进一步加强锁的封装性，简化了代码的开发，避免死锁;
+拿别人的一个例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">parentDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//....</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">childDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.parentDo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果不可重入，super.parentDo()不可以获得Parent的锁，因为这个锁已经被childDo()持有，从而使线程阻塞，造成死锁
+所以可以用于：</p>
+<ol>
+<li>递归调用</li>
+<li>此线程调用同一对象其它synchronized或者有同步锁函数。
+synchronized是可重入锁</li>
+</ol>
+<h3>Golang中不同</h3>
+<p>golang设计者对此做过回应<img src="https://stackoverflow.com/questions/14670979/recursive-locking-in-go#14671462" alt="这里">
+go不支持可重入锁，只能通过将需要锁的操作作为函数，并以Locked为后缀命名，然后调用它们的时候用锁锁住</p>
+<h2>自旋锁(SpinLock)</h2>
+<p>线程会反复检查锁变量是否可用。但由于线程此时一直保持执行，所以属于忙等待（busy-waiting），一旦获得了自旋锁，线程会一直保持该锁，直到显式释放;
+这里说说<strong>互斥锁</strong>，区别就是，互斥锁的调用者一方如果发现锁被拿走了，就会<strong>进入睡眠状态</strong>
+盗取别人例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpinLock</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> AtomicReference&lt;Thread&gt; cas = <span class="keyword">new</span> AtomicReference&lt;Thread&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lock&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        <span class="comment">//CAS</span></span><br><span class="line">        <span class="comment">//第一个线程得到锁，就会跳过while循环，第二个线程会一直在while循环，直到满足CAS</span></span><br><span class="line">        <span class="keyword">while</span> (!cas.compareAndSet(<span class="keyword">null</span>,cur))&#123;</span><br><span class="line">            <span class="comment">//Do sth...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        cas.compareAndSet(cur,<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Pros:
+自旋锁避免上下文切换（？），只要阻塞很短时间的场景下可以使用<br>
+Cons:</p>
+<ol>
+<li>然而会导致不公平地持有锁，无法满足等待最长时间线程获得锁，会有饥饿状态出现</li>
+<li>越来越多的线程循环等待会导致cpu越来越多</li>
+</ol>
+<p>可重入的自旋锁和不可重入的自旋锁</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ckcw5ou6x000n8d55oe9kb930" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LOCK/">LOCK</a></li></ul>
 
     </footer>
   </div>
@@ -524,7 +534,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
 
 
   <nav id="page-nav">
-    <a class="extend prev" rel="prev" href="/">&laquo; __('prev')</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/">__('next') &raquo;</a>
+    <a class="extend prev" rel="prev" href="/">&laquo; __('prev')</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/">__('next') &raquo;</a>
   </nav>
 </section>
         
@@ -537,7 +547,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -547,7 +557,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 12.5px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -556,7 +566,7 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -569,23 +579,23 @@ AppClassloader实现，负责把classpath中指定的类加载;</li>
       <ul>
         
           <li>
-            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+            <a href="/2020/06/24/Go/type/">Golang type</a>
           </li>
         
           <li>
-            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
           </li>
         
           <li>
-            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+            <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
           </li>
         
           <li>
-            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+            <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
           </li>
         
           <li>
-            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>

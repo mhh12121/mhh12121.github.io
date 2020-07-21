@@ -66,10 +66,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Comcon/DesignIO" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Go/type" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2020/01/30/Comcon/DesignIO/" class="article-date">
-  <time datetime="2020-01-30T15:48:00.000Z" itemprop="datePublished">2020-01-30</time>
+    <a href="/2020/06/24/Go/type/" class="article-date">
+  <time datetime="2020-06-24T14:10:00.000Z" itemprop="datePublished">2020-06-24</time>
 </a>
     
   </div>
@@ -80,7 +80,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+      <a class="article-title" href="/2020/06/24/Go/type/">Golang type</a>
     </h1>
   
 
@@ -88,363 +88,13 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <a id="more"></a>
-<h2>I/O设计模式</h2>
+        <p>类型</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// a copy of runtime.typeAlg</span></span><br><span class="line"><span class="keyword">type</span> typeAlg <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// function for hashing objects of this type</span></span><br><span class="line">    <span class="comment">// (ptr to object, seed) -&gt; hash</span></span><br><span class="line">    <span class="comment">//用作识别</span></span><br><span class="line">	hash <span class="function"><span class="keyword">func</span><span class="params">(unsafe.Pointer, <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span></span><br><span class="line"><span class="function">	// <span class="title">function</span> <span class="title">for</span> <span class="title">comparing</span> <span class="title">objects</span> <span class="title">of</span> <span class="title">this</span> <span class="title">type</span></span></span><br><span class="line"><span class="function">    // <span class="params">(ptr to object A, ptr to object B)</span> -&gt; ==?</span></span><br><span class="line"><span class="function">    //用作表明该类型是不是可比较的<span class="params">(<span class="keyword">string</span>就是不可比较的,</span></span></span><br><span class="line"><span class="function"><span class="params">    //context.WithValue传入的key就是要求要是可比较的)</span></span></span><br><span class="line"><span class="function">	<span class="title">equal</span> <span class="title">func</span><span class="params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/01/30/Comcon/DesignIO/" data-id="ck64wr0r5000njx556jq2wekc" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/Practice" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/12/15/Go/Practice/" class="article-date">
-  <time datetime="2019-12-15T09:39:50.674Z" itemprop="datePublished">2019-12-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/12/15/Go/Practice/" data-id="ck64wr0ql0009jx55tqze77gn" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/StringCompare" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/08/18/Comcon/StringCompare/" class="article-date">
-  <time datetime="2019-08-18T08:50:00.000Z" itemprop="datePublished">2019-08-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>今天改同事的代码，在匹配字符串方面发现了点东西：levenshtein算法</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/08/18/Comcon/StringCompare/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/08/18/Comcon/StringCompare/" data-id="ck64wr0rd0012jx550u5a914y" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/String/">String</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/Goroutine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/09/Go/Goroutine/" class="article-date">
-  <time datetime="2019-07-08T17:00:00.000Z" itemprop="datePublished">2019-07-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/07/09/Go/Goroutine/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ck64wr0r0000ejx5584gg408l" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-MySQL/MySQLIndexing" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/03/MySQL/MySQLIndexing/" class="article-date">
-  <time datetime="2019-07-03T06:20:00.000Z" itemprop="datePublished">2019-07-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>一些注意事项</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/07/03/MySQL/MySQLIndexing/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ck64wr0re0014jx55x29ppxgd" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/SoftwareEngineer" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/02/Comcon/SoftwareEngineer/" class="article-date">
-  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/02/Comcon/SoftwareEngineer/">Something about Software Enginnering</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>软件工程的通用概念！
-//todo留坑</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/07/02/Comcon/SoftwareEngineer/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/SoftwareEngineer/" data-id="ck64wr0rc0010jx55a4wasjfg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/se/">se</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/somethingAboutTcp" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/02/Comcon/somethingAboutTcp/" class="article-date">
-  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/02/Comcon/somethingAboutTcp/">Something about Networking</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>记录了一些很基础的但经常被问到的问题</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/07/02/Comcon/somethingAboutTcp/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ck64wr0re0016jx55osb5pb6b" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Comcon/ReentranceLock" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/01/Comcon/ReentranceLock/" class="article-date">
-  <time datetime="2019-06-30T16:48:00.000Z" itemprop="datePublished">2019-07-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/01/Comcon/ReentranceLock/">Something about LOCK</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2>可重入锁（ReentranceLock）</h2>
-<p>可以进一步加强锁的封装性，简化了代码的开发，避免死锁;
-拿别人的一个例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">parentDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//....</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">childDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.parentDo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果不可重入，super.parentDo()不可以获得Parent的锁，因为这个锁已经被childDo()持有，从而使线程阻塞，造成死锁
-所以可以用于：</p>
-<ol>
-<li>递归调用</li>
-<li>此线程调用同一对象其它synchronized或者有同步锁函数。
-synchronized是可重入锁</li>
-</ol>
-<h3>Golang中不同</h3>
-<p>golang设计者对此做过回应<img src="https://stackoverflow.com/questions/14670979/recursive-locking-in-go#14671462" alt="这里">
-go不支持可重入锁，只能通过将需要锁的操作作为函数，并以Locked为后缀命名，然后调用它们的时候用锁锁住</p>
-<h2>自旋锁(SpinLock)</h2>
-<p>线程会反复检查锁变量是否可用。但由于线程此时一直保持执行，所以属于忙等待（busy-waiting），一旦获得了自旋锁，线程会一直保持该锁，直到显式释放;
-这里说说<strong>互斥锁</strong>，区别就是，互斥锁的调用者一方如果发现锁被拿走了，就会<strong>进入睡眠状态</strong>
-盗取别人例子：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpinLock</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> AtomicReference&lt;Thread&gt; cas = <span class="keyword">new</span> AtomicReference&lt;Thread&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lock&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        <span class="comment">//CAS</span></span><br><span class="line">        <span class="comment">//第一个线程得到锁，就会跳过while循环，第二个线程会一直在while循环，直到满足CAS</span></span><br><span class="line">        <span class="keyword">while</span> (!cas.compareAndSet(<span class="keyword">null</span>,cur))&#123;</span><br><span class="line">            <span class="comment">//Do sth...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        cas.compareAndSet(cur,<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Pros:
-自旋锁避免上下文切换（？），只要阻塞很短时间的场景下可以使用<br>
-Cons:</p>
-<ol>
-<li>然而会导致不公平地持有锁，无法满足等待最长时间线程获得锁，会有饥饿状态出现</li>
-<li>越来越多的线程循环等待会导致cpu越来越多</li>
-</ol>
-<p>可重入的自旋锁和不可重入的自旋锁</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ck64wr0r9000wjx55y6lp1vb0" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LOCK/">LOCK</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/gRPC" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/29/Go/gRPC/" class="article-date">
-  <time datetime="2019-06-29T06:40:00.000Z" itemprop="datePublished">2019-06-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/29/Go/gRPC/">Something in gRPC</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>常用的rpc框架，我们先从它的proto开始了解吧//todo</p>
-        
-          <p class="article-more-link">
-            <a href="/2019/06/29/Go/gRPC/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ck64wr0r4000kjx55x7pmih51" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/06/24/Go/type/" data-id="ckcw5ou83003e8d55tjh8fre2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -456,10 +106,10 @@ Cons:</p>
 
 
   
-    <article id="post-ToMyLover" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Go/Pointer" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/06/26/ToMyLover/" class="article-date">
-  <time datetime="2019-06-26T03:40:00.000Z" itemprop="datePublished">2019-06-26</time>
+    <a href="/2020/05/03/Go/Pointer/" class="article-date">
+  <time datetime="2020-05-03T06:20:00.000Z" itemprop="datePublished">2020-05-03</time>
 </a>
     
   </div>
@@ -470,7 +120,7 @@ Cons:</p>
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/06/26/ToMyLover/">To my lover</a>
+      <a class="article-title" href="/2020/05/03/Go/Pointer/">Golang指针</a>
     </h1>
   
 
@@ -478,16 +128,584 @@ Cons:</p>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>I was looking for something until met you,
-So I found the whole world</p>
+        <p>比较容易混淆三种值:</p>
+<p>指针值(Pointer value):比如stirng,int这种其实是一种指针值</p>
+<p>指针(Pointer)</p>
+<p>uintptr</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// Pointer represents a pointer to an arbitrary type. There are four special operations</span></span><br><span class="line"><span class="comment">// available for type Pointer that are not available for other types:</span></span><br><span class="line"><span class="comment">//	- A pointer value of any type can be converted to a Pointer.</span></span><br><span class="line">unsafe.Pointer(&amp;a)</span><br><span class="line"><span class="comment">//	- A Pointer can be converted to a pointer value of any type.</span></span><br><span class="line">(*<span class="keyword">string</span>)(unsafe.Pointer(somePointer))</span><br><span class="line"><span class="comment">//	- A uintptr can be converted to a Pointer.</span></span><br><span class="line">unsafe.Pointer(<span class="keyword">uintptr</span>(somePointer)+unsafe.sizeof(&amp;a))</span><br><span class="line"><span class="comment">//	- A Pointer can be converted to a uintptr.</span></span><br><span class="line"><span class="keyword">uintptr</span>(unsafe.Pointer(&amp;a))</span><br></pre></td></tr></table></figure>
+<p>因为指针可以随意读取内存而不经过go自己的type系统，要谨慎使用，注释里面有写到不可用作临时变量，如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//错误！</span></span><br><span class="line">tmp := <span class="keyword">uintptr</span>(unsafe.Pointer(&amp;x)) + unsafe.Offsetof(x.b)</span><br><span class="line">pb := (*<span class="keyword">int16</span>)(unsafe.Pointer(tmp))</span><br><span class="line">*pb = <span class="number">42</span></span><br></pre></td></tr></table></figure>
+<p>这里主要跟gc的实现有关系，有时候垃圾回收器会移动（整理）一些变量来降低碎片度；变量被移动后当然其地址也会被改变，这个指针就要指向新地址。</p>
+<p>而上面这段代码中unsafe.Pointer就是一个<strong>指向变量的指针</strong>，被移动后就要改变，但是tmp实际在这段代码中却是作为一个<strong>普通的整数</strong>，值不应该被改变!</p>
+<p>因为垃圾回收器<strong>识别不出</strong>上面tmp其实是一个<strong>指向x的指针</strong>，当到第二行时，可能x地址已经被转移，tmp此时就不会是这个地址了，第三行可能向一个不知道什么地址赋值，肯定会出错。</p>
+<p>还有一些:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pT := <span class="keyword">uintptr</span>(unsafe.Pointer(<span class="built_in">new</span>(T))) <span class="comment">// 提示: 错误!</span></span><br></pre></td></tr></table></figure>
+<p>这里new(T)创建后并没有指针引用，这行跑完后垃圾回收器可能会立即回收掉内存空间，所以pT得到的就是无效的地址</p>
+<p>比较常见的</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Bytes2String</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="title">string</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> *(*<span class="keyword">string</span>)(unsafe.Pointer(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2>uinputr</h2>
+<p>uintptr是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A uintptr is an integer, not a reference.</span></span><br><span class="line"><span class="comment">// Converting a Pointer to a uintptr creates an integer value</span></span><br><span class="line"><span class="comment">// with no pointer semantics.</span></span><br><span class="line"><span class="comment">// Even if a uintptr holds the address of some object,</span></span><br><span class="line"><span class="comment">// the garbage collector will not update that uintptr's value</span></span><br><span class="line"><span class="comment">// if the object moves, nor will that uintptr keep the object</span></span><br><span class="line"><span class="comment">// from being reclaimed.</span></span><br><span class="line"><span class="comment">//</span></span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="ck64wr0qc0001jx55tz8qzi3s" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/05/03/Go/Pointer/" data-id="ckcw5ou7e001o8d55qqsjnpcm" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Love/">Love</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-MySQL/btree" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/04/03/MySQL/btree/" class="article-date">
+  <time datetime="2020-04-03T06:20:00.000Z" itemprop="datePublished">2020-04-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们都知道计算机在存储数据的时候，有最小存储单元;</p>
+<p>在计算机中磁盘(机械硬盘)存储数据最小单元是<strong>扇区</strong>，一个扇区的大小是512字节，而文件系统（例如XFS/EXT4）他的最小单元是块，一个块的大小是4k，而对于我们的InnoDB存储引擎也有自己的最小储存单元——页（Page），一个页的大小是16K。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/04/03/MySQL/btree/" data-id="ckcw5ou6p000b8d55lr0n6a0u" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/Reflect" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/26/Go/Reflect/" class="article-date">
+  <time datetime="2020-03-26T12:10:00.000Z" itemprop="datePublished">2020-03-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h2>Reflect Package</h2>
+<h3>1. reflect.Type</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3>2. reflect.Kind</h3>
+<h3>Interface{}</h3>
+<p>接下来说一说经常用到的 interface{} 结构体，
+传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；</p>
+<p>我们可以先看一个问题:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Animal <span class="keyword">interface</span>&#123;</span><br><span class="line">    Walk()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Cat <span class="keyword">struct</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cat)</span> <span class="title">Walk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    log.Println(<span class="string">"walking! cat"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> i2 <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> </span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> t1 i1</span><br><span class="line">    <span class="keyword">var</span> t2 i2</span><br><span class="line">    <span class="keyword">if</span> t1==t2&#123;</span><br><span class="line">        log.Println(<span class="string">"equal!"</span>)</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        log.Println(<span class="string">"nope!"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了反射其还可以当做原本的用途： 多态 （OOP）的特征之一，只是golang是ducktype类型，实现多态的几个要求：</p>
+<ol>
+<li>有interface接口和方法，有子类把那个接口的方法都实现了，编译器就会自动认为这个结构体就是使用了这个接口</li>
+<li>父类指针指向子类的具体对象</li>
+</ol>
+<p>满足以上就可以实现<strong>多态</strong></p>
+<p>一般有两种写法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//方法内嵌</span></span><br><span class="line"><span class="keyword">type</span> doInterfaceWithMethod <span class="keyword">interface</span>&#123;</span><br><span class="line">    Do1(<span class="keyword">string</span>) <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//方法放在外面</span></span><br><span class="line"><span class="keyword">type</span> doInterfaceWithoutMethod <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *doInterfaceWithoutMethod)</span> <span class="title">Do1</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">string</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckcw5ou7f001r8d55rpdgy87l" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/syncPool" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/24/Go/syncPool/" class="article-date">
+  <time datetime="2020-03-24T14:10:00.000Z" itemprop="datePublished">2020-03-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<p>golang进程池</p>
+<h1>Sync.Pool</h1>
+<p>这个是1.13后的大改进，大幅度削减开销;
+首先明确一个<strong>目标</strong>就是：</p>
+<p>池类技术都是为了减少资源的多次分配，在这里就是<strong>减少GC</strong>的压力，以及提高缓存命中率</p>
+<h2>结构</h2>
+<p>相关内容主要在 sync/pool.go 和 sync/poolqueue.go上</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Pool <span class="keyword">struct</span> &#123;</span><br><span class="line">	noCopy noCopy <span class="comment">//这个是一个保证了第一次使用不会被copy的结构,防止被复制，很多结构也有用到这个</span></span><br><span class="line"></span><br><span class="line">	local     unsafe.Pointer <span class="comment">// local fixed-size per-P pool, actual type is [P]poolLocal</span></span><br><span class="line">	localSize <span class="keyword">uintptr</span>        <span class="comment">// size of the local array</span></span><br><span class="line"></span><br><span class="line">    victim     unsafe.Pointer <span class="comment">// local from previous cycle</span></span><br><span class="line">    <span class="comment">//这个东西实际上在gc用到，后面再说</span></span><br><span class="line">	victimSize <span class="keyword">uintptr</span>        <span class="comment">// size of victims array</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// New optionally specifies a function to generate</span></span><br><span class="line">	<span class="comment">// a value when Get would otherwise return nil.</span></span><br><span class="line">	<span class="comment">// It may not be changed concurrently with calls to Get.</span></span><br><span class="line">	New <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>容易想到池类技术多用队列来实现:
+但是这里使用了我觉得“妙啊”的结构：环式队列</p>
+<h3>poolDequeue</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> poolDequeue <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// headTail packs together a 32-bit head index and a 32-bit</span></span><br><span class="line">	<span class="comment">// tail index. Both are indexes into vals modulo len(vals)-1.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// tail = index of oldest data in queue</span></span><br><span class="line">	<span class="comment">// head = index of next slot to fill</span></span><br><span class="line">	头部，生产者放入data</span><br><span class="line">	<span class="comment">// Slots in the range [tail, head) are owned by consumers.</span></span><br><span class="line">	消费者只消费tail</span><br><span class="line">	<span class="comment">// A consumer continues to own a slot outside this range until</span></span><br><span class="line">	<span class="comment">// it nils the slot, at which point ownership passes to the</span></span><br><span class="line">	<span class="comment">// producer.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">// The head index is stored in the most-significant bits so</span></span><br><span class="line">	<span class="comment">// that we can atomically add to it and the overflow is</span></span><br><span class="line">	<span class="comment">// harmless.</span></span><br><span class="line">	headTail <span class="keyword">uint64</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// vals is a ring buffer of interface&#123;&#125; values stored in this</span></span><br><span class="line">	<span class="comment">// dequeue. The size of this must be a power of 2.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line"></span><br><span class="line">	vals就是这个环形buffer，长度是<span class="number">2</span>的幂次</span><br><span class="line">	<span class="comment">// vals[i].typ is nil if the slot is empty and non-nil</span></span><br><span class="line">	<span class="comment">// otherwise. A slot is still in use until *both* the tail</span></span><br><span class="line">	<span class="comment">// index has moved beyond it and typ has been set to nil. This</span></span><br><span class="line">	<span class="comment">// is set to nil atomically by the consumer and read</span></span><br><span class="line">	<span class="comment">// atomically by the producer.</span></span><br><span class="line">	vals []eface</span><br><span class="line">&#125;</span><br><span class="line"> <span class="comment">// 类似于没有方法 interface&#123;&#125;</span></span><br><span class="line"><span class="keyword">type</span> eface <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">//这个slot是空的话，typ将会=nil；</span></span><br><span class="line">	<span class="comment">//而且每次读写改变slot状态都会是原子性操作</span></span><br><span class="line">	typ, val unsafe.Pointer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>pushHead</h4>
+<p>队列，由 <strong>单个</strong> 生产者推入head，如果满了就返回false;</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> dequeueBits = <span class="number">32</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pushHead adds val at the head of the queue. It returns false if the</span></span><br><span class="line"><span class="comment">// queue is full. It must only be called by a single producer.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *poolDequeue)</span> <span class="title">pushHead</span><span class="params">(val <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	ptrs := atomic.LoadUint64(&amp;d.headTail)</span><br><span class="line">	head, tail := d.unpack(ptrs)</span><br><span class="line">	<span class="comment">//这里的dequeueBits</span></span><br><span class="line">	<span class="comment">//const dequeueBits = 32</span></span><br><span class="line">	<span class="comment">//这里判断</span></span><br><span class="line">	<span class="keyword">if</span> (tail+<span class="keyword">uint32</span>(<span class="built_in">len</span>(d.vals)))&amp;(<span class="number">1</span>&lt;&lt;dequeueBits<span class="number">-1</span>) == head &#123;</span><br><span class="line">		<span class="comment">// Queue is full.</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	slot := &amp;d.vals[head&amp;<span class="keyword">uint32</span>(<span class="built_in">len</span>(d.vals)<span class="number">-1</span>)]</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Check if the head slot has been released by popTail.</span></span><br><span class="line">	typ := atomic.LoadPointer(&amp;slot.typ)</span><br><span class="line">	<span class="keyword">if</span> typ != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Another goroutine is still cleaning up the tail, so</span></span><br><span class="line">		<span class="comment">// the queue is actually still full.</span></span><br><span class="line">		<span class="comment">//其他goroutine正在清除(consume)tail</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// The head slot is free, so we own it.</span></span><br><span class="line">	<span class="keyword">if</span> val == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">//这里实际上是*struct&#123;&#125;类型，代表interface&#123;&#125;(nil)，因为我们使用nil来代表空的slot，所以要一种sentinel value (可以理解为标记值) 来代表nil</span></span><br><span class="line">		val = dequeueNil(<span class="literal">nil</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//slot是eface类型，slot转为interface&#123;&#125;，val就可以直接赋值给slot，又因为eface是interface&#123;&#125;其中一种实现，slot.typ和slot.val则不为空, 这里其实也是之前判断是否满队列的原因</span></span><br><span class="line">	*(*<span class="keyword">interface</span>&#123;&#125;)(unsafe.Pointer(slot)) = val</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Increment head. This passes ownership of slot to popTail</span></span><br><span class="line">	<span class="comment">// and acts as a store barrier for writing the slot.</span></span><br><span class="line">	<span class="comment">//插入后head +1 </span></span><br><span class="line">	atomic.AddUint64(&amp;d.headTail, <span class="number">1</span>&lt;&lt;dequeueBits)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>PopTail</h4>
+<p>这个就是消费者(<strong>多个</strong>)所用的，pop出队列尾的元素</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *poolDequeue)</span> <span class="title">popTail</span><span class="params">()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> slot *eface</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		ptrs := atomic.LoadUint64(&amp;d.headTail)</span><br><span class="line">		head, tail := d.unpack(ptrs)</span><br><span class="line">		<span class="comment">//同样，先判断是否为空</span></span><br><span class="line">		<span class="keyword">if</span> tail == head &#123;</span><br><span class="line">			<span class="comment">// Queue is empty.</span></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Confirm head and tail (for our speculative check</span></span><br><span class="line">		<span class="comment">// above) and increment tail. If this succeeds, then</span></span><br><span class="line">		<span class="comment">// we own the slot at tail.</span></span><br><span class="line">		ptrs2 := d.pack(head, tail+<span class="number">1</span>)</span><br><span class="line">		<span class="keyword">if</span> atomic.CompareAndSwapUint64(&amp;d.headTail, ptrs, ptrs2) &#123;</span><br><span class="line">			<span class="comment">// Success.</span></span><br><span class="line">			slot = &amp;d.vals[tail&amp;<span class="keyword">uint32</span>(<span class="built_in">len</span>(d.vals)<span class="number">-1</span>)]</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// We now own slot.</span></span><br><span class="line">	val := *(*<span class="keyword">interface</span>&#123;&#125;)(unsafe.Pointer(slot))</span><br><span class="line">	<span class="keyword">if</span> val == dequeueNil(<span class="literal">nil</span>) &#123;</span><br><span class="line">		val = <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Tell pushHead that we're done with this slot. Zeroing the</span></span><br><span class="line">	<span class="comment">// slot is also important so we don't leave behind references</span></span><br><span class="line">	<span class="comment">// that could keep this object live longer than necessary.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// We write to val first and then publish that we're done with</span></span><br><span class="line">	<span class="comment">// this slot by atomically writing to typ.</span></span><br><span class="line">	<span class="comment">//将当前的slot设为空</span></span><br><span class="line">	slot.val = <span class="literal">nil</span></span><br><span class="line">	atomic.StorePointer(&amp;slot.typ, <span class="literal">nil</span>)</span><br><span class="line">	<span class="comment">// At this point pushHead owns the slot.</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> val, <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>比较奇怪的PopHead</h4>
+<p>顾名思义，移除在head的元素，如果队列是空的返回false，也只能被单个生产者使用
+这个有点奇怪 ？？？</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// popHead removes and returns the element at the head of the queue.</span></span><br><span class="line"><span class="comment">// It returns false if the queue is empty. It must only be called by a</span></span><br><span class="line"><span class="comment">// single producer.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *poolDequeue)</span> <span class="title">popHead</span><span class="params">()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> slot *eface</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		ptrs := atomic.LoadUint64(&amp;d.headTail)</span><br><span class="line">		<span class="comment">//解析出head，tail</span></span><br><span class="line">		head, tail := d.unpack(ptrs)</span><br><span class="line">		<span class="keyword">if</span> tail == head &#123;</span><br><span class="line">			<span class="comment">// Queue is empty.</span></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Confirm tail and decrement head. We do this before</span></span><br><span class="line">		<span class="comment">// reading the value to take back ownership of this</span></span><br><span class="line">		<span class="comment">// slot.</span></span><br><span class="line">		<span class="comment">//在读取该值之前，要先确认tail以及head -1，目的是可以拿回该slot的所有权???</span></span><br><span class="line">		<span class="comment">//理解为将当前指针指向head--的位置,因为这个是环状结构，无法从head-- 获得 head的地址，所以要先转移指针指向???</span></span><br><span class="line">		head--</span><br><span class="line">		ptrs2 := d.pack(head, tail)</span><br><span class="line">		<span class="keyword">if</span> atomic.CompareAndSwapUint64(&amp;d.headTail, ptrs, ptrs2) &#123;</span><br><span class="line">			<span class="comment">//成功更新该slot，跳出循环</span></span><br><span class="line">			<span class="comment">// We successfully took back slot.</span></span><br><span class="line">			slot = &amp;d.vals[head&amp;<span class="keyword">uint32</span>(<span class="built_in">len</span>(d.vals)<span class="number">-1</span>)]</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//如果失败了，重新进行</span></span><br><span class="line">		<span class="comment">//失败的情况可能是更新失败，</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	val := *(*<span class="keyword">interface</span>&#123;&#125;)(unsafe.Pointer(slot))</span><br><span class="line">	<span class="keyword">if</span> val == dequeueNil(<span class="literal">nil</span>) &#123;</span><br><span class="line">		val = <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// Zero the slot. Unlike popTail, this isn't racing with</span></span><br><span class="line">	<span class="comment">// pushHead, so we don't need to be careful here.</span></span><br><span class="line">	*slot = eface&#123;&#125;</span><br><span class="line">	<span class="keyword">return</span> val, <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3>PoolChain</h3>
+<p>其中还有一个结构是配合pooldequeue实现了双线链表的poolChain</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// poolChain is a dynamically-sized version of poolDequeue.</span></span><br><span class="line"><span class="comment">//poolchain实际上就是一个动态大小版本的poolDeque</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// This is implemented as a doubly-linked list queue of poolDequeues</span></span><br><span class="line"><span class="comment">// where each dequeue is double the size of the previous one. Once a</span></span><br><span class="line"><span class="comment">// dequeue fills up, this allocates a new one and only ever pushes to</span></span><br><span class="line"><span class="comment">// the latest dequeue. Pops happen from the other end of the list and</span></span><br><span class="line"><span class="comment">// once a dequeue is exhausted, it gets removed from the list.</span></span><br><span class="line"><span class="comment">//这个poolchain实际就是有双倍长度的poolDequeue，当其中一个dequeue被填充数据，其会分配一个新的dequeue，且把这个填充数据放入最新的一个dequeue上；</span></span><br><span class="line"><span class="keyword">type</span> poolChain <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">//因为只被生产者所用(推入)，不保证顺序，所以不必要保证串行性</span></span><br><span class="line">	<span class="comment">// head is the poolDequeue to push to. This is only accessed</span></span><br><span class="line">	<span class="comment">// by the producer, so doesn't need to be synchronized.</span></span><br><span class="line">	head *poolChainElt</span><br><span class="line"></span><br><span class="line">	<span class="comment">// tail is the poolDequeue to popTail from. This is accessed</span></span><br><span class="line">	<span class="comment">// by consumers, so reads and writes must be atomic.</span></span><br><span class="line">	tail *poolChainElt</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> poolChainElt <span class="keyword">struct</span> &#123;</span><br><span class="line">	poolDequeue</span><br><span class="line"></span><br><span class="line">	<span class="comment">// next and prev link to the adjacent poolChainElts in this</span></span><br><span class="line">	<span class="comment">// poolChain.</span></span><br><span class="line">	<span class="comment">//这里的next和prev指向相邻的poolChain元素,其中next是被生产者所写，消费者读取，只能从nil变为non-nil,prev则刚好相反</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment">// next is written atomically by the producer and read</span></span><br><span class="line">	<span class="comment">// atomically by the consumer. It only transitions from nil to</span></span><br><span class="line">	<span class="comment">// non-nil.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// prev is written atomically by the consumer and read</span></span><br><span class="line">	<span class="comment">// atomically by the producer. It only transitions from</span></span><br><span class="line">	<span class="comment">// non-nil to nil.</span></span><br><span class="line">	next, prev *poolChainElt</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同理，poolChaint也有一样的方法：</p>
+<h4>pushHead</h4>
+<p>生产者增加元素</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *poolChain)</span> <span class="title">pushHead</span><span class="params">(val <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	d := c.head</span><br><span class="line">	<span class="keyword">if</span> d == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Initialize the chain.</span></span><br><span class="line">		<span class="keyword">const</span> initSize = <span class="number">8</span> <span class="comment">// Must be a power of 2</span></span><br><span class="line">		d = <span class="built_in">new</span>(poolChainElt)</span><br><span class="line">		d.vals = <span class="built_in">make</span>([]eface, initSize)</span><br><span class="line">		c.head = d</span><br><span class="line">		storePoolChainElt(&amp;c.tail, d)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//先把该val插入到pooldeqeue中</span></span><br><span class="line">	<span class="keyword">if</span> d.pushHead(val) &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// The current dequeue is full. Allocate a new one of twice</span></span><br><span class="line">	<span class="comment">// the size.</span></span><br><span class="line">	<span class="comment">//当前pooldequeue满了,则设置新大小为前一次pooldequeue的两倍</span></span><br><span class="line">	newSize := <span class="built_in">len</span>(d.vals) * <span class="number">2</span></span><br><span class="line">	<span class="comment">//dequeueLimit为最大的size，</span></span><br><span class="line">	<span class="comment">//const dequeueLimit = (1&lt;&lt;dequeueBits)/4 = 2^30</span></span><br><span class="line">	<span class="keyword">if</span> newSize &gt;= dequeueLimit &#123;</span><br><span class="line">		<span class="comment">// Can't make it any bigger.</span></span><br><span class="line">		newSize = dequeueLimit</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	d2 := &amp;poolChainElt&#123;prev: d&#125;</span><br><span class="line">	d2.vals = <span class="built_in">make</span>([]eface, newSize)</span><br><span class="line">	c.head = d2</span><br><span class="line">	storePoolChainElt(&amp;d.next, d2)</span><br><span class="line">	d2.pushHead(val)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>popTail</h4>
+<p>消费者消费队列</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *poolChain)</span> <span class="title">popTail</span><span class="params">()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	d := loadPoolChainElt(&amp;c.tail)</span><br><span class="line">	<span class="keyword">if</span> d == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="comment">// It's important that we load the next pointer</span></span><br><span class="line">		<span class="comment">// *before* popping the tail. In general, d may be</span></span><br><span class="line">		<span class="comment">// transiently empty, but if next is non-nil before</span></span><br><span class="line">		<span class="comment">// the pop and the pop fails, then d is permanently</span></span><br><span class="line">		<span class="comment">// empty, which is the only condition under which it's</span></span><br><span class="line">		<span class="comment">// safe to drop d from the chain.</span></span><br><span class="line">		d2 := loadPoolChainElt(&amp;d.next)</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> val, ok := d.popTail(); ok &#123;</span><br><span class="line">			<span class="keyword">return</span> val, ok</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> d2 == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// This is the only dequeue. It's empty right</span></span><br><span class="line">			<span class="comment">// now, but could be pushed to in the future.</span></span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// The tail of the chain has been drained, so move on</span></span><br><span class="line">		<span class="comment">// to the next dequeue. Try to drop it from the chain</span></span><br><span class="line">		<span class="comment">// so the next pop doesn't have to look at the empty</span></span><br><span class="line">		<span class="comment">// dequeue again.</span></span><br><span class="line">		<span class="keyword">if</span> atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&amp;c.tail)), unsafe.Pointer(d), unsafe.Pointer(d2)) &#123;</span><br><span class="line">			<span class="comment">// We won the race. Clear the prev pointer so</span></span><br><span class="line">			<span class="comment">// the garbage collector can collect the empty</span></span><br><span class="line">			<span class="comment">// dequeue and so popHead doesn't back up</span></span><br><span class="line">			<span class="comment">// further than necessary.</span></span><br><span class="line">			storePoolChainElt(&amp;d2.prev, <span class="literal">nil</span>)</span><br><span class="line">		&#125;</span><br><span class="line">		d = d2</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>popHead</h4>
+<p>逻辑比较简单，一个个pooldequeue去找，找完就往前一个元素继续</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *poolChain)</span> <span class="title">popHead</span><span class="params">()</span> <span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	d := c.head</span><br><span class="line">	<span class="keyword">for</span> d != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">//首先从pooldequeue中pophead</span></span><br><span class="line">		<span class="keyword">if</span> val, ok := d.popHead(); ok &#123;</span><br><span class="line">			<span class="keyword">return</span> val, ok</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// There may still be unconsumed elements in the</span></span><br><span class="line">		<span class="comment">// previous dequeue, so try backing up.</span></span><br><span class="line">		<span class="comment">//pop完当前的pooldequeue则load前面的poolChainElt</span></span><br><span class="line">		d = loadPoolChainElt(&amp;d.prev)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3>由功能出发，猜结构</h3>
+<p>池类技术不用问，get，set各一个，还有超过了size之后的清空</p>
+<h4>Set</h4>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Put adds x to the pool.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span> <span class="title">Put</span><span class="params">(x <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> x == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> race.Enabled &#123;</span><br><span class="line">		<span class="keyword">if</span> fastrand()%<span class="number">4</span> == <span class="number">0</span> &#123;</span><br><span class="line">			<span class="comment">// Randomly drop x on floor.</span></span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		race.ReleaseMerge(poolRaceAddr(x))</span><br><span class="line">		race.Disable()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//这里pin</span></span><br><span class="line">	l, _ := p.pin()</span><br><span class="line">	<span class="keyword">if</span> l.private == <span class="literal">nil</span> &#123;</span><br><span class="line">		l.private = x</span><br><span class="line">		x = <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> x != <span class="literal">nil</span> &#123;</span><br><span class="line">		l.shared.pushHead(x)</span><br><span class="line">	&#125;</span><br><span class="line">	runtime_procUnpin()</span><br><span class="line">	<span class="keyword">if</span> race.Enabled &#123;</span><br><span class="line">		race.Enable()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的 l, _ := p.pin() <strong>pin()</strong> 函数就值得深入看一下:</p>
+<ol>
+<li>大概意思就是，这个pin函数会pin住当前goroutine，防止抢占(可以看一下goroutines一节)</li>
+<li>原子性操作atomic.LoadUintPtr()保证不会同步问题</li>
+<li>返回值是</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// pin pins the current goroutine to P, disables preemption and</span></span><br><span class="line"><span class="comment">// returns poolLocal pool for the P and the P's id.</span></span><br><span class="line"><span class="comment">// Caller must call runtime_procUnpin() when done with the pool.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span> <span class="title">pin</span><span class="params">()</span> <span class="params">(*poolLocal, <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	pid := runtime_procPin()</span><br><span class="line">	<span class="comment">// In pinSlow we store to local and then to localSize, here we load in opposite order.</span></span><br><span class="line">	<span class="comment">// Since we've disabled preemption, GC cannot happen in between.</span></span><br><span class="line">	<span class="comment">// Thus here we must observe local at least as large localSize.</span></span><br><span class="line">	<span class="comment">// We can observe a newer/larger local, it is fine (we must observe its zero-initialized-ness).</span></span><br><span class="line">	s := atomic.LoadUintptr(&amp;p.localSize) <span class="comment">// load-acquire</span></span><br><span class="line">	l := p.local                          <span class="comment">// load-consume</span></span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">uintptr</span>(pid) &lt; s &#123;</span><br><span class="line">		<span class="keyword">return</span> indexLocal(l, pid), pid</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> p.pinSlow()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>Get</h4>
+<p>与set有一定的相似</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125; &#123;</span><br><span class="line">	<span class="keyword">if</span> race.Enabled &#123;</span><br><span class="line">		race.Disable()</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//与set一样，都要先"锁住"当前goroutine</span></span><br><span class="line">	l, pid := p.pin()</span><br><span class="line">	x := l.private</span><br><span class="line">	l.private = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> x == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Try to pop the head of the local shard. We prefer</span></span><br><span class="line">		<span class="comment">// the head over the tail for temporal locality of</span></span><br><span class="line">		<span class="comment">// reuse.</span></span><br><span class="line">		x, _ = l.shared.popHead()</span><br><span class="line">		<span class="keyword">if</span> x == <span class="literal">nil</span> &#123;</span><br><span class="line">			x = p.getSlow(pid)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	runtime_procUnpin()</span><br><span class="line">	<span class="keyword">if</span> race.Enabled &#123;</span><br><span class="line">		race.Enable()</span><br><span class="line">		<span class="keyword">if</span> x != <span class="literal">nil</span> &#123;</span><br><span class="line">			race.Acquire(poolRaceAddr(x))</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> x == <span class="literal">nil</span> &amp;&amp; p.New != <span class="literal">nil</span> &#123;</span><br><span class="line">		x = p.New()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/03/24/Go/syncPool/" data-id="ckcw5ou7m00258d552xc85oko" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-redis/basic" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/03/01/redis/basic/" class="article-date">
+  <time datetime="2020-03-01T14:10:00.000Z" itemprop="datePublished">2020-03-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/03/01/redis/basic/">Redis basis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>笔记</p>
+<h3>基本数据结构</h3>
+<h4>1. string</h4>
+<p>sds
+大概的结构如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">sds</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> len <span class="comment">//含有数据的长度</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">free</span><span class="comment">//空的长度</span></span><br><span class="line">    byte[] arr<span class="comment">//底层数组</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4>2. dict</h4>
+<h4>3. skiplist</h4>
+<h4>4. linkedlist</h4>
+<h4>5. intset</h4>
+<h3>redisObject</h3>
+<h4>提供的数据结构和编码</h4>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/03/01/redis/basic/" data-id="ckcw5ou7c001k8d55o8y0cb6l" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/gc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/Go/gc/" class="article-date">
+  <time datetime="2020-02-24T14:10:00.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/Go/gc/">Golang Garbage Collection</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>看了下runtime的代码（注释），总结一哈</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/24/Go/gc/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckcw5ou7j001z8d55ogkyapsk" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/memManage" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/Go/memManage/" class="article-date">
+  <time datetime="2020-02-24T14:10:00.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/Go/memManage/">Golang Memory Allocator</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<h1>golang内存管理</h1>
+<p>go的内存管理是基于tcmalloc，<a href="http://goog-perftools.sourceforge.net/doc/tcmalloc.html" target="_blank" rel="noopener">这个连接</a>看详情</p>
+<p>任何大小的内存页可以被分割成<strong>一系列同样大小的object</strong>,这些规定的大小size则被定义在<a href="#sizetoclass">sizetoclass</a>,然后被一个<strong>bitmap</strong>管理</p>
+<h2>基本数据结构</h2>
+<p>类似于<a href="http://goog-perftools.sourceforge.net/doc/tcmalloc.html" target="_blank" rel="noopener">TCMalloc</a></p>
+<p><strong>class_to_allocnpages</strong>总共有67个范围</p>
+<p>栈的分配也是多层次和多class的</p>
+<ul>
+<li>
+<p>mspan (主要使用该机制减少碎片):</p>
+<p>被内存堆管理的的页面，至少一个页(8KB)，用于范围分配内存，比如16-32B则分配32B,112~128则分配128B的span</p>
+</li>
+<li>
+<p>mcentral</p>
+<p>全局有 67 × 2 (?) 个对应不同size的span <strong>后备</strong>mcentral
+收集所有特定size的span，如果也被用完，则再次转向mheap申请</p>
+</li>
+<li>
+<p>mcache</p>
+<p>多层次的cache用来减少分配冲突，mcache是per-P的，所以无锁，mspan的每个P(process)下的可用cache空间；小于16B直接使用P中的macache</p>
+</li>
+<li>
+<p>fixalloc</p>
+</li>
+</ul>
+<p>一个不定长度的列表，用来管理<strong>不在堆上</strong>的固定的对象</p>
+<ul>
+<li>
+<p>mheap:</p>
+<p>全局只有一个
+内存堆，以页为粒度(8KB)进行管理,结构体为treap，维护空闲连续page，归还内存到heap中时，连续地址会合并；大于32KB内存申请直接从mheap中拿，剩下的则先使用当前P的mcache中对应的size class分配，如果其对应的span已经无可用的块，则向mcentral请求，如果没有则在mheap申请，如果还不够则要向操作系统申请;</p>
+</li>
+<li>
+<p>mstatisitc</p>
+<p>提供管理信息</p>
+</li>
+</ul>
+<h3>mspan的结构体</h3>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> mspan <span class="keyword">struct</span> &#123;</span><br><span class="line">	next *mspan     <span class="comment">// next span in list, or nil if none</span></span><br><span class="line">	prev *mspan     <span class="comment">// previous span in list, or nil if none</span></span><br><span class="line">	list *mSpanList <span class="comment">// For debugging. <span class="doctag">TODO:</span> Remove.</span></span><br><span class="line"></span><br><span class="line">	startAddr <span class="keyword">uintptr</span> <span class="comment">// address of first byte of span aka s.base()</span></span><br><span class="line">	npages    <span class="keyword">uintptr</span> <span class="comment">// number of pages in span</span></span><br><span class="line"></span><br><span class="line">	manualFreeList gclinkptr <span class="comment">// list of free objects in mSpanManual spans</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// freeindex is the slot index between 0 and nelems at which to begin scanning</span></span><br><span class="line">	<span class="comment">// for the next free object in this span.</span></span><br><span class="line">	<span class="comment">// Each allocation scans allocBits starting at freeindex until it encounters a 0</span></span><br><span class="line">	<span class="comment">// indicating a free object. freeindex is then adjusted so that subsequent scans begin</span></span><br><span class="line">	<span class="comment">// just past the newly discovered free object.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If freeindex == nelem, this span has no free objects.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// allocBits is a bitmap of objects in this span.</span></span><br><span class="line">	<span class="comment">// If n &gt;= freeindex and allocBits[n/8] &amp; (1&lt;&lt;(n%8)) is 0</span></span><br><span class="line">	<span class="comment">// then object n is free;</span></span><br><span class="line">	<span class="comment">// otherwise, object n is allocated. Bits starting at nelem are</span></span><br><span class="line">	<span class="comment">// undefined and should never be referenced.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Object n starts at address n*elemsize + (start &lt;&lt; pageShift).</span></span><br><span class="line">	freeindex <span class="keyword">uintptr</span></span><br><span class="line">	<span class="comment">// <span class="doctag">TODO:</span> Look up nelems from sizeclass and remove this field if it</span></span><br><span class="line">	<span class="comment">// helps performance.</span></span><br><span class="line">	nelems <span class="keyword">uintptr</span> <span class="comment">// number of object in the span.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Cache of the allocBits at freeindex. allocCache is shifted</span></span><br><span class="line">	<span class="comment">// such that the lowest bit corresponds to the bit freeindex.</span></span><br><span class="line">	<span class="comment">// allocCache holds the complement of allocBits, thus allowing</span></span><br><span class="line">	<span class="comment">// ctz (count trailing zero) to use it directly.</span></span><br><span class="line">	<span class="comment">// allocCache may contain bits beyond s.nelems; the caller must ignore</span></span><br><span class="line">	<span class="comment">// these.</span></span><br><span class="line">	allocCache <span class="keyword">uint64</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// allocBits and gcmarkBits hold pointers to a span's mark and</span></span><br><span class="line">	<span class="comment">// allocation bits. The pointers are 8 byte aligned.</span></span><br><span class="line">	<span class="comment">// There are three arenas where this data is held.</span></span><br><span class="line">	<span class="comment">// free: Dirty arenas that are no longer accessed</span></span><br><span class="line">	<span class="comment">//       and can be reused.</span></span><br><span class="line">	<span class="comment">// next: Holds information to be used in the next GC cycle.</span></span><br><span class="line">	<span class="comment">// current: Information being used during this GC cycle.</span></span><br><span class="line">	<span class="comment">// previous: Information being used during the last GC cycle.</span></span><br><span class="line">	<span class="comment">// A new GC cycle starts with the call to finishsweep_m.</span></span><br><span class="line">	<span class="comment">// finishsweep_m moves the previous arena to the free arena,</span></span><br><span class="line">	<span class="comment">// the current arena to the previous arena, and</span></span><br><span class="line">	<span class="comment">// the next arena to the current arena.</span></span><br><span class="line">	<span class="comment">// The next arena is populated as the spans request</span></span><br><span class="line">	<span class="comment">// memory to hold gcmarkBits for the next GC cycle as well</span></span><br><span class="line">	<span class="comment">// as allocBits for newly allocated spans.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// The pointer arithmetic is done "by hand" instead of using</span></span><br><span class="line">	<span class="comment">// arrays to avoid bounds checks along critical performance</span></span><br><span class="line">	<span class="comment">// paths.</span></span><br><span class="line">	<span class="comment">// The sweep will free the old allocBits and set allocBits to the</span></span><br><span class="line">	<span class="comment">// gcmarkBits. The gcmarkBits are replaced with a fresh zeroed</span></span><br><span class="line">	<span class="comment">// out memory.</span></span><br><span class="line">	allocBits  *gcBits</span><br><span class="line">	gcmarkBits *gcBits</span><br><span class="line"></span><br><span class="line">	<span class="comment">// sweep generation:</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen - 2, the span needs sweeping</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen - 1, the span is currently being swept</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen, the span is swept and ready to use</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen + 1, the span was cached before sweep began and is still cached, and needs sweeping</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen + 3, the span was swept and then cached and is still cached</span></span><br><span class="line">	<span class="comment">// h-&gt;sweepgen is incremented by 2 after every GC</span></span><br><span class="line"></span><br><span class="line">	sweepgen    <span class="keyword">uint32</span></span><br><span class="line">	divMul      <span class="keyword">uint16</span>     <span class="comment">// for divide by elemsize - divMagic.mul</span></span><br><span class="line">	baseMask    <span class="keyword">uint16</span>     <span class="comment">// if non-0, elemsize is a power of 2, &amp; this will get object allocation base</span></span><br><span class="line">	allocCount  <span class="keyword">uint16</span>     <span class="comment">// number of allocated objects</span></span><br><span class="line">	spanclass   spanClass  <span class="comment">// size class and noscan (uint8)</span></span><br><span class="line">	state       mSpanState <span class="comment">// mspaninuse etc</span></span><br><span class="line">	needzero    <span class="keyword">uint8</span>      <span class="comment">// needs to be zeroed before allocation</span></span><br><span class="line">	divShift    <span class="keyword">uint8</span>      <span class="comment">// for divide by elemsize - divMagic.shift</span></span><br><span class="line">	divShift2   <span class="keyword">uint8</span>      <span class="comment">// for divide by elemsize - divMagic.shift2</span></span><br><span class="line">	scavenged   <span class="keyword">bool</span>       <span class="comment">// whether this span has had its pages released to the OS</span></span><br><span class="line">	elemsize    <span class="keyword">uintptr</span>    <span class="comment">// computed from sizeclass or from npages</span></span><br><span class="line">	limit       <span class="keyword">uintptr</span>    <span class="comment">// end of data in span</span></span><br><span class="line">	speciallock mutex      <span class="comment">// guards specials list</span></span><br><span class="line">	specials    *special   <span class="comment">// linked list of special records sorted by offset.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要的字段:</p>
+<ul>
+<li>
+<p>elementsize: slot大小，B为单位</p>
+</li>
+<li>
+<p>freeindex，&lt;该值的已经被分配，&gt;=该位置的可能未被分配，需要配合allocCache查找,每次分配后，freeindex设置为分配的slot+1</p>
+</li>
+<li>
+<p>allocBits表示上一次GC之后哪一些slot被使用，0未使用或释放，1已分配</p>
+</li>
+<li>
+<p>allocCache表示从freeindex开始的64个slot的分配情况，1为未分配，0为已分配，使用ctz(Count trailing zeros指令)找到第一个非0位，使用完了就从allocBits加载，取反；</p>
+</li>
+<li>
+<p>每次gc完的sweep阶段，将allocBits设置为gcmarkbits</p>
+</li>
+</ul>
+<h2>内存总体结构</h2>
+<p>暂时将linux amd64作为例子</p>
+<ul>
+<li>
+<p>1.10以前，内存不是初始化就分配虚拟内存
+arena大小为512G，为了方便将其分为一个个page，所以总共也有512G/8KB = 65536个page</p>
+<p>span区域存放指向span的指针，表示arena区域page所属的span，所以其大小即为 512GB/8KB* 8B(指针大小) = 512M</p>
+<p>bitmap主要用于GC，两个bit表示arena中一个字的可用状态，所以表示为 (512GB/ 8(8个byte一个字，即指令长度)) * 2 /8 (8个bit一个byte) = 16G 长度</p>
+</li>
+<li>
+<p>1.11以后
+改成两阶段稀疏索引方式，内存允许超过512G，也可以允许不连续内存
+mheap中的arenas字段实际是一个指针数组，每个heapArena管理一个64MB的内存
+bitmap和spans功能不变</p>
+</li>
+</ul>
+<h2>go的分配内存策略：</h2>
+<h3>小对象（小于32K）和大对象的不同</h3>
+<ol>
+<li>小于32KB的小对象时，会直接去 P (process)的cache的list里面拿，大于32KB的才去堆拿;
+拿的过程会roundup一下大小，然后在当前P的mcachexmspan</li>
+</ol>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Allocate an object of size bytes.</span></span><br><span class="line"><span class="comment">// Small objects are allocated from the per-P cache's free lists.</span></span><br><span class="line"><span class="comment">// Large objects (&gt; 32 kB) are allocated straight from the heap.</span></span><br><span class="line"><span class="comment">//typ有两种，一种noscan，一种是scan，表示分配对象是否包含指针</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mallocgc</span><span class="params">(size <span class="keyword">uintptr</span>, typ *_type, needzero <span class="keyword">bool</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> gcphase == _GCmarktermination &#123;</span><br><span class="line">		throw(<span class="string">"mallocgc called with gcphase == _GCmarktermination"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> size == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> unsafe.Pointer(&amp;zerobase)</span><br><span class="line">	&#125;</span><br><span class="line">	......</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// assistG is the G to charge for this allocation, or nil if</span></span><br><span class="line">	<span class="comment">// GC is not currently active.</span></span><br><span class="line">	<span class="keyword">var</span> assistG *g</span><br><span class="line">	<span class="keyword">if</span> gcBlackenEnabled != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// Charge the current user G for this allocation.</span></span><br><span class="line">		assistG = getg()</span><br><span class="line">		<span class="keyword">if</span> assistG.m.curg != <span class="literal">nil</span> &#123;</span><br><span class="line">			assistG = assistG.m.curg</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// Charge the allocation against the G. We'll account</span></span><br><span class="line">		<span class="comment">// for internal fragmentation at the end of mallocgc.</span></span><br><span class="line">		assistG.gcAssistBytes -= <span class="keyword">int64</span>(size)</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> assistG.gcAssistBytes &lt; <span class="number">0</span> &#123;</span><br><span class="line">			<span class="comment">// This G is in debt. Assist the GC to correct</span></span><br><span class="line">			<span class="comment">// this before allocating. This must happen</span></span><br><span class="line">			<span class="comment">// before disabling preemption.</span></span><br><span class="line">			gcAssistAlloc(assistG)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set mp.mallocing to keep from being preempted by GC.</span></span><br><span class="line">	mp := acquirem()</span><br><span class="line">	<span class="keyword">if</span> mp.mallocing != <span class="number">0</span> &#123;</span><br><span class="line">		throw(<span class="string">"malloc deadlock"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> mp.gsignal == getg() &#123;</span><br><span class="line">		throw(<span class="string">"malloc during signal"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	mp.mallocing = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">	shouldhelpgc := <span class="literal">false</span></span><br><span class="line">	dataSize := size</span><br><span class="line">	c := gomcache()</span><br><span class="line">	<span class="keyword">var</span> x unsafe.Pointer</span><br><span class="line"></span><br><span class="line">	noscan := typ == <span class="literal">nil</span> || typ.ptrdata == <span class="number">0</span></span><br><span class="line">	<span class="keyword">if</span> size &lt;= maxSmallSize &#123;</span><br><span class="line">		<span class="keyword">if</span> noscan &amp;&amp; size &lt; maxTinySize &#123;</span><br><span class="line">			<span class="comment">// Tiny allocator.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">//一种分配器</span></span><br><span class="line">			<span class="comment">// Tiny allocator combines several tiny allocation requests</span></span><br><span class="line">			<span class="comment">// into a single memory block. The resulting memory block</span></span><br><span class="line">			<span class="comment">// is freed when all subobjects are unreachable. The subobjects</span></span><br><span class="line">			<span class="comment">// must be noscan (don't have pointers), this ensures that</span></span><br><span class="line">			<span class="comment">// the amount of potentially wasted memory is bounded.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// Size of the memory block used for combining (maxTinySize) is tunable.</span></span><br><span class="line">			<span class="comment">// Current setting is 16 bytes, which relates to 2x worst case memory</span></span><br><span class="line">			<span class="comment">// wastage (when all but one subobjects are unreachable).</span></span><br><span class="line">			<span class="comment">// 8 bytes would result in no wastage at all, but provides less</span></span><br><span class="line">			<span class="comment">// opportunities for combining.</span></span><br><span class="line">			<span class="comment">// 32 bytes provides more opportunities for combining,</span></span><br><span class="line">			<span class="comment">// but can lead to 4x worst case wastage.</span></span><br><span class="line">			<span class="comment">// The best case winning is 8x regardless of block size.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// Objects obtained from tiny allocator must not be freed explicitly.</span></span><br><span class="line">			<span class="comment">// So when an object will be freed explicitly, we ensure that</span></span><br><span class="line">			<span class="comment">// its size &gt;= maxTinySize.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// SetFinalizer has a special case for objects potentially coming</span></span><br><span class="line">			<span class="comment">// from tiny allocator, it such case it allows to set finalizers</span></span><br><span class="line">			<span class="comment">// for an inner byte of a memory block.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// The main targets of tiny allocator are small strings and</span></span><br><span class="line">			<span class="comment">// standalone escaping variables. On a json benchmark</span></span><br><span class="line">			<span class="comment">// the allocator reduces number of allocations by ~12% and</span></span><br><span class="line">			<span class="comment">// reduces heap size by ~20%.</span></span><br><span class="line">			off := c.tinyoffset</span><br><span class="line">			<span class="comment">// Align tiny pointer for required (conservative) alignment.</span></span><br><span class="line">			<span class="keyword">if</span> size&amp;<span class="number">7</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">8</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> size&amp;<span class="number">3</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">4</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> size&amp;<span class="number">1</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">2</span>)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> off+size &lt;= maxTinySize &amp;&amp; c.tiny != <span class="number">0</span> &#123;</span><br><span class="line">				<span class="comment">// The object fits into existing tiny block.</span></span><br><span class="line">				x = unsafe.Pointer(c.tiny + off)</span><br><span class="line">				c.tinyoffset = off + size</span><br><span class="line">				c.local_tinyallocs++</span><br><span class="line">				mp.mallocing = <span class="number">0</span></span><br><span class="line">				releasem(mp)</span><br><span class="line">				<span class="keyword">return</span> x</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// Allocate a new maxTinySize block.</span></span><br><span class="line">			span := c.alloc[tinySpanClass]</span><br><span class="line">			v := nextFreeFast(span)</span><br><span class="line">			<span class="keyword">if</span> v == <span class="number">0</span> &#123;</span><br><span class="line">				v, _, shouldhelpgc = c.nextFree(tinySpanClass)</span><br><span class="line">			&#125;</span><br><span class="line">			x = unsafe.Pointer(v)</span><br><span class="line">			(*[<span class="number">2</span>]<span class="keyword">uint64</span>)(x)[<span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">			(*[<span class="number">2</span>]<span class="keyword">uint64</span>)(x)[<span class="number">1</span>] = <span class="number">0</span></span><br><span class="line">			<span class="comment">// See if we need to replace the existing tiny block with the new one</span></span><br><span class="line">			<span class="comment">// based on amount of remaining free space.</span></span><br><span class="line">			<span class="keyword">if</span> size &lt; c.tinyoffset || c.tiny == <span class="number">0</span> &#123;</span><br><span class="line">				c.tiny = <span class="keyword">uintptr</span>(x)</span><br><span class="line">				c.tinyoffset = size</span><br><span class="line">			&#125;</span><br><span class="line">			size = maxTinySize</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> sizeclass <span class="keyword">uint8</span></span><br><span class="line">			<span class="keyword">if</span> size &lt;= smallSizeMax<span class="number">-8</span> &#123;</span><br><span class="line">				sizeclass = size_to_class8[(size+smallSizeDiv<span class="number">-1</span>)/smallSizeDiv]</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv<span class="number">-1</span>)/largeSizeDiv]</span><br><span class="line">			&#125;</span><br><span class="line">			size = <span class="keyword">uintptr</span>(class_to_size[sizeclass])</span><br><span class="line">			spc := makeSpanClass(sizeclass, noscan)</span><br><span class="line">			span := c.alloc[spc]</span><br><span class="line">			v := nextFreeFast(span)</span><br><span class="line">			<span class="keyword">if</span> v == <span class="number">0</span> &#123;</span><br><span class="line">				v, span, shouldhelpgc = c.nextFree(spc)</span><br><span class="line">			&#125;</span><br><span class="line">			x = unsafe.Pointer(v)</span><br><span class="line">			<span class="keyword">if</span> needzero &amp;&amp; span.needzero != <span class="number">0</span> &#123;</span><br><span class="line">				memclrNoHeapPointers(unsafe.Pointer(v), size)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">var</span> s *mspan</span><br><span class="line">		shouldhelpgc = <span class="literal">true</span></span><br><span class="line">		systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			s = largeAlloc(size, needzero, noscan)</span><br><span class="line">		&#125;)</span><br><span class="line">		s.freeindex = <span class="number">1</span></span><br><span class="line">		s.allocCount = <span class="number">1</span></span><br><span class="line">		x = unsafe.Pointer(s.base())</span><br><span class="line">		size = s.elemsize</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> scanSize <span class="keyword">uintptr</span></span><br><span class="line">	<span class="keyword">if</span> !noscan &#123;</span><br><span class="line">		<span class="comment">// If allocating a defer+arg block, now that we've picked a malloc size</span></span><br><span class="line">		<span class="comment">// large enough to hold everything, cut the "asked for" size down to</span></span><br><span class="line">		<span class="comment">// just the defer header, so that the GC bitmap will record the arg block</span></span><br><span class="line">		<span class="comment">// as containing nothing at all (as if it were unused space at the end of</span></span><br><span class="line">		<span class="comment">// a malloc block caused by size rounding).</span></span><br><span class="line">		<span class="comment">// The defer arg areas are scanned as part of scanstack.</span></span><br><span class="line">		<span class="keyword">if</span> typ == deferType &#123;</span><br><span class="line">			dataSize = unsafe.Sizeof(_defer&#123;&#125;)</span><br><span class="line">		&#125;</span><br><span class="line">		heapBitsSetType(<span class="keyword">uintptr</span>(x), size, dataSize, typ)</span><br><span class="line">		<span class="keyword">if</span> dataSize &gt; typ.size &#123;</span><br><span class="line">			<span class="comment">// Array allocation. If there are any</span></span><br><span class="line">			<span class="comment">// pointers, GC has to scan to the last</span></span><br><span class="line">			<span class="comment">// element.</span></span><br><span class="line">			<span class="keyword">if</span> typ.ptrdata != <span class="number">0</span> &#123;</span><br><span class="line">				scanSize = dataSize - typ.size + typ.ptrdata</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			scanSize = typ.ptrdata</span><br><span class="line">		&#125;</span><br><span class="line">		c.local_scan += scanSize</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Ensure that the stores above that initialize x to</span></span><br><span class="line">	<span class="comment">// type-safe memory and set the heap bits occur before</span></span><br><span class="line">	<span class="comment">// the caller can make x observable to the garbage</span></span><br><span class="line">	<span class="comment">// collector. Otherwise, on weakly ordered machines,</span></span><br><span class="line">	<span class="comment">// the garbage collector could follow a pointer to x,</span></span><br><span class="line">	<span class="comment">// but see uninitialized memory or stale heap bits.</span></span><br><span class="line">	publicationBarrier()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Allocate black during GC.</span></span><br><span class="line">	<span class="comment">// All slots hold nil so no scanning is needed.</span></span><br><span class="line">	<span class="comment">// This may be racing with GC so do it atomically if there can be</span></span><br><span class="line">	<span class="comment">// a race marking the bit.</span></span><br><span class="line">	<span class="keyword">if</span> gcphase != _GCoff &#123;</span><br><span class="line">		gcmarknewobject(<span class="keyword">uintptr</span>(x), size, scanSize)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">		racemalloc(x, size)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> msanenabled &#123;</span><br><span class="line">		msanmalloc(x, size)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mp.mallocing = <span class="number">0</span></span><br><span class="line">	releasem(mp)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> debug.allocfreetrace != <span class="number">0</span> &#123;</span><br><span class="line">		tracealloc(x, size, typ)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> rate := MemProfileRate; rate &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> rate != <span class="number">1</span> &amp;&amp; size &lt; c.next_sample &#123;</span><br><span class="line">			c.next_sample -= size</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			mp := acquirem()</span><br><span class="line">			profilealloc(mp, x, size)</span><br><span class="line">			releasem(mp)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> assistG != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Account for internal fragmentation in the assist</span></span><br><span class="line">		<span class="comment">// debt now that we know it.</span></span><br><span class="line">		assistG.gcAssistBytes -= <span class="keyword">int64</span>(size - dataSize)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> shouldhelpgc &#123;</span><br><span class="line">		<span class="keyword">if</span> t := (gcTrigger&#123;kind: gcTriggerHeap&#125;); t.test() &#123;</span><br><span class="line">			gcStart(t)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3>内存分配器</h3>
+<p>上面代码中注意一个<strong>tinyallocator</strong></p>
+<h3>一些重要参数</h3>
+<ul>
+<li>
+<p>go_memstats_sys_bytes: 进程从操作系统获得内存的总字节数，包含了go运行的stack，heap还有其他数据结构相关的虚拟地址空间</p>
+</li>
+<li>
+<p>go_memstats_heap_inuse_bytes: 在span中真正被使用的字节数；其中不包括可能已经返回到操作系统，或者可以重用进行对分配、可以将作为堆栈内存重用的字节 (?)</p>
+</li>
+<li>
+<p>go_memstats_heap_idle_bytes: 在span中空闲的字节数;</p>
+</li>
+<li>
+<p>go_memstats_stack_sys_bytes: 栈内存字节数；主要用于goroutine栈内存的分配;</p>
+</li>
+</ul>
+<p>由以上参数结合代码其实可以知道大概span在内存中有几种状态:</p>
+<ol>
+<li>
+<p>idle不包含对象或者其他数据，空闲的物理内存可以释放回OS（虚拟地址不会释放！！！），或者将其转换成inuse状态或者stack span</p>
+</li>
+<li>
+<p>inuse,至少包含一个mheap，并且可能有空闲空间分配更多堆对象</p>
+</li>
+<li>
+<p>stack span，只会在堆或者是栈内存其中之一</p>
+</li>
+</ol>
+<h2>内存对齐以及一些分配规则</h2>
+<p>runtime/msize.go</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">roundupsize</span><span class="params">(size <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="comment">//size&lt;32768</span></span><br><span class="line">	<span class="keyword">if</span> size &lt; _MaxSmallSize &#123;</span><br><span class="line">		<span class="keyword">if</span> size &lt;= smallSizeMax<span class="number">-8</span> &#123;</span><br><span class="line">			<span class="comment">//这里面的字段是go对特定class设定的对应大小</span></span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class8[(size+smallSizeDiv<span class="number">-1</span>)/smallSizeDiv]])</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class128[(size-smallSizeMax+largeSizeDiv<span class="number">-1</span>)/largeSizeDiv]])</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//size为负数,_PageSize=1&lt;&lt;13 </span></span><br><span class="line">	<span class="keyword">if</span> size+_PageSize &lt; size &#123;</span><br><span class="line">		<span class="keyword">return</span> size</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> round(size, _PageSize)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//该运算在下面会提到</span></span><br><span class="line"><span class="comment">// round n up to a multiple of a.  a must be a power of 2.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">round</span><span class="params">(n, a <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (n + a - <span class="number">1</span>) &amp;^ (a - <span class="number">1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意到<strong>class_to_size</strong>和<strong>size_to_class</strong>等等字段</p>
+<p><a id="sizetoclass">[sizetoclass]</a>
+实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：</p>
+<blockquote>
+<blockquote>
+<p>class0表示单独分配一个&gt;32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	=134个class</p>
+</blockquote>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// class  bytes/obj  bytes/span  objects  tail waste  max waste</span></span><br><span class="line"><span class="comment">//     1          8        8192     1024           0     87.50%</span></span><br><span class="line"><span class="comment">//     2         16        8192      512           0     43.75%</span></span><br><span class="line"><span class="comment">//     3         32        8192      256           0     46.88%</span></span><br><span class="line"><span class="comment">//     4         48        8192      170          32     31.52%</span></span><br><span class="line"><span class="comment">//     5         64        8192      128           0     23.44%</span></span><br><span class="line"><span class="comment">//     6         80        8192      102          32     19.07%</span></span><br><span class="line"><span class="comment">//     7         96        8192       85          32     15.95%</span></span><br><span class="line"><span class="comment">//     8        112        8192       73          16     13.56%</span></span><br><span class="line"><span class="comment">//     9        128        8192       64           0     11.72%</span></span><br><span class="line"><span class="comment">//    10        144        8192       56         128     11.82%</span></span><br><span class="line"><span class="comment">//    11        160        8192       51          32      9.73%</span></span><br><span class="line">......</span><br><span class="line"><span class="comment">//    60      19072       57344        3         128      3.57%</span></span><br><span class="line"><span class="comment">//    61      20480       40960        2           0      6.87%</span></span><br><span class="line"><span class="comment">//    62      21760       65536        3         256      6.25%</span></span><br><span class="line"><span class="comment">//    63      24576       24576        1           0     11.45%</span></span><br><span class="line"><span class="comment">//    64      27264       81920        3         128     10.00%</span></span><br><span class="line"><span class="comment">//    65      28672       57344        2           0      4.91%</span></span><br><span class="line"><span class="comment">//    66      32768       32768        1           0     12.50%</span></span><br></pre></td></tr></table></figure>
+<p>可以看到bytes/obj一栏，就是go预定义object大小，最小是8B，最大是32KB（注意这里只是在32KB以内，还有大于32KB以外的），所以都可以解释到<strong>slice</strong>在扩容的时候可能会不遵守*2和1.25倍扩容的规则；</p>
+<p>相关的main方法可以在classToSize的转换runtime/mksizeclass.go中找到</p>
+<h3>golang的位运算</h3>
+<p>有时候会经常看见会用一些全局常量：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//指针大小,一般64位就是8</span></span><br><span class="line"><span class="keyword">const</span> PtrSize = <span class="number">4</span> &lt;&lt; (^<span class="keyword">uintptr</span>(<span class="number">0</span>) &gt;&gt; <span class="number">63</span>) <span class="comment">//8</span></span><br></pre></td></tr></table></figure>
+<p>sys.PtrSize, sys.RegSize等等</p>
+<h4>1. ^运算</h4>
+<ul>
+<li>用作单目运算时， ^ 指的就是取反,等于一些语言的 ~ 符号（这里注意都一样取补码）</li>
+</ul>
+<p>ps: 这里复习一下，</p>
+<p>正数取反：化为二进制，得到补码(正数补码和原码一样)，再对补码每位取反</p>
+<p>负数取反：化为二进制，得到补码(所有除符号位的每位取反，+1)，然后再对补码全部每位取反</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">x:=^<span class="number">3</span></span><br><span class="line"><span class="comment">//3=》 0011=》 1100=-4 </span></span><br><span class="line">log.Printf(<span class="string">"%d"</span>,x)<span class="comment">//-4</span></span><br><span class="line"></span><br><span class="line">x:=^(<span class="number">-3</span>)</span><br><span class="line"><span class="comment">//-3=》 1011 =》 1100 =》 1101 =》 0010=2</span></span><br><span class="line">log.Printf(<span class="string">"%d"</span>,x)<span class="comment">//2</span></span><br></pre></td></tr></table></figure>
+<p>也可以用比较直接的方法：
+^a= -(a+1)</p>
+<ul>
+<li>用作双目运算符时则为异或（XOR）
+相同为0，相异为1</li>
+</ul>
+<h4>2. &amp;^运算</h4>
+<p>将运算符号左边数据相异保留，相同置为0;</p>
+<p>符合：</p>
+<ul>
+<li>右侧为0，左侧数不变，</li>
+<li>右侧是1，左侧清零</li>
+<li>符合结合法即 a&amp;^b=a&amp;(^b)</li>
+</ul>
+<p>经常用该符号作内存对齐
+如runtime/stubs.go里面</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// round n up to a multiple of a.  a must be a power of 2.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">round</span><span class="params">(n, a <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (n + a - <span class="number">1</span>) &amp;^ (a - <span class="number">1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//可以有这种说法：</span></span><br><span class="line"><span class="comment">//找到最大位为１的位数，然后用１左移该位数即是roundup后的结果,</span></span><br><span class="line"><span class="comment">//比如6 : 110,最大为为1的是在第三位，1&lt;&lt;3 = 1000 = 8,即十进制的8</span></span><br><span class="line"><span class="comment">// n=6,a=2 : 110 =&gt; (6+2-1) = 111 &amp;^ 001 = 110</span></span><br></pre></td></tr></table></figure>
+<p>runtime/malloc.go</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckcw5ou7k00218d55zp9xqqkl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/consensus" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/10/Comcon/consensus/" class="article-date">
+  <time datetime="2020-02-10T08:50:00.000Z" itemprop="datePublished">2020-02-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/10/Comcon/consensus/">Consensus</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>基本的共识思想</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/10/Comcon/consensus/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/02/10/Comcon/consensus/" data-id="ckcw5ou6z000p8d55zbe0w8uy" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Comcon/os" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/03/Comcon/os/" class="article-date">
+  <time datetime="2020-02-03T06:20:00.000Z" itemprop="datePublished">2020-02-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/03/Comcon/os/">OS basis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2>虚拟内存</h2>
+<p>段页式
+以页为单位替换，以段为单位使用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/02/03/Comcon/os/" data-id="ckcw5ou70000r8d55inau0zfg" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OS/">OS</a></li></ul>
 
     </footer>
   </div>
@@ -499,7 +717,7 @@ So I found the whole world</p>
 
 
   <nav id="page-nav">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">__('next') &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">__('next') &raquo;</a>
   </nav>
 </section>
         
@@ -512,7 +730,7 @@ So I found the whole world</p>
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -522,7 +740,7 @@ So I found the whole world</p>
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 12.5px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -531,7 +749,7 @@ So I found the whole world</p>
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -544,23 +762,23 @@ So I found the whole world</p>
       <ul>
         
           <li>
-            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+            <a href="/2020/06/24/Go/type/">Golang type</a>
           </li>
         
           <li>
-            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
           </li>
         
           <li>
-            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+            <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
           </li>
         
           <li>
-            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+            <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
           </li>
         
           <li>
-            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>

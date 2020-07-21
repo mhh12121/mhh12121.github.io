@@ -13,12 +13,10 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="HTTP2">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://stackoverflow.com/questions/44019565/http2-file-download">
-<meta property="og:updated_time" content="2019-12-15T09:39:50.674Z">
+<meta property="og:updated_time" content="2020-07-21T15:12:38.375Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about HTTP2">
 <meta name="twitter:description" content="HTTP2">
-<meta name="twitter:image" content="https://stackoverflow.com/questions/44019565/http2-file-download">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -105,18 +103,22 @@
 <ol>
 <li>连接数过多，浏览器一般就会因为这个设置TCP连接限制;
 一般是6-8个，假设是6,如果apache最大并发数为300,服务器每次承载最多只有300/6=50而已，多过这个数就要等待</li>
-<li>文件传输只能是串行的（在一个通道里面）</li>
+<li>文件传输只能是<strong>串行</strong>的（在一个通道里面）</li>
 </ol>
 <h3>HTTP2多路复用</h3>
 <ol>
-<li>连接数过多的问题：
-HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong>，都在同一个连接，比如上面的并发为300,用HTTP2就能达到300;</li>
-<li>因为HTTP1.1传输的request和response都是<strong>基于文本的</strong>，所以所有数据必须按<strong>顺序传输</strong>才能保证可靠性（TCP）;
-然而HTTP2前面说到利用的是<strong>二进制数据帧</strong>和<strong>流</strong>（TCP其实也是流），帧就是标识了数据的顺序！</li>
+<li>
+<p>连接数过多的问题：
+HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong>，都在同一个连接，比如上面的并发为300,用HTTP2就能达到300;</p>
+</li>
+<li>
+<p>因为HTTP1.1传输的request和response都是<strong>基于文本的</strong>，所以所有数据必须按<strong>顺序传输</strong>才能保证可靠性（TCP）;
+然而HTTP2前面说到利用的是<strong>二进制数据帧</strong>和<strong>流</strong>（TCP其实也是流），帧就是标识了数据的顺序！即不必要传完一个request，等到response再继续下一个;</p>
+</li>
 </ol>
 <h2>Question</h2>
 <h3>why not use HTTP2 as download protocol?</h3>
-<p><img src="https://stackoverflow.com/questions/44019565/http2-file-download" alt="StackOverflow上有大佬提出"></p>
+<p><a href="https://stackoverflow.com/questions/44019565/http2-file-download" target="_blank" rel="noopener">StackOverflow上有大佬提出</a></p>
 <p>主要是两个点：</p>
 <ol>
 <li>frame overhead</li>
@@ -125,16 +127,16 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
 <li>flow control</li>
 </ol>
 <p>http2的server端会控制给每一个session和每一个在这个session里的stream的发送端口</p>
-<h3>Something not compatible with HTTP2?</h3>
+<h3>造成的问题? Something not compatible with HTTP2?</h3>
 <ol>
 <li>JS文件合并:以前多个模块（文件）会合并成一个文件，当有模块要修改的时候，会全部上传一遍;</li>
-<li>多域名进行文件传输，会导致<strong>DNS解析时间过长</strong>，<strong>增加服务端压力</strong>等</li>
+<li>多域名进行文件传输(domain sharding)，会导致<strong>DNS解析时间过长</strong>，<strong>增加服务端压力</strong>等</li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/15/Comcon/HTTP2/" data-id="ck64wr0r8000ujx55jr9l1j9f" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/15/Comcon/HTTP2/" data-id="ckcw5ou6r000e8d55av5bxunx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -145,11 +147,11 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
     
 <nav id="article-nav">
   
-    <a href="/2019/06/05/java/Java-JVM/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Slice/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Notes about JVM
+          Something about Slice in Go
         
       </div>
     </a>
@@ -176,7 +178,7 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Golang/">Golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
     </div>
   </div>
 
@@ -186,7 +188,7 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 13.33px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 10px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 13.33px;">Golang</a> <a href="/tags/Java/" style="font-size: 16.67px;">Java</a> <a href="/tags/Javascript/" style="font-size: 13.33px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 13.33px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 13.33px;">javascript</a> <a href="/tags/networking/" style="font-size: 13.33px;">networking</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 12.5px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -195,7 +197,7 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -208,23 +210,23 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
       <ul>
         
           <li>
-            <a href="/2020/01/30/Comcon/DesignIO/">Reviews on I/O design</a>
+            <a href="/2020/06/24/Go/type/">Golang type</a>
           </li>
         
           <li>
-            <a href="/2019/12/15/Go/Practice/">(no title)</a>
+            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
           </li>
         
           <li>
-            <a href="/2019/08/18/Comcon/StringCompare/">Notes about Strings</a>
+            <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
           </li>
         
           <li>
-            <a href="/2019/07/09/Go/Goroutine/">Goroutine Notes</a>
+            <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
           </li>
         
           <li>
-            <a href="/2019/07/03/MySQL/MySQLIndexing/">Notes about MySQL indexing</a>
+            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>
