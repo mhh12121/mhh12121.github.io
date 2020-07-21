@@ -51,7 +51,10 @@ tcp会进行**慢启动**直到丢包,每接到一个ack就会把窗口（cwnd�
 
 1. client发送server  
 **SYN=1**（同步位，这种报文不能携带数据，但要**消耗一个序号**）
-自己的序号 **Seq=client_w** 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）
+自己的序号 **Seq=client_w ( isn )** 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）
+
+>> ps: **isn**泛指一种计算序号的算法，有一种是每4μs+1，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；
+
 2. server收到报文，把确认报文段中的SYN和ACK都设为1
  **SYN=1**(同理**要消耗一个序号**) 和 **ACK=1**
 自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）

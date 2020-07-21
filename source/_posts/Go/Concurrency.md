@@ -3,7 +3,8 @@ title: Concurrency Problem
 date: 2019-06-05 23:48
 tags: Golang
 ---
-其实里面只涉及部分concurrency问题，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新
+其实里面只涉及部分concurrency问题，一些实用例子，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新
+
 <!--more-->
 ## 1. Channel
 
@@ -22,6 +23,7 @@ tags: Golang
 1.2 当把channel当作传入参数的时候要先确定一下箭头方向
 
 chan<-string：指的是可以入可以出的channel
+
 <-chan string：指的是receive-only channnel
 
 
@@ -53,7 +55,92 @@ func main() {
 
 
 ### Channel部分源码解析：
-//todo
+
+应用上，我们经常用作两个goroutine通信，一个写入，一个读出
+
+这里可以有无缓冲的channel，和有缓冲的channel，
+无缓冲的写入就必须要读出，否则立即阻塞（阻塞写入），读出后也会阻塞（阻塞读出）
+
+有缓冲的在空的时候会阻塞读出，满之后会阻塞写入
+
+在调用方（其实可以在任何地方close，但是一般在写入方close才符合设计规范）close掉channel，第二个参数会返回false；
+
+如果里面仍然有值，可以读出，但是写入会引发panic
+
+
+```go
+x,ok:=<-channel1
+if !ok{
+	//channel1已经被关掉
+
+}
+```
+
+基本数据结构:
+```go
+type hchan struct {
+	qcount   uint           // total data in the queue
+	dataqsiz uint           // size of the circular queue
+	buf      unsafe.Pointer // points to an array of dataqsiz elements
+	elemsize uint16
+	closed   uint32
+	elemtype *_type // element type
+	sendx    uint   // send index
+	recvx    uint   // receive index
+	recvq    waitq  // list of recv waiters
+	sendq    waitq  // list of send waiters
+
+	// lock protects all fields in hchan, as well as several
+	// fields in sudogs blocked on this channel.
+	//
+	// Do not change another G's status while holding this lock
+	// (in particular, do not ready a G), as this can deadlock
+	// with stack shrinking.
+	lock mutex
+}
+```
+
+```go
+// sudog represents a g in a wait list, such as for sending/receiving
+// on a channel.
+//
+// sudog is necessary because the g ↔ synchronization object relation
+// is many-to-many. A g can be on many wait lists, so there may be
+// many sudogs for one g; and many gs may be waiting on the same
+// synchronization object, so there may be many sudogs for one object.
+//
+// sudogs are allocated from a special pool. Use acquireSudog and
+// releaseSudog to allocate and free them.
+type sudog struct {
+	// The following fields are protected by the hchan.lock of the
+	// channel this sudog is blocking on. shrinkstack depends on
+	// this for sudogs involved in channel ops.
+
+	g *g
+
+	// isSelect indicates g is participating in a select, so
+	// g.selectDone must be CAS'd to win the wake-up race.
+	isSelect bool
+	next     *sudog
+	prev     *sudog
+	elem     unsafe.Pointer // data element (may point to stack)
+
+	// The following fields are never accessed concurrently.
+	// For channels, waitlink is only accessed by g.
+	// For semaphores, all fields (including the ones above)
+	// are only accessed when holding a semaRoot lock.
+
+	acquiretime int64
+	releasetime int64
+	ticket      uint32
+	parent      *sudog // semaRoot binary tree
+	waitlink    *sudog // g.waiting list or semaRoot
+	waittail    *sudog // semaRoot
+	c           *hchan // channel
+}
+```
+
+
 
 
 ### Happens-before问题
@@ -64,25 +151,6 @@ channel的一些问题：
 2. 不带缓冲的channel发生在其相应的写操作之前
 3. 如果你关闭channel，之后才会读其channel最后的返回值0(这个其实在Context里面发现过！)
 
-```go
-var temp=make(chan int,10)//带缓冲
-var a="123"
-
-func foo(){
-    fmt.Println("a:",a)//1 
-    fmt.Ptemp<-1// 2
-}
-func main(){
-    go foo()
-    <-temp//3
-    fmt.Println("a main:",a)//4
-}
-```
-输出
-```
-a: 123
-a main: 123
-```
 
 ```go
 var temp=make(chan int)//不带缓冲
@@ -98,7 +166,27 @@ func main(){
     fmt.Println("a main:",a)//4
 }
 ```
-如果上面的temp改成有缓冲的，不能保证12 和 3 的发生顺序，就很有可能只输出
+
+输出
+```
+a: 123
+a main: 123
+```
+```go
+var temp=make(chan int,10)//带缓冲
+var a="123"
+
+func foo(){
+    fmt.Println("a:",a)//1 
+    temp<-1// 2
+}
+func main(){
+    go foo()
+    <-temp//3,可能先发生
+    fmt.Println("a main:",a)//4
+}
+```
+不能保证1, 2 和 3 的发生顺序，就很有可能只输出
 ```
 a main: 123
 ```
@@ -124,7 +212,7 @@ func main() {
 
 ## 2. Mutex互斥量
 
-2.1 01互斥量
+###  01互斥量
 
 ```go
 var sema=make(chan struct{},1)
@@ -139,9 +227,9 @@ func Deposit(amount int){
 }
 
 ```
-2.2 Sync.Mutex 互斥量
+### Sync.Mutex 互斥量
 
-注意： golang的锁都不是可重入锁(ReentranLock),参考一下Java的 ![可重入锁](../Java-Concurrency.html)
+注意： golang的锁都不是可重入锁(ReentranLock),参考一下Java的 [可重入锁](../Java-Concurrency.html)
 
 ```go
 var mu Sync.Mutex
@@ -176,13 +264,14 @@ func Withdraw(amount int) bool {
 ```
 
 
-2.2.* RWMutex 读写互斥量
+### * RWMutex 读写互斥量
 
 ```go
 var mu Sync.RWMutex
 ```
- *** 写操作 Lock(), UnLock() *** 
- *** 读操作 RLock(), RUnlock() ***
+ **写操作 Lock(), UnLock()** 
+
+ **读操作 RLock(), RUnlock()**
 
 读锁即是 同一时间允许多个读的协程，但只允许一个写的协程
 
@@ -201,7 +290,7 @@ func Balance() int{
 ```
 
 
-## 3. Sync.WaitGroup 等待组 (Java CountDownLatch)
+## 3.Sync.WaitGroup 等待组 (Java CountDownLatch)
 
 Sync.WaitGroup
 有三个methods:

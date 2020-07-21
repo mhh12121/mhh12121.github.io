@@ -7,13 +7,20 @@ tags: golang
 Golang's Slice is kinda diffrent===>
 
 <!--more-->
-![group](/img/golangusergroups.png)
+当前版本go 1.13
+![group](../../img/golangusergroups.png)
 
-This article [Slice]https://blog.golang.org/slices may give you more information
+Related article [Slice]https://blog.golang.org/slices
 
-## slice struct
+讨论到一种数据结构，我们很自然就从以下：
+- 结构体本身
+- 初始化(constructor)
+- 使用详情（包含各种数据增删改等情况）
+- 销毁(deconstructor)
 
-slice其实是一个结构体，并不是简单的数组或者链表(不想用英文写了)
+## 1. 结构体
+
+slice其实是一个结构体，并不是简单的数组或者链表
 
 
  ```go
@@ -51,14 +58,60 @@ func main() {
     fmt.Println("After:  len(newSlice) =", len(newSlice))
 }
 ```
-You *** Must *** do so:
+You **Must** do sth like:
 ```go
     newSlice := SubtractOneFromLength(&slice)//Like this will work!
 ```
 
-## Enlarge Capcity
+## 2. 初始化
 
-你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，是直接 *** ×2 ***
+```golang
+//顶层
+func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer{}
+func makeslice(et *_type, len, cap int) unsafe.Pointer{}
+```
+以上函数会先进行一个**溢出判断** （todo，这里涉及到编译器平台问题），如果cap设定太大会panic:cap out of range
+
+然后便会开始分配空间，这里用的是runtime/malloc.go里面的mallocgc方法:
+1. 小对象会从每个**P(GPM模型中process)中的cache**的可用队列中拿到空间
+2. 大对象(>32KB)则会从全局**堆**中拿到空间
+
+详情可以看下[之前的那篇笔记gc](./gc.md)
+
+
+## 3. Enlarge Capcity
+
+你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 **×2**，或者是超过了1024的只会库容1.25倍,自己注释的文档：
+
+```golang
+func growslice(et *_type, old slice, cap int) slice {// et 指的是？？？？， old是老的slice，cap是申请的容量
+    //前面是一些判断racecodition以及调试，防止cap设置不合理的判断
+    ........
+    //-------------这里开始计算扩容数量-----------------
+    newcap := old.cap
+    doublecap := newcap + newcap
+    if cap > doublecap {//申请容量 > 2 * 旧的容量
+        newcap = cap
+    } else {
+        if old.len < 1024 {//老容量 < 1024，直接扩成旧的两倍
+            newcap = doublecap
+        } else {
+            // Check 0 < newcap to detect overflow
+            // and prevent an infinite loop.
+            for 0 < newcap && newcap < cap {//好像看见有文章說是1.25倍，但实际并不是，可以往下继续看capmen变量
+                newcap += newcap / 4
+            }
+            // Set newcap to the requested cap when
+            // the newcap calculation overflowed.
+            if newcap <= 0 {//溢出的话就使之等于申请的容量
+                newcap = cap
+            }
+        }
+    }
+```
+
+
+
 但是，那些只针对于没有定义 *** cap *** 字段的slice，万一规定了，像
 ```go
 slice := make([]int, 10, 15)
@@ -91,6 +144,8 @@ slice := make([]int, 10, 15)
 
 
 1. 究竟是哪个slice
+
+简单的 = 号其实属于一种浅复制
 ```go
 a:=make([]int,3,4)
 a[0]=1
@@ -99,7 +154,8 @@ a[2]=3
 
 b:=append(a,4)
 c:=append(a,100)
-fmt.Println(&a[0], &b[0], &c[0]) //0xc0000125c0 0xc0000125c0 0xc0000125c0   Found that they use the same memory address
+fmt.Println(&a[0], &b[0], &c[0]) //0xc0000125c0 0xc0000125c0 0xc0000125c0
+//  可以看到这里其实用的是同一个slice
 fmt.Println(a, b, c)//[1 2 3] [1 2 3 100] [1 2 3 100]
 
 c[0] = 101
@@ -108,6 +164,8 @@ fmt.Println(a, b, c)//[101 2 3] [101 2 3 100] [101 2 3 100]
 
 2. 值传递？引用传递？
 
+首先明确，slice是一种struct,struct本身就是值传递
+
 ```go
 y:=[]int{0,0,0}
 add(y)//你可能这样子推论：go里面都是值传递==>所以这里面的改动不会影响到y。可惜，这是错的
@@ -115,78 +173,61 @@ fmt.Println(y)//{1,1,1}  ///wtf？？？？？
 
 
 func add(y []int){
-    // for _,v:=range y{ //这个就不会改变，因为这个v只是值的拷贝
+    //这个就不会改变，因为这个v只是值的拷贝
+    // for _,v:=range y{ 
     //     v++
     // }
+    //但这个会被改变
     for i:=range y{
         y[i]++
     }
 }
 ```
 
+
 ##### 注意：
 其实上面已经提到，slice是一个struct，传入的时候如果仅仅是修改一下元素的内容，是不会对其头部地址进行改变，所以，传入修改其值是可以的;
 
 但是，做一些比如append之类的操作，这样会使整个slice发生变化，**其头部指针指向一个新的slice**，所以原来的slice就不会被改变
 
+针对以上问题的答案也有了：
 
-这里放上扩容的源码:
+1. 因为a,b,c的头指针地址都一样，所以其实它们都指向同一个slice，所以后面对任意一个进行改变，都会覆盖其他的改变;
+
+2. slice作为参数传递进去，其实可以改变其中的元素，在不重新分配内存的情况下会影响到自身。但如果需要（保险为先），必须从返回值或传指针进行修改;
+
+
+### **但是，扩容其实没有那么简单，我注意到growslice下面还要一段源码！**
+### 扩容growslice
 
 ```go
-// growslice handles slice growth during append.
-// It is passed the slice element type, the old slice, and the desired new minimum capacity,
-// and it returns a new slice with at least that capacity, with the old data
-// copied into it.
-// The new slice's length is set to the old slice's length,
-// NOT to the new requested capacity.
-// This is for codegen convenience. The old slice's length is used immediately
-// to calculate where to write new values during an append.
-// TODO: When the old backend is gone, reconsider this decision.
-// The SSA backend might prefer the new length or to return only ptr/cap and save stack space.
-func growslice(et *_type, old slice, cap int) slice {// et 指的是？？？？， old是老的slice，cap是申请的容量
-
-
-    if raceenabled {
-        callerpc := getcallerpc()
-        racereadrangepc(old.array, uintptr(old.len*int(et.size)), callerpc, funcPC(growslice))
-    }
-    if msanenabled {
-        msanread(old.array, uintptr(old.len*int(et.size)))
-    }
-
-    //TODO不懂
-    if et.size == 0 {
-        if cap < old.cap {
-            panic(errorString("growslice: cap out of range"))
-        }
-        // append should not create a slice with nil pointer but non-zero len.
-        // We assume that append doesn't need to preserve old.array in this case.
-        return slice{unsafe.Pointer(&zerobase), old.len, cap}
-    }
-    //-------------计算扩容数量-----------------
-    newcap := old.cap
-    doublecap := newcap + newcap
-    if cap > doublecap {//申请容量 > 2 * 旧的容量
-        newcap = cap
-    } else {
-        if old.len < 1024 {//老容量 < 1024，直接扩成旧的两倍
-            newcap = doublecap
-        } else {
-            // Check 0 < newcap to detect overflow
-            // and prevent an infinite loop.
-            for 0 < newcap && newcap < cap {//好像看见有文章說是1.25倍，但实际并不是，可以往下继续看capmen变量
-                newcap += newcap / 4
-            }
-            // Set newcap to the requested cap when
-            // the newcap calculation overflowed.
-            if newcap <= 0 {//溢出的话就使之等于申请的容量
-                newcap = cap
-            }
-        }
-    }
+func growslice(et *_type, old slice, cap int) slice {// et 是_type指针，详情可以看type文章， old是老的slice，cap是申请的容量
+//新的slice的length会设为旧的slice的length
+    ........
     //-------------以上计算扩容数量结束--------------------
-
-    //-------------TODO以下开始计算内存位置，不但继续计算新的容量大小，还要决定扩容后是否要重新划分内存------------------
+    newcap := old.cap
+	doublecap := newcap + newcap
+	if cap > doublecap {
+		newcap = cap
+	} else {
+		if old.len < 1024 {
+            newcap = doublecap
+            //长度小于1024，新cap直接= len*2
+		} else {
+			// Check 0 < newcap to detect overflow
+            // and prevent an infinite loop.
+            //这里有个检测overflow的小技巧；还有
+			for 0 < newcap && newcap < cap {
+				newcap += newcap / 4
+			}
+			// Set newcap to the requested cap when
+			// the newcap calculation overflowed.
+			if newcap <= 0 {
+				newcap = cap
+			}
+		}
+	}
+    //-------------!!!!以下开始计算内存位置，不但继续计算新的容量大小，还要决定扩容后是否要重新划分内存------------------
     var overflow bool
     var lenmem, newlenmem, capmem uintptr
     // Specialize for common values of et.size.
@@ -197,7 +238,7 @@ func growslice(et *_type, old slice, cap int) slice {// et 指的是？？？？
     case et.size == 1:
         lenmem = uintptr(old.len)
         newlenmem = uintptr(cap)
-        capmem = roundupsize(uintptr(newcap))//这个东西，感觉有关于内存对齐TODO
+        capmem = roundupsize(uintptr(newcap))//这个就是计算新的capmen，当newcap不符合规定内存的大小规格时，会进行roundup内存对齐!!!
         overflow = uintptr(newcap) > maxAlloc
         newcap = int(capmem)
     case et.size == sys.PtrSize://是一个指针大小
@@ -267,14 +308,44 @@ func growslice(et *_type, old slice, cap int) slice {// et 指的是？？？？
 
     return slice{p, old.len, newcap}
 }
+```
+这里可以参照[之前写的日志memManger](./memManage.md)里面有关go的内存管理中
+```go
+func roundupsize(size uintptr) uintptr{}
+```
+
+即会对传入类型进行内存对齐,这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！
+
+我们做一个实验:
+```go
+
+t := make([]int, 1000, 1000)
+log.Printf("%+v", cap(t))
+t = append(t, 1,2,3,4,5)
+log.Printf("%+v", cap(t))
+```
+
+结果得出的是1000和2048，符合<1024 则*2
+
+```go
+t := make([]int, 1024, 1024)
+log.Printf("%+v", cap(t))
+t = append(t, 1,2,3,4,5)
+log.Printf("%+v", cap(t))
+```
+
+结果是1024和1280 ，符合>1024 则 ×1.25倍
+
+
+```go
+t := make([]int, 1025, 1025)
+log.Printf("%+v", cap(t))
+t = append(t, 1,2,3,4,5)
+log.Printf("%+v", cap(t))
 
 ```
-针对以上问题的答案也有了：
+1025,1360 ,符合 
 
-1. 因为a,b,c的头指针地址都一样，所以其实它们都指向同一个slice，所以后面对任意一个进行改变，都会覆盖其他的改变
-
-
-2. slice作为参数传递进去，其实可以改变其中的元素，但是不能改变自己。如果需要，必须从返回值或传指针入手
 
 
 

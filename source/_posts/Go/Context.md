@@ -390,6 +390,9 @@ type valueCtx struct {
 }
 ```
 
+一个简单的kv结构，但是一个ctx只支持一对kv，多了的话会构成一颗**树型**的结构
+
+
 首先可以确认它是一个**Context** ，它的独立方法只有两个，其他都是继承context：
 ```go
 func (c *valueCtx) String() string {
@@ -415,14 +418,21 @@ Export出去的创建一个valueCtx的方法：
 //
 // Use context Values only for request-scoped data that transits processes and
 // APIs, not for passing optional parameters to functions.
-//
+
+//这里很明白地说明了，context值是被设计为在进程间或者API间request的存储值，而不是为了传入一些可选的参数给函数
+
 // The provided key must be comparable and should not be of type
 // string or any other built-in type to avoid collisions between
 // packages using context. Users of WithValue should define their own
-// types for keys. To avoid allocating when assigning to an
+// types for keys. 
+//还要注意这里，WithValue的key必须是可比较的，不能是string或者其他built-in type，目的是避免不同用的context包的冲突
+
+//To avoid allocating when assigning to an
 // interface{}, context keys often have concrete type
 // struct{}. Alternatively, exported context key variables' static
 // type should be a pointer or interface.
+//为了避免？？？ context的key一般是有确切的类型struct，或者是exported出去的key静态类型为指针或者interface
+
 func WithValue(parent Context, key, val interface{}) Context {
 	if key == nil {
 		panic("nil key")
@@ -458,10 +468,8 @@ WithValue（）规定了：
 
 ##### 流程
 1. 判断key是否为空，key的类型是否合法
-2. 返回一个有parent指针的valueCtx;所以，创建valueCtx是可以从parent开始一级一级往下创建，如下图：
+2. 返回一个有parent指针的valueCtx;所以，创建valueCtx是可以从parent开始一级一级往下创建(树)，如下图：
 ![valueCtx](/img/valueCtx.png)
-
-
 
 
 #### timerCtx
