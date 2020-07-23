@@ -440,6 +440,20 @@ func systemstack(fn func())
 
 ### 一个大概的go程序启动流程
 
+golang注释中有大概写明:
+```go
+// The bootstrap sequence is:
+//
+//	call osinit
+//	call schedinit
+//	make & queue new G
+//	call runtime·mstart
+// The new G calls runtime·main.
+```
+
+
+
+
 go程序的入口点是runtime.rt0_go, 流程是:
 
 1. 分配栈空间, 需要2个本地变量+2个函数参数, 然后向8对齐
@@ -473,7 +487,13 @@ go程序的入口点是runtime.rt0_go, 流程是:
 
 4. 调用runtime.schedinit执行共同的初始化
 
-这里的处理比较多, 会初始化栈空间分配器, GC, 按cpu核心数量或GOMAXPROCS的值生成P等
+这里的处理比较多, 
+- 首先会调用raceinit()检查race condition
+- 会初始化栈空间分配器(stackinit), 
+- mallocinit()
+- mcommoninit(_g_.m),这里是一些公共初始化
+- 按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)
+- alginit
 
 生成P的处理在procresize中
 
@@ -484,17 +504,6 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;
 
 - 启动后m0会不断从运行队列获取G并运行, runtime.mstart调用后不会返回
 - runtime.mstart这个函数是m的入口点(不仅仅是m0), 在下面的"调度器的实现"中会详细讲解
-
-golang注释中有大概写明:
-```go
-// The bootstrap sequence is:
-//
-//	call osinit
-//	call schedinit
-//	make & queue new G
-//	call runtime·mstart
-// The new G calls runtime·main.
-```
 
 
 

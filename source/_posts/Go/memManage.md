@@ -3,6 +3,7 @@ title: Golang Memory Allocator
 date: 2020-02-24 22:10
 tags: golang
 ---
+
 <!--more-->
 
 # golang内存管理
@@ -13,6 +14,10 @@ go的内存管理是基于tcmalloc，[这个连接](http://goog-perftools.source
 ## 基本数据结构
 
 类似于[TCMalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)
+
+大概概括:
+其目的是 减少多线程对内存请求时候的锁竞争，在对小内存的申请时甚至可以无锁操作，获取大内存时用spinlocks；但是其在TLS会预分配一部分空间，所以启动时相比dlmalloc等其他内存分配器空间较大，但是最终会接近;
+
 
 **class_to_allocnpages**总共有67个范围
 
@@ -32,7 +37,7 @@ go的内存管理是基于tcmalloc，[这个连接](http://goog-perftools.source
 
 - fixalloc
 
-一个不定长度的列表，用来管理**不在堆上**的固定的对象
+一个不定长度的列表，用来管理**不在堆上**的固定的对象，这些对象都是runtime上大小固定的结构，比如mspan，mcache
 
 - mheap:
 
@@ -221,90 +226,8 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 
 	noscan := typ == nil || typ.ptrdata == 0
 	if size <= maxSmallSize {
-		if noscan && size < maxTinySize {
-			// Tiny allocator.
-			//
-			//一种分配器
-			// Tiny allocator combines several tiny allocation requests
-			// into a single memory block. The resulting memory block
-			// is freed when all subobjects are unreachable. The subobjects
-			// must be noscan (don't have pointers), this ensures that
-			// the amount of potentially wasted memory is bounded.
-			//
-			// Size of the memory block used for combining (maxTinySize) is tunable.
-			// Current setting is 16 bytes, which relates to 2x worst case memory
-			// wastage (when all but one subobjects are unreachable).
-			// 8 bytes would result in no wastage at all, but provides less
-			// opportunities for combining.
-			// 32 bytes provides more opportunities for combining,
-			// but can lead to 4x worst case wastage.
-			// The best case winning is 8x regardless of block size.
-			//
-			// Objects obtained from tiny allocator must not be freed explicitly.
-			// So when an object will be freed explicitly, we ensure that
-			// its size >= maxTinySize.
-			//
-			// SetFinalizer has a special case for objects potentially coming
-			// from tiny allocator, it such case it allows to set finalizers
-			// for an inner byte of a memory block.
-			//
-			// The main targets of tiny allocator are small strings and
-			// standalone escaping variables. On a json benchmark
-			// the allocator reduces number of allocations by ~12% and
-			// reduces heap size by ~20%.
-			off := c.tinyoffset
-			// Align tiny pointer for required (conservative) alignment.
-			if size&7 == 0 {
-				off = round(off, 8)
-			} else if size&3 == 0 {
-				off = round(off, 4)
-			} else if size&1 == 0 {
-				off = round(off, 2)
-			}
-			if off+size <= maxTinySize && c.tiny != 0 {
-				// The object fits into existing tiny block.
-				x = unsafe.Pointer(c.tiny + off)
-				c.tinyoffset = off + size
-				c.local_tinyallocs++
-				mp.mallocing = 0
-				releasem(mp)
-				return x
-			}
-			// Allocate a new maxTinySize block.
-			span := c.alloc[tinySpanClass]
-			v := nextFreeFast(span)
-			if v == 0 {
-				v, _, shouldhelpgc = c.nextFree(tinySpanClass)
-			}
-			x = unsafe.Pointer(v)
-			(*[2]uint64)(x)[0] = 0
-			(*[2]uint64)(x)[1] = 0
-			// See if we need to replace the existing tiny block with the new one
-			// based on amount of remaining free space.
-			if size < c.tinyoffset || c.tiny == 0 {
-				c.tiny = uintptr(x)
-				c.tinyoffset = size
-			}
-			size = maxTinySize
-		} else {
-			var sizeclass uint8
-			if size <= smallSizeMax-8 {
-				sizeclass = size_to_class8[(size+smallSizeDiv-1)/smallSizeDiv]
-			} else {
-				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv-1)/largeSizeDiv]
-			}
-			size = uintptr(class_to_size[sizeclass])
-			spc := makeSpanClass(sizeclass, noscan)
-			span := c.alloc[spc]
-			v := nextFreeFast(span)
-			if v == 0 {
-				v, span, shouldhelpgc = c.nextFree(spc)
-			}
-			x = unsafe.Pointer(v)
-			if needzero && span.needzero != 0 {
-				memclrNoHeapPointers(unsafe.Pointer(v), size)
-			}
-		}
+		...
+		//tiny allocator分配方式的代码
 	} else {
 		var s *mspan
 		shouldhelpgc = true
@@ -400,11 +323,187 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 ```
 
 
+### 各种分配器
 
+#### TinyAllocator
+上面的源代码中，当size<=maxSmallSize时，实际上调用了一种tinyAllocator的分配器
 
-### 内存分配器
+该分配是 **会结合多个申请内存请求 成为 申请一个内存块的请求(即合并小对象存储下来)**；
+所以当所有的子对象都不可达时，这个内存块才会被释放（同时这些对象一定不含指针，这个很好理解，有指针又要从指针处进行可达性查询）
+作用是**避免可能内存浪费**
 
-上面代码中注意一个**tinyallocator**
+其中这个maxTinySize是可调整的，调整成8bytes就一定不会浪费任何内存（一个页就8B），但是这样就没什么意义（不用combine）
+照这个道理，16bytes就可能会造成2× 最坏情况的内存浪费，32B就会造成4×最坏情况的内存浪费
+
+- 其中从tinyallocator分配的对象不能被显式释放(?)，所以每次我们显式释放对象的时候，自然的要保证这个对象是大于maxTinySize
+
+- 主要的对象是一些小字符串和一些独立的变量，json的benchmark使用了这个分配器，减少了20%的堆size
+
+其结构![如图](img/tinyObjects.png)
+
+- 每个P在本地维护了专门的memory block来存储tinyObject，分配时根据tinyoffset和需要的size及对齐来判断该block是否容纳该object，如果可以就返回地址
+
+```go
+
+func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
+	....
+	//maxSmallsize = 32786
+	if size<=maxSmallSize {
+		//申请对象不含指针且小于16B则会调用tiny allocator
+		if noscan && size < maxTinySize {
+			// Tiny allocator.
+			//
+			//一种分配器
+			// Tiny allocator combines several tiny allocation requests
+			// into a single memory block. The resulting memory block
+			// is freed when all subobjects are unreachable. The subobjects
+			// must be noscan (don't have pointers), this ensures that
+			// the amount of potentially wasted memory is bounded.
+			//
+			// Size of the memory block used for combining (maxTinySize) is tunable.
+			// Current setting is 16 bytes, which relates to 2x worst case memory
+			// wastage (when all but one subobjects are unreachable).
+			// 8 bytes would result in no wastage at all, but provides less
+			// opportunities for combining.
+			// 32 bytes provides more opportunities for combining,
+			// but can lead to 4x worst case wastage.
+			// The best case winning is 8x regardless of block size.
+			//
+			// Objects obtained from tiny allocator must not be freed explicitly.
+			// So when an object will be freed explicitly, we ensure that
+			// its size >= maxTinySize.
+			//
+			// SetFinalizer has a special case for objects potentially coming
+			// from tiny allocator, it such case it allows to set finalizers
+			// for an inner byte of a memory block.
+			//
+			// The main targets of tiny allocator are small strings and
+			// standalone escaping variables. On a json benchmark
+			// the allocator reduces number of allocations by ~12% and
+			// reduces heap size by ~20%.
+			off := c.tinyoffset
+			// Align tiny pointer for required (conservative) alignment.
+			if size&7 == 0 {
+				off = round(off, 8)
+			} else if size&3 == 0 {
+				off = round(off, 4)
+			} else if size&1 == 0 {
+				off = round(off, 2)
+			}
+			if off+size <= maxTinySize && c.tiny != 0 {
+				// The object fits into existing tiny block.
+				//该对象适合于已有的tinyblock
+				x = unsafe.Pointer(c.tiny + off)
+				c.tinyoffset = off + size
+				c.local_tinyallocs++
+				mp.mallocing = 0
+				releasem(mp)
+				return x
+			}
+			// Allocate a new maxTinySize block.
+			span := c.alloc[tinySpanClass]
+			v := nextFreeFast(span)
+			if v == 0 {
+				v, _, shouldhelpgc = c.nextFree(tinySpanClass)
+			}
+			x = unsafe.Pointer(v)
+			(*[2]uint64)(x)[0] = 0
+			(*[2]uint64)(x)[1] = 0
+			// See if we need to replace the existing tiny block with the new one
+			// based on amount of remaining free space.
+			if size < c.tinyoffset || c.tiny == 0 {
+				c.tiny = uintptr(x)
+				c.tinyoffset = size
+			}
+			size = maxTinySize
+		} else {
+			//在32KB以内，16B以上的
+			var sizeclass uint8
+			//smallSizeMax = 1024
+			if size <= smallSizeMax-8 {
+				sizeclass = size_to_class8[(size+smallSizeDiv-1)/smallSizeDiv]
+			} else {
+				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv-1)/largeSizeDiv]
+			}
+			size = uintptr(class_to_size[sizeclass])
+			spc := makeSpanClass(sizeclass, noscan)
+			span := c.alloc[spc]
+			v := nextFreeFast(span)
+			if v == 0 {
+				v, span, shouldhelpgc = c.nextFree(spc)
+			}
+			x = unsafe.Pointer(v)
+			if needzero && span.needzero != 0 {
+				memclrNoHeapPointers(unsafe.Pointer(v), size)
+			}
+		}
+	}else{
+		....
+	}
+	....
+}
+```
+
+#### fixAlloc
+
+因为我们的都知道go分配对象是在go gc heap中，并且由mspan，mcache，mcentral这些结构管理，但是这些结构的对象又是在哪里管理和分配呢？
+
+fixalloc就是做这个的：
+前面讲到fixalloc都是mheap中固定的结构
+
+- 主要目的就是一次性分配一大块内存(注意persistentalloc方法，使用是mmap，不指定地址，分配内存不再arena范围内，从进程空间获得可能百来KB)，
+每次请求对应的结构体大小，释放时就放在list链表中
+
+大概的分配有以下集中
+```go
+type mheap struct{
+	...
+	spanalloc             fixalloc // allocator for span*
+	cachealloc            fixalloc // allocator for mcache*
+	treapalloc            fixalloc // allocator for treapNodes*
+	specialfinalizeralloc fixalloc // allocator for specialfinalizer*
+	specialprofilealloc   fixalloc // allocator for specialprofile*
+	speciallock           mutex    // lock for special record allocators.
+	arenaHintAlloc        fixalloc // allocator for arenaHints
+	...
+}
+```
+
+#### stackCache
+
+在mcache结构上
+
+```go
+// Number of orders that get caching. Order 0 is FixedStack
+	// and each successive order is twice as large.
+	// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks
+	// will be allocated directly.
+	// Since FixedStack is different on different systems, we
+	// must vary NumStackOrders to keep the same maximum cached size.
+	//   OS               | FixedStack | NumStackOrders
+	//   -----------------+------------+---------------
+	//   linux/darwin/bsd | 2KB        | 4
+	//   windows/32       | 4KB        | 3
+	//   windows/64       | 8KB        | 2
+	//   plan9            | 4KB        | 3
+_NumStackOrders = 4 - sys.PtrSize/4*sys.GoosWindows - 1*sys.GoosPlan9
+type mcache struct{
+	...
+	stackcache [_NumStackOrders]stackfreelist 
+	...
+}
+type stackfreelist struct {
+	list gclinkptr // linked list of free stacks
+	size uintptr   // total size of stacks in list
+}
+```
+大概结构![如图](img/stackCache.png)
+
+stackCache是per-P的，在另外一篇文章[goroutine](../goroutine.html)上讲过，主要用于分配goroutine的stack，同普通内存一样
+其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级
+
+其中 > 16K的直接从全局stacklarge分配
+否则按照先从P的stackcache分配=> 如果无法分配 => 从全局stackpool分配一批stack(stackpoolalloc)，赋给该p的stackcache，再从local stackcache分配
 
 ### 一些重要参数
 
