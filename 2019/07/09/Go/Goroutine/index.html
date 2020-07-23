@@ -14,7 +14,7 @@
 <meta property="og:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/2019/07/09/Go/Goroutine/img/sysmon.png">
-<meta property="og:updated_time" content="2020-07-21T15:53:42.412Z">
+<meta property="og:updated_time" content="2020-07-23T14:29:15.973Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Goroutine Notes">
 <meta name="twitter:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo">
@@ -257,6 +257,8 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 </ul>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// systemstack runs fn on a system stack.</span></span><br><span class="line"><span class="comment">// If systemstack is called from the per-OS-thread (g0) stack, or</span></span><br><span class="line"><span class="comment">// if systemstack is called from the signal handling (gsignal) stack,</span></span><br><span class="line"><span class="comment">// systemstack calls fn directly and returns.</span></span><br><span class="line"><span class="comment">// Otherwise, systemstack is being called from the limited stack</span></span><br><span class="line"><span class="comment">// of an ordinary goroutine. In this case, systemstack switches</span></span><br><span class="line"><span class="comment">// to the per-OS-thread stack, calls fn, and switches back.</span></span><br><span class="line"><span class="comment">// It is common to use a func literal as the argument, in order</span></span><br><span class="line"><span class="comment">// to share inputs and outputs with the code around the call</span></span><br><span class="line"><span class="comment">// to system stack:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	... set up y ...</span></span><br><span class="line"><span class="comment">//	systemstack(func() &#123;</span></span><br><span class="line"><span class="comment">//		x = bigcall(y)</span></span><br><span class="line"><span class="comment">//	&#125;)</span></span><br><span class="line"><span class="comment">//	... use x ...</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//go:noescape</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">systemstack</span><span class="params">(fn <span class="keyword">func</span>()</span>)</span></span><br></pre></td></tr></table></figure>
 <h3>一个大概的go程序启动流程</h3>
+<p>golang注释中有大概写明:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The bootstrap sequence is:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	call osinit</span></span><br><span class="line"><span class="comment">//	call schedinit</span></span><br><span class="line"><span class="comment">//	make &amp; queue new G</span></span><br><span class="line"><span class="comment">//	call runtime·mstart</span></span><br><span class="line"><span class="comment">// The new G calls runtime·main.</span></span><br></pre></td></tr></table></figure>
 <p>go程序的入口点是runtime.rt0_go, 流程是:</p>
 <ol>
 <li>分配栈空间, 需要2个本地变量+2个函数参数, 然后向8对齐</li>
@@ -282,7 +284,15 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <ol start="4">
 <li>调用runtime.schedinit执行共同的初始化</li>
 </ol>
-<p>这里的处理比较多, 会初始化栈空间分配器, GC, 按cpu核心数量或GOMAXPROCS的值生成P等</p>
+<p>这里的处理比较多,</p>
+<ul>
+<li>首先会调用raceinit()检查race condition</li>
+<li>会初始化栈空间分配器(stackinit),</li>
+<li>mallocinit()</li>
+<li>mcommoninit(<em>g</em>.m),这里是一些公共初始化</li>
+<li>按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)</li>
+<li>alginit</li>
+</ul>
 <p>生成P的处理在procresize中</p>
 <ol start="5">
 <li>
@@ -297,8 +307,6 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
 <li>启动后m0会不断从运行队列获取G并运行, runtime.mstart调用后不会返回</li>
 <li>runtime.mstart这个函数是m的入口点(不仅仅是m0), 在下面的&quot;调度器的实现&quot;中会详细讲解</li>
 </ul>
-<p>golang注释中有大概写明:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The bootstrap sequence is:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	call osinit</span></span><br><span class="line"><span class="comment">//	call schedinit</span></span><br><span class="line"><span class="comment">//	make &amp; queue new G</span></span><br><span class="line"><span class="comment">//	call runtime·mstart</span></span><br><span class="line"><span class="comment">// The new G calls runtime·main.</span></span><br></pre></td></tr></table></figure>
 <h3>runtime.main之后</h3>
 <p>第一个被调度的G会运行runtime.main, 流程是:</p>
 <p>标记主函数已调用, 设置mainStarted = true</p>
@@ -320,7 +328,7 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckcw5ou83003f8d55x3g4uyj9" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckcyw74xn000yke55mmpwroa5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
