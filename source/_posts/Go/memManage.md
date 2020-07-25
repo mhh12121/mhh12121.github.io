@@ -31,9 +31,86 @@ go的内存管理是基于tcmalloc，[这个连接](http://goog-perftools.source
 	全局有 67 × 2 (?) 个对应不同size的span **后备**mcentral 
 收集所有特定size的span，如果也被用完，则再次转向mheap申请
 
+```go
+type mheap struct{
+	...
+	// central free lists for small size classes.
+	// the padding makes sure that the mcentrals are
+	// spaced CacheLinePadSize bytes apart, so that each mcentral.lock
+	// gets its own cache line.
+	// central is indexed by spanClass.
+	//numSpanClasses = _NumSizeClasses << 1 = 134
+	central [numSpanClasses]struct {
+		mcentral type mcentral struct {
+					lock      mutex
+					spanclass spanClass
+					nonempty  mSpanList // list of spans with a free object, ie a nonempty free list
+					empty     mSpanList // list of spans with no free objects (or cached in an mcache)
+
+					// nmalloc is the cumulative count of objects allocated from
+					// this mcentral, assuming all spans in mcaches are
+					// fully-allocated. Written atomically, read under STW.
+					nmalloc uint64
+				}
+		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral{})%cpu.CacheLinePadSize]byte
+	}
+	....
+}
+
+```
+代码中的pad是用作分割多个mcentral，以CacheLinePadSize个Bytes分割开，所以每一个mcentral的lock可以得到自己的cache line
+我认为可以看做是内存对齐的一种方法(???是不是捏)
+
 - mcache
 
 	多层次的cache用来减少分配冲突，mcache是per-P的，所以无锁，mspan的每个P(process)下的可用cache空间；小于16B直接使用P中的macache
+```go
+	// Per-thread (in Go, per-P) cache for small objects.
+// No locking needed because it is per-thread (per-P).
+//
+// mcaches are allocated from non-GC'd memory, so any heap pointers
+// must be specially handled.
+//
+//因为只用作local P，所以自然无锁
+//go:notinheap
+//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中
+type mcache struct {
+	// The following members are accessed on every malloc,
+	// so they are grouped here for better caching.
+	next_sample uintptr // trigger heap sample after allocating this many bytes
+	local_scan  uintptr // bytes of scannable heap allocated
+
+	// Allocator cache for tiny objects w/o pointers.
+	// See "Tiny allocator" comment in malloc.go.
+	//具体可以见下面的tiny allocator分配器
+	// tiny points to the beginning of the current tiny block, or
+	// nil if there is no current tiny block.
+	//
+	// tiny is a heap pointer. Since mcache is in non-GC'd memory,
+	// we handle it by clearing it in releaseAll during mark
+	// termination.
+	tiny             uintptr
+	tinyoffset       uintptr
+	local_tinyallocs uintptr // number of tiny allocs not counted in other stats
+
+	// The rest is not accessed on every malloc.
+
+	alloc [numSpanClasses]*mspan // spans to allocate from, indexed by spanClass
+
+	stackcache [_NumStackOrders]stackfreelist
+
+	// Local allocator stats, flushed during GC.
+	local_largefree  uintptr                  // bytes freed for large objects (>maxsmallsize)
+	local_nlargefree uintptr                  // number of frees for large objects (>maxsmallsize)
+	local_nsmallfree [_NumSizeClasses]uintptr // number of frees for small objects (<=maxsmallsize)
+
+	// flushGen indicates the sweepgen during which this mcache
+	// was last flushed. If flushGen != mheap_.sweepgen, the spans
+	// in this mcache are stale and need to the flushed so they
+	// can be swept. This is done in acquirep.
+	flushGen uint32
+}
+```
 
 - fixalloc
 
@@ -339,7 +416,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 
 - 主要的对象是一些小字符串和一些独立的变量，json的benchmark使用了这个分配器，减少了20%的堆size
 
-其结构![如图](img/tinyObjects.png)
+其结构![如图](/img/tinyObjects.png)
 
 - 每个P在本地维护了专门的memory block来存储tinyObject，分配时根据tinyoffset和需要的size及对齐来判断该block是否容纳该object，如果可以就返回地址
 
@@ -497,7 +574,7 @@ type stackfreelist struct {
 	size uintptr   // total size of stacks in list
 }
 ```
-大概结构![如图](img/stackCache.png)
+大概结构![如图](/img/stackCache.png)
 
 stackCache是per-P的，在另外一篇文章[goroutine](../goroutine.html)上讲过，主要用于分配goroutine的stack，同普通内存一样
 其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级
@@ -517,6 +594,7 @@ stackCache是per-P的，在另外一篇文章[goroutine](../goroutine.html)上�
 
 
 由以上参数结合代码其实可以知道大概span在内存中有几种状态:
+
 1. idle不包含对象或者其他数据，空闲的物理内存可以释放回OS（虚拟地址不会释放！！！），或者将其转换成inuse状态或者stack span
 
 2. inuse,至少包含一个mheap，并且可能有空闲空间分配更多堆对象
@@ -555,8 +633,10 @@ func round(n, a uintptr) uintptr {
 
 <a id="sizetoclass">[sizetoclass]</a>
 实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：
+每个span都带有一个sizeclass，即表明该span的page应该被怎么用；
 
->> class0表示单独分配一个>32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	=134个class
+
+>> class0表示单独分配一个>32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	= 134个class (即上面提到的numSpanClasses)
 
 
 ```go

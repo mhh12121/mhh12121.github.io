@@ -4,6 +4,7 @@ date: 2020-05-03 14:20
 tags: Golang
 ---
 
+<!--more-->
 
 比较容易混淆三种值:
 
@@ -17,6 +18,7 @@ uintptr
  // Pointer represents a pointer to an arbitrary type. There are four special operations
 // available for type Pointer that are not available for other types:
 //	- A pointer value of any type can be converted to a Pointer.
+//gc的时候会有write barrier
 unsafe.Pointer(&a)
 //	- A Pointer can be converted to a pointer value of any type.
 (*string)(unsafe.Pointer(somePointer))
@@ -34,6 +36,7 @@ tmp := uintptr(unsafe.Pointer(&x)) + unsafe.Offsetof(x.b)
 pb := (*int16)(unsafe.Pointer(tmp))
 *pb = 42
 ```
+
 这里主要跟gc的实现有关系，有时候垃圾回收器会移动（整理）一些变量来降低碎片度；变量被移动后当然其地址也会被改变，这个指针就要指向新地址。
 
 而上面这段代码中unsafe.Pointer就是一个**指向变量的指针**，被移动后就要改变，但是tmp实际在这段代码中却是作为一个**普通的整数**，值不应该被改变!
@@ -58,7 +61,7 @@ func Bytes2String(b []byte) string{
 
 ## uinputr
 
-uintptr是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象
+uintptr是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象（很自然就不会有写屏障)
 
 
 ```go

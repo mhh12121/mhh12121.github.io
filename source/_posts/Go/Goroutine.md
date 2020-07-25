@@ -4,8 +4,9 @@ date: 2019-07-09 01:00
 tags: Golang
 ---
 
-Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo
+Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑
 <!--more-->
+
 ## 为什么有这个东西？
 1. 传统OS自带的线程一个占栈1MB，明显大的过分，所以编程语言自身得另外实现一些小的线程, 而goroutines一般就4KB左右，当然这个数值是可以调整的；
 
@@ -63,7 +64,7 @@ GPM
 
 #### 相关状态转换
 
-[一个状态图](/img/gstatus.png)
+![一个状态图](/img/gstatus.png)
 
 当有新的Goroutine被创建或者是现存的goroutine更新为runnable状态，它会被push到当前P的runnable goroutine list里面，
 当P完成了执行goroutine，它会
@@ -97,7 +98,7 @@ func runtime_procUnpin() //解除抢占标志
 
 sysmon是在**runtime初始化之后，执行代码之前**，由runtime启动且不与任何P绑定直接由一个M执行的协程，类似于linux的一些系统任务内核线程
 
-具体设置如![sysmon状态转换图](img/sysmon.png)
+具体设置如![sysmon状态转换图](/img/sysmon.png)
 
 
 ### 各个结构体
@@ -349,10 +350,57 @@ type p struct {
 ```
 
 - SchedDt 调度结构
+
 ```go
+type schedt struct{
+	lock mutex//锁用于调用globalq的时候使用
 
+	// When increasing nmidle, nmidlelocked, nmsys, or nmfreed, be
+	// sure to call checkdead().
+	//空闲的m
+	midle        muintptr // idle m's waiting for work
+	nmidle       int32    // number of idle m's waiting for work
+	nmidlelocked int32    // number of locked m's waiting for work
+	mnext        int64    // number of m's that have been created and next M ID
+	maxmcount    int32    // maximum number of m's allowed (or die)
+	nmsys        int32    // number of system m's not counted for deadlock
+	nmfreed      int64    // cumulative number of freed m's
 
+	ngsys uint32 // number of system goroutines; updated atomically
+	//空闲的p
+	pidle      puintptr // idle p's
+	npidle     uint32
+	//在spinning状态的m的数量
+	nmspinning uint32 // See "Worker thread parking/unparking" comment in proc.go.
+
+	// Global runnable queue.
+	//可运行 的globalq
+	runq     gQueue
+	runqsize int32
+
+	// disable controls selective disabling of the scheduler.
+	//
+	// Use schedEnableUser to control this.
+	//
+	// disable is protected by sched.lock.
+	disable struct {
+		// user disables scheduling of user goroutines.
+		user     bool
+		runnable gQueue // pending runnable Gs
+		n        int32  // length of runnable
+	}
+
+	// Global cache of dead G's.
+	//全局空余剩下的g
+	gFree struct {
+		lock    mutex
+		stack   gList // Gs with stacks
+		noStack gList // Gs without stacks
+		n       int32
+	}
+}
 ```
+
 相关结构可以在runtime/runtime2.go 中找到
 
 P在GOMAXPROCS中，所有的P被组织成一个数组，当GOMAXPROCS改变时会触发 stop the world来重新调整P 数组的长度
@@ -394,13 +442,19 @@ morestack()--> newstack()--> gopreempt_m() --> goschedImpl() --> schedule()
 1. 遇到阻塞的情况，怎么扩展进程池，使其不会因为任务阻塞或者同步独占线程
 
 
-1. goroutine类似green threads（Green threads），是application自己维护的执行过程；很多goroutines实际上被有限个操作系统管理的threads执行;
-2. goroutine的调度往往发生在I/O和系统调用的时候。如果创建的goroutines都是跑for循环做纯计算（没有I/O），那就需要我们自己时不常的调用 runtime.Gosched()，否则那几个在thread上跑的goroutines会霸占着threads，不让其他goroutines有机会跑起来;
+2. goroutine类似green threads（Green threads），是application自己维护的执行过程；很多goroutines实际上被有限个操作系统管理的threads执行;
+3. goroutine的调度往往发生在I/O和系统调用的时候。如果创建的goroutines都是跑for循环做纯计算（没有I/O），那就需要我们自己时不常的调用 runtime.Gosched()，否则那几个在thread上跑的goroutines会霸占着threads，不让其他goroutines有机会跑起来;
 
-3. 用户代码造成的协程同步造成的阻塞，只是切换(gopark)协程，而不是阻塞线程，**m和p仍结合**，去寻找新的可执行的g;
+4. 用户代码造成的协程同步造成的阻塞，只是切换(gopark)协程，而不是阻塞线程，**m和p仍结合**，去寻找新的可执行的g;
 
-4. 上层封装了epoll，网络fd会设置成NonBlocking模式，返回EAGAIN则gopark当前goroutine，在m调度，sysmon中，gc start the world等阶段均会poll出ready的goroutine进行运行或者添加到全局runq中
+5. 上层封装了epoll，网络fd会设置成NonBlocking模式，返回EAGAIN则gopark当前goroutine，在m调度，sysmon中，gc start the world等阶段均会poll出ready的goroutine进行运行或者添加到全局runq中
 
+**一些小细节**
+代码经常发现一些编辑器生成的//go:nosplit字样
+
+>> The //go:nosplit directive specifies that the next function declared in the file must not include a stack overflow check. This is most commonly used by low-level runtime sources invoked at times when it is unsafe for the calling goroutine to be preempted.
+
+大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用
 
 ## SystemStack
 
@@ -451,9 +505,6 @@ golang注释中有大概写明:
 // The new G calls runtime·main.
 ```
 
-
-
-
 go程序的入口点是runtime.rt0_go, 流程是:
 
 1. 分配栈空间, 需要2个本地变量+2个函数参数, 然后向8对齐
@@ -485,25 +536,107 @@ go程序的入口点是runtime.rt0_go, 流程是:
 
 这里(linux x64)设置了全局变量ncpu等于cpu核心数量
 
-4. 调用runtime.schedinit执行共同的初始化
+4. 调用**runtime.schedinit()**执行共同的初始化
 
-这里的处理比较多, 
+这里的处理比较多:
+
 - 首先会调用raceinit()检查race condition
-- 会初始化栈空间分配器(stackinit), 
+
+- 然后进接这tracebackinit()和moduledateverify()，分别为一些变量提前初始化和包的验证
+```go
+func tracebackinit() {
+	// Go variable initialization happens late during runtime startup.
+	// Instead of initializing the variables above in the declarations,
+	// schedinit calls this function so that the variables are
+	// initialized and available earlier in the startup sequence.
+	skipPC = funcPC(skipPleaseUseCallersFrames)
+}
+
+```
+- 会初始化栈空间分配器(stackinit)
+```go
+func stackinit() {
+	//// Per-P, per order stack segment cache size.
+	//_StackCacheSize = 32 * 1024
+	// stack的分段大小一定要是pagesize的倍数（容易理解，方便对齐）
+	//_PageShift = 13
+	//_PageSize = 1 << _PageShift = 8192
+	//_PageMask = _PageSize - 1
+	if _StackCacheSize&_PageMask != 0 {
+		throw("cache size must be a multiple of page size")
+	}
+	//stackpool就是一个span的双向链表
+	for i := range stackpool {
+		stackpool[i].init()
+	}
+	// stackLarge的free是一个list ， 大小为 log_2(s.npages)
+	for i := range stackLarge.free {
+		stackLarge.free[i].init()
+	}
+}
+```
+
+
+这里插入一副<s>盗</s>借来的![图](/img/mheap.png)
+更加明确发现一些奇怪的特点
+
 - mallocinit()
+
+	1. 这个最主要是检查page，huge page大小是不是2的倍数以及是不是大于最小页大小(4KB)
+	2. 然后就初始化 heap，在memManage 那篇文章有讲到,会初始化多个fixalloc，包括treap，span，cache，specialfinalizer，specialprofile，arenaHint
+	还有getg()获得当前g的指针，以及初始化当前mcache(allocmcache())
+	3. 创建初始化的arena区域(即是heap)的增长规则,注意在64bit机器中，其做了一些优化:
+		从中间空间开始分配,如上面的图一样，
+		- 可以更加容易地增长连续空间
+		- 使其更加容易debug
+		- 为了gccgo区别于其他数据
+		- UTF8编码
+
+
 - mcommoninit(_g_.m),这里是一些公共初始化
+	主要对_g_.m即自己的m进行一些初始化
+
 - 按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)
+
+```go
+	cpuinit()       // must run before alginit
+```
+
 - alginit
 
-生成P的处理在procresize中
+```go
+	alginit()       // maps must not be used before this call
+```
 
+- 生成P的处理在procresize中
+
+更改了P的数目，期间stop the world并锁住sched，返回本地的所有p
+```go
+func schedinit(){
+	...
+	sched.lastpoll = uint64(nanotime())
+	procs := ncpu
+	if n, ok := atoi32(gogetenv("GOMAXPROCS")); ok && n > 0 {
+		procs = n
+	}
+	if procresize(procs) != nil {
+		throw("unknown runnable goroutine during bootstrap")
+	}
+	...
+}
+// Change number of processors. The world is stopped, sched is locked.
+// gcworkbufs are not being modified by either the GC or
+// the write barrier code.
+// Returns list of Ps with local work, they need to be scheduled by the caller.
+func procresize(nprocs int32) *p { ... }
+```
 5. 调用runtime.newproc创建一个新的goroutine, 指向的是runtime.main
 runtime.newproc这个函数在创建普通的goroutine时也会使用;
 
 6. 调用runtime·mstart启动m0
 
-- 启动后m0会不断从运行队列获取G并运行, runtime.mstart调用后不会返回
-- runtime.mstart这个函数是m的入口点(不仅仅是m0), 在下面的"调度器的实现"中会详细讲解
+	- 启动后m0会不断从运行队列获取G并运行, runtime.mstart调用后不会返回
+	- runtime.mstart这个函数是m的入口点(不仅仅是m0), 在下面的"调度器的实现"中会详细讲解
 
 
 
