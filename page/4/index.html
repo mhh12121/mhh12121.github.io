@@ -66,6 +66,69 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-java/Java-Class" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/06/05/java/Java-Class/" class="article-date">
+  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/06/05/java/Java-Class/">class loading</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <a id="more"></a>
+<p>##类的加载</p>
+<h3>双亲委托模型</h3>
+<p>双亲委派指的就是
+类加载器需要加载类的时候，会先把请求委托给父类加载器，依次递归，如果父类能完成，就返回，只有父类或祖类等无法完成，才自己加载;</p>
+<p>JVM预定义的三个类型的加载器（classloader）</p>
+<ol>
+<li>Bootstrap加载器
+一般在&lt;JAVA_RUNTIME_HOME&gt;/lib下的类库加载到内存中，因为其涉及JVM本身实现细节，使用C++实现，所以开发者没法获得其引用</li>
+<li>Extension类加载器
+sun的ExtClassloader负责&lt;JAVA_RUNTIME_HOME&gt;/lib/ext下或由java.ext.dir指定位置中的类库加载到内存中;</li>
+<li>System类加载器
+AppClassloader实现，负责把classpath中指定的类加载;</li>
+</ol>
+<p>####目的
+防止内存出现多个同样的字节码，也能保证用到真正JDK里面提供的类;</p>
+<p>然而这个<strong>并不是强制模型</strong></p>
+<h4>需要注意：</h4>
+<ol>
+<li>加载的时候，会派出<strong>当前线程</strong>的类加载器（当前类加载器通过Thread.getContextClassLoader()，也可以通过setContextLoader()设置类加载器</li>
+<li>如果加载该类的时候，有其他类引用此类，其他类也会被该类加载器加载</li>
+<li>可直接调用Classloader.loadClass()指定某个类加载器</li>
+</ol>
+<p>SPI（service Provider Interface）
+//todo</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-Class/" data-id="ckd1sofm3001yom552x7sb77w" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-java/Java-JVM" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/05/java/Java-JVM/" class="article-date">
@@ -97,7 +160,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ckcyw74y1001xke55oe9cotkl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ckd1sofm40020om553rn9xq2b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -140,7 +203,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/15/Comcon/HTTP2/" data-id="ckcyw74xc000dke5561sc0n8g" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/15/Comcon/HTTP2/" data-id="ckd1soflg000eom55km0u7c3i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -183,7 +246,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ckcyw74xe000fke55khch9xru" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ckd1soflf000dom5531cgwszw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
@@ -296,7 +359,7 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/04/30/Comcon/DesignPattern/" data-id="ckcyw74xb000bke5533ntmx97" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/04/30/Comcon/DesignPattern/" data-id="ckd1sofle000bom55bzl7rnbn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -339,7 +402,7 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="ckcyw74y2001yke558n8jch8f" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/03/07/java/Java-Concurrency/" data-id="ckd1sofm40022om55njsptfyn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -382,7 +445,7 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="ckcyw74xz001tke55ated1h4m" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/07/java/Java-Collection/" data-id="ckd1sofm2001vom553c0o9rot" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -426,7 +489,7 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="ckcyw74wf0000ke55joghvhz8" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/01/05/Regexp/" data-id="ckd1sofkp0001om55ng6yose3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li></ul>
@@ -469,7 +532,7 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="ckcyw74y50026ke55w8rcw0et" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/05/js/gui_engine/" data-id="ckd1sofm50024om552o084nd1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/css/">css</a></li></ul>
@@ -512,53 +575,10 @@ getClass(),wait()等并不会进行代理
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/02/01/markdown/" data-id="ckcyw74wv0006ke55bpaqauh0" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/02/01/markdown/" data-id="ckd1sofks0003om55ltzhju6s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Markdown/">Markdown</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-js/js-Promise" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/01/07/js/js-Promise/" class="article-date">
-  <time datetime="2017-01-07T15:00:00.000Z" itemprop="datePublished">2017-01-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/01/07/js/js-Promise/">My Understanding towards Promise/A+</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Personal comprehension about ES6 promise,including simulated promise implementation</p>
-        
-          <p class="article-more-link">
-            <a href="/2017/01/07/js/js-Promise/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/01/07/js/js-Promise/" data-id="ckcyw74y30022ke55tift1s9v" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Javascript/">Javascript</a></li></ul>
 
     </footer>
   </div>
@@ -602,7 +622,7 @@ getClass(),wait()等并不会进行代理
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -613,6 +633,10 @@ getClass(),wait()等并不会进行代理
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
+          </li>
         
           <li>
             <a href="/2020/06/24/Go/type/">Golang type</a>
@@ -628,10 +652,6 @@ getClass(),wait()等并不会进行代理
         
           <li>
             <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>

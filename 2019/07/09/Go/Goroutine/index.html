@@ -5,20 +5,22 @@
   
   <title>Goroutine Notes | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo">
+  <meta name="description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
 <meta name="keywords" content="Golang">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Goroutine Notes">
 <meta property="og:url" content="https://mhh12121.github.io/2019/07/09/Go/Goroutine/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo">
+<meta property="og:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2019/07/09/Go/Goroutine/img/sysmon.png">
-<meta property="og:updated_time" content="2020-07-23T14:29:15.973Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/gstatus.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/sysmon.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/mheap.png">
+<meta property="og:updated_time" content="2020-07-25T06:32:48.556Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Goroutine Notes">
-<meta name="twitter:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo">
-<meta name="twitter:image" content="https://mhh12121.github.io/2019/07/09/Go/Goroutine/img/sysmon.png">
+<meta name="twitter:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/gstatus.png">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -93,7 +95,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑//todo</p>
+        <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑</p>
 <a id="more"></a>
 <h2>为什么有这个东西？</h2>
 <ol>
@@ -153,7 +155,7 @@ GPM</p>
 <li>从其他的p 偷一部分</li>
 </ol>
 <h4>相关状态转换</h4>
-<p><a href="/img/gstatus.png">一个状态图</a></p>
+<p><img src="/img/gstatus.png" alt="一个状态图"></p>
 <p>当有新的Goroutine被创建或者是现存的goroutine更新为runnable状态，它会被push到当前P的runnable goroutine list里面，
 当P完成了执行goroutine，它会</p>
 <ul>
@@ -179,7 +181,7 @@ GPM</p>
 </ol>
 <h3>Sysmon</h3>
 <p>sysmon是在<strong>runtime初始化之后，执行代码之前</strong>，由runtime启动且不与任何P绑定直接由一个M执行的协程，类似于linux的一些系统任务内核线程</p>
-<p>具体设置如<img src="img/sysmon.png" alt="sysmon状态转换图"></p>
+<p>具体设置如<img src="/img/sysmon.png" alt="sysmon状态转换图"></p>
 <h3>各个结构体</h3>
 <ul>
 <li>g (goroutine)</li>
@@ -197,7 +199,7 @@ GPM</p>
 <ul>
 <li>SchedDt 调度结构</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> schedt <span class="keyword">struct</span>&#123;</span><br><span class="line">	lock mutex<span class="comment">//锁用于调用globalq的时候使用</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// When increasing nmidle, nmidlelocked, nmsys, or nmfreed, be</span></span><br><span class="line">	<span class="comment">// sure to call checkdead().</span></span><br><span class="line">	<span class="comment">//空闲的m</span></span><br><span class="line">	midle        muintptr <span class="comment">// idle m's waiting for work</span></span><br><span class="line">	nmidle       <span class="keyword">int32</span>    <span class="comment">// number of idle m's waiting for work</span></span><br><span class="line">	nmidlelocked <span class="keyword">int32</span>    <span class="comment">// number of locked m's waiting for work</span></span><br><span class="line">	mnext        <span class="keyword">int64</span>    <span class="comment">// number of m's that have been created and next M ID</span></span><br><span class="line">	maxmcount    <span class="keyword">int32</span>    <span class="comment">// maximum number of m's allowed (or die)</span></span><br><span class="line">	nmsys        <span class="keyword">int32</span>    <span class="comment">// number of system m's not counted for deadlock</span></span><br><span class="line">	nmfreed      <span class="keyword">int64</span>    <span class="comment">// cumulative number of freed m's</span></span><br><span class="line"></span><br><span class="line">	ngsys <span class="keyword">uint32</span> <span class="comment">// number of system goroutines; updated atomically</span></span><br><span class="line">	<span class="comment">//空闲的p</span></span><br><span class="line">	pidle      puintptr <span class="comment">// idle p's</span></span><br><span class="line">	npidle     <span class="keyword">uint32</span></span><br><span class="line">	<span class="comment">//在spinning状态的m的数量</span></span><br><span class="line">	nmspinning <span class="keyword">uint32</span> <span class="comment">// See "Worker thread parking/unparking" comment in proc.go.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Global runnable queue.</span></span><br><span class="line">	<span class="comment">//可运行 的globalq</span></span><br><span class="line">	runq     gQueue</span><br><span class="line">	runqsize <span class="keyword">int32</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// disable controls selective disabling of the scheduler.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Use schedEnableUser to control this.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// disable is protected by sched.lock.</span></span><br><span class="line">	disable <span class="keyword">struct</span> &#123;</span><br><span class="line">		<span class="comment">// user disables scheduling of user goroutines.</span></span><br><span class="line">		user     <span class="keyword">bool</span></span><br><span class="line">		runnable gQueue <span class="comment">// pending runnable Gs</span></span><br><span class="line">		n        <span class="keyword">int32</span>  <span class="comment">// length of runnable</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Global cache of dead G's.</span></span><br><span class="line">	<span class="comment">//全局空余剩下的g</span></span><br><span class="line">	gFree <span class="keyword">struct</span> &#123;</span><br><span class="line">		lock    mutex</span><br><span class="line">		stack   gList <span class="comment">// Gs with stacks</span></span><br><span class="line">		noStack gList <span class="comment">// Gs without stacks</span></span><br><span class="line">		n       <span class="keyword">int32</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>相关结构可以在runtime/runtime2.go 中找到</p>
 <p>P在GOMAXPROCS中，所有的P被组织成一个数组，当GOMAXPROCS改变时会触发 stop the world来重新调整P 数组的长度
 一些变量会从sched中分离出到P中</p>
@@ -221,7 +223,7 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <ol>
 <li>遇到阻塞的情况，怎么扩展进程池，使其不会因为任务阻塞或者同步独占线程</li>
 </ol>
-<ol>
+<ol start="2">
 <li>
 <p>goroutine类似green threads（Green threads），是application自己维护的执行过程；很多goroutines实际上被有限个操作系统管理的threads执行;</p>
 </li>
@@ -235,6 +237,14 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>上层封装了epoll，网络fd会设置成NonBlocking模式，返回EAGAIN则gopark当前goroutine，在m调度，sysmon中，gc start the world等阶段均会poll出ready的goroutine进行运行或者添加到全局runq中</p>
 </li>
 </ol>
+<p><strong>一些小细节</strong>
+代码经常发现一些编辑器生成的//go:nosplit字样</p>
+<blockquote>
+<blockquote>
+<p>The //go:nosplit directive specifies that the next function declared in the file must not include a stack overflow check. This is most commonly used by low-level runtime sources invoked at times when it is unsafe for the calling goroutine to be preempted.</p>
+</blockquote>
+</blockquote>
+<p>大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用</p>
 <h2>SystemStack</h2>
 <p>SystemStack(fn func())
 系统栈 被不同地方调用会有不同的表现方式：</p>
@@ -282,18 +292,62 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>调用runtime.osinit根据系统执行不同的初始化</p>
 <p>这里(linux x64)设置了全局变量ncpu等于cpu核心数量</p>
 <ol start="4">
-<li>调用runtime.schedinit执行共同的初始化</li>
+<li>调用**runtime.schedinit()**执行共同的初始化</li>
 </ol>
-<p>这里的处理比较多,</p>
+<p>这里的处理比较多:</p>
 <ul>
-<li>首先会调用raceinit()检查race condition</li>
-<li>会初始化栈空间分配器(stackinit),</li>
-<li>mallocinit()</li>
-<li>mcommoninit(<em>g</em>.m),这里是一些公共初始化</li>
-<li>按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)</li>
+<li>
+<p>首先会调用raceinit()检查race condition</p>
+</li>
+<li>
+<p>然后进接这tracebackinit()和moduledateverify()，分别为一些变量提前初始化和包的验证</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">tracebackinit</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// Go variable initialization happens late during runtime startup.</span></span><br><span class="line">	<span class="comment">// Instead of initializing the variables above in the declarations,</span></span><br><span class="line">	<span class="comment">// schedinit calls this function so that the variables are</span></span><br><span class="line">	<span class="comment">// initialized and available earlier in the startup sequence.</span></span><br><span class="line">	skipPC = funcPC(skipPleaseUseCallersFrames)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>会初始化栈空间分配器(stackinit)</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">stackinit</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//// Per-P, per order stack segment cache size.</span></span><br><span class="line">	<span class="comment">//_StackCacheSize = 32 * 1024</span></span><br><span class="line">	<span class="comment">// stack的分段大小一定要是pagesize的倍数（容易理解，方便对齐）</span></span><br><span class="line">	<span class="comment">//_PageShift = 13</span></span><br><span class="line">	<span class="comment">//_PageSize = 1 &lt;&lt; _PageShift = 8192</span></span><br><span class="line">	<span class="comment">//_PageMask = _PageSize - 1</span></span><br><span class="line">	<span class="keyword">if</span> _StackCacheSize&amp;_PageMask != <span class="number">0</span> &#123;</span><br><span class="line">		throw(<span class="string">"cache size must be a multiple of page size"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//stackpool就是一个span的双向链表</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> stackpool &#123;</span><br><span class="line">		stackpool[i].init()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// stackLarge的free是一个list ， 大小为 log_2(s.npages)</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> stackLarge.free &#123;</span><br><span class="line">		stackLarge.free[i].init()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里插入一副<s>盗</s>借来的<img src="/img/mheap.png" alt="图">
+更加明确发现一些奇怪的特点</p>
+<ul>
+<li>
+<p>mallocinit()</p>
+<ol>
+<li>这个最主要是检查page，huge page大小是不是2的倍数以及是不是大于最小页大小(4KB)</li>
+<li>然后就初始化 heap，在memManage 那篇文章有讲到,会初始化多个fixalloc，包括treap，span，cache，specialfinalizer，specialprofile，arenaHint
+还有getg()获得当前g的指针，以及初始化当前mcache(allocmcache())</li>
+<li>创建初始化的arena区域(即是heap)的增长规则,注意在64bit机器中，其做了一些优化:
+从中间空间开始分配,如上面的图一样，
+<ul>
+<li>可以更加容易地增长连续空间</li>
+<li>使其更加容易debug</li>
+<li>为了gccgo区别于其他数据</li>
+<li>UTF8编码</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<ul>
+<li>
+<p>mcommoninit(<em>g</em>.m),这里是一些公共初始化
+主要对_g_.m即自己的m进行一些初始化</p>
+</li>
+<li>
+<p>按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cpuinit()       <span class="comment">// must run before alginit</span></span><br></pre></td></tr></table></figure>
+<ul>
 <li>alginit</li>
 </ul>
-<p>生成P的处理在procresize中</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">alginit()       <span class="comment">// maps must not be used before this call</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>生成P的处理在procresize中</li>
+</ul>
+<p>更改了P的数目，期间stop the world并锁住sched，返回本地的所有p</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedinit</span><span class="params">()</span></span>&#123;</span><br><span class="line">	...</span><br><span class="line">	sched.lastpoll = <span class="keyword">uint64</span>(nanotime())</span><br><span class="line">	procs := ncpu</span><br><span class="line">	<span class="keyword">if</span> n, ok := atoi32(gogetenv(<span class="string">"GOMAXPROCS"</span>)); ok &amp;&amp; n &gt; <span class="number">0</span> &#123;</span><br><span class="line">		procs = n</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> procresize(procs) != <span class="literal">nil</span> &#123;</span><br><span class="line">		throw(<span class="string">"unknown runnable goroutine during bootstrap"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Change number of processors. The world is stopped, sched is locked.</span></span><br><span class="line"><span class="comment">// gcworkbufs are not being modified by either the GC or</span></span><br><span class="line"><span class="comment">// the write barrier code.</span></span><br><span class="line"><span class="comment">// Returns list of Ps with local work, they need to be scheduled by the caller.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">procresize</span><span class="params">(nprocs <span class="keyword">int32</span>)</span> *<span class="title">p</span></span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
 <ol start="5">
 <li>
 <p>调用runtime.newproc创建一个新的goroutine, 指向的是runtime.main
@@ -301,12 +355,12 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
 </li>
 <li>
 <p>调用runtime·mstart启动m0</p>
-</li>
-</ol>
 <ul>
 <li>启动后m0会不断从运行队列获取G并运行, runtime.mstart调用后不会返回</li>
 <li>runtime.mstart这个函数是m的入口点(不仅仅是m0), 在下面的&quot;调度器的实现&quot;中会详细讲解</li>
 </ul>
+</li>
+</ol>
 <h3>runtime.main之后</h3>
 <p>第一个被调度的G会运行runtime.main, 流程是:</p>
 <p>标记主函数已调用, 设置mainStarted = true</p>
@@ -328,7 +382,7 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckcyw74xn000yke55mmpwroa5" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckd1soflq0011om556b1z4ivm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -389,7 +443,7 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -400,6 +454,10 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
+          </li>
         
           <li>
             <a href="/2020/06/24/Go/type/">Golang type</a>
@@ -415,10 +473,6 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
         
           <li>
             <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>

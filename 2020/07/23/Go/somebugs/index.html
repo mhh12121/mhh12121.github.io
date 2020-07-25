@@ -3,20 +3,20 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
-  <title>Golang指针 | 兜的破烂</title>
+  <title>Golang Some bugs notes | 兜的破烂</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="比较容易混淆三种值: 指针值(Pointer value):比如stirng,int这种其实是一种指针值 指针(Pointer) uintptr 1234567891011 // Pointer represents a pointer to an arbitrary type. There are four special operations// available for type Poi">
-<meta name="keywords" content="Golang">
+  <meta name="description" content="记录一些自己发现或者是他人发现的一些bug">
+<meta name="keywords" content="golang">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Golang指针">
-<meta property="og:url" content="https://mhh12121.github.io/2020/05/03/Go/Pointer/index.html">
+<meta property="og:title" content="Golang Some bugs notes">
+<meta property="og:url" content="https://mhh12121.github.io/2020/07/23/Go/somebugs/index.html">
 <meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="比较容易混淆三种值: 指针值(Pointer value):比如stirng,int这种其实是一种指针值 指针(Pointer) uintptr 1234567891011 // Pointer represents a pointer to an arbitrary type. There are four special operations// available for type Poi">
+<meta property="og:description" content="记录一些自己发现或者是他人发现的一些bug">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-07-23T15:21:31.171Z">
+<meta property="og:updated_time" content="2020-07-25T06:32:38.932Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Golang指针">
-<meta name="twitter:description" content="比较容易混淆三种值: 指针值(Pointer value):比如stirng,int这种其实是一种指针值 指针(Pointer) uintptr 1234567891011 // Pointer represents a pointer to an arbitrary type. There are four special operations// available for type Poi">
+<meta name="twitter:title" content="Golang Some bugs notes">
+<meta name="twitter:description" content="记录一些自己发现或者是他人发现的一些bug">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -69,10 +69,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-Go/Pointer" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-Go/somebugs" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2020/05/03/Go/Pointer/" class="article-date">
-  <time datetime="2020-05-03T06:20:00.000Z" itemprop="datePublished">2020-05-03</time>
+    <a href="/2020/07/23/Go/somebugs/" class="article-date">
+  <time datetime="2020-07-23T13:10:00.000Z" itemprop="datePublished">2020-07-23</time>
 </a>
     
   </div>
@@ -83,7 +83,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Golang指针
+      Golang Some bugs notes
     </h1>
   
 
@@ -91,33 +91,24 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <a id="more"></a>
-<p>比较容易混淆三种值:</p>
-<p>指针值(Pointer value):比如stirng,int这种其实是一种指针值</p>
-<p>指针(Pointer)</p>
-<p>uintptr</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// Pointer represents a pointer to an arbitrary type. There are four special operations</span></span><br><span class="line"><span class="comment">// available for type Pointer that are not available for other types:</span></span><br><span class="line"><span class="comment">//	- A pointer value of any type can be converted to a Pointer.</span></span><br><span class="line"><span class="comment">//gc的时候会有write barrier</span></span><br><span class="line">unsafe.Pointer(&amp;a)</span><br><span class="line"><span class="comment">//	- A Pointer can be converted to a pointer value of any type.</span></span><br><span class="line">(*<span class="keyword">string</span>)(unsafe.Pointer(somePointer))</span><br><span class="line"><span class="comment">//	- A uintptr can be converted to a Pointer.</span></span><br><span class="line">unsafe.Pointer(<span class="keyword">uintptr</span>(somePointer)+unsafe.sizeof(&amp;a))</span><br><span class="line"><span class="comment">//	- A Pointer can be converted to a uintptr.</span></span><br><span class="line"><span class="keyword">uintptr</span>(unsafe.Pointer(&amp;a))</span><br></pre></td></tr></table></figure>
-<p>因为指针可以随意读取内存而不经过go自己的type系统，要谨慎使用，注释里面有写到不可用作临时变量，如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//错误！</span></span><br><span class="line">tmp := <span class="keyword">uintptr</span>(unsafe.Pointer(&amp;x)) + unsafe.Offsetof(x.b)</span><br><span class="line">pb := (*<span class="keyword">int16</span>)(unsafe.Pointer(tmp))</span><br><span class="line">*pb = <span class="number">42</span></span><br></pre></td></tr></table></figure>
-<p>这里主要跟gc的实现有关系，有时候垃圾回收器会移动（整理）一些变量来降低碎片度；变量被移动后当然其地址也会被改变，这个指针就要指向新地址。</p>
-<p>而上面这段代码中unsafe.Pointer就是一个<strong>指向变量的指针</strong>，被移动后就要改变，但是tmp实际在这段代码中却是作为一个<strong>普通的整数</strong>，值不应该被改变!</p>
-<p>因为垃圾回收器<strong>识别不出</strong>上面tmp其实是一个<strong>指向x的指针</strong>，当到第二行时，可能x地址已经被转移，tmp此时就不会是这个地址了，第三行可能向一个不知道什么地址赋值，肯定会出错。</p>
-<p>还有一些:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pT := <span class="keyword">uintptr</span>(unsafe.Pointer(<span class="built_in">new</span>(T))) <span class="comment">// 提示: 错误!</span></span><br></pre></td></tr></table></figure>
-<p>这里new(T)创建后并没有指针引用，这行跑完后垃圾回收器可能会立即回收掉内存空间，所以pT得到的就是无效的地址</p>
-<p>比较常见的</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Bytes2String</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="title">string</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> *(*<span class="keyword">string</span>)(unsafe.Pointer(&amp;b))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2>uinputr</h2>
-<p>uintptr是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象（很自然就不会有写屏障)</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A uintptr is an integer, not a reference.</span></span><br><span class="line"><span class="comment">// Converting a Pointer to a uintptr creates an integer value</span></span><br><span class="line"><span class="comment">// with no pointer semantics.</span></span><br><span class="line"><span class="comment">// Even if a uintptr holds the address of some object,</span></span><br><span class="line"><span class="comment">// the garbage collector will not update that uintptr's value</span></span><br><span class="line"><span class="comment">// if the object moves, nor will that uintptr keep the object</span></span><br><span class="line"><span class="comment">// from being reclaimed.</span></span><br><span class="line"><span class="comment">//</span></span><br></pre></td></tr></table></figure>
+        <p>记录一些自己发现或者是他人发现的一些bug</p>
+<a id="more"></a>
+<h3>一个无限循环</h3>
+<p><a href="https://github.com/golang/go/issues/40367" target="_blank" rel="noopener">issues</a></p>
+<p>一个奇怪的程序会陷入无限循环</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    rates := []<span class="keyword">int32</span>&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> s, r := <span class="keyword">range</span> rates &#123;</span><br><span class="line">		<span class="keyword">if</span> s+<span class="number">1</span> &lt; <span class="number">1</span> &#123; <span class="comment">//但是将 (s+1) 换成 (s+其他数字) 则可以通过,又或者将panic去掉，改成其他，都可以通过编译</span></span><br><span class="line">			<span class="built_in">panic</span>(<span class="string">"abc"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Println(s, r)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Expected:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0 1</span><br><span class="line">1 2</span><br><span class="line">2 3</span><br><span class="line">3 4</span><br><span class="line">4 5</span><br></pre></td></tr></table></figure>
+<p>Got:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">0 1</span><br><span class="line">1 2</span><br><span class="line">2 3</span><br><span class="line">3 4</span><br><span class="line">4 5</span><br><span class="line">5 115616</span><br><span class="line">6 192</span><br><span class="line">7 6717248</span><br><span class="line">8 0</span><br><span class="line">9 115696</span><br><span class="line">10 192</span><br><span class="line">11 6717376</span><br><span class="line">12 0</span><br><span class="line">13 9447072</span><br><span class="line">14 192</span><br><span class="line">15 393048</span><br><span class="line">16 192</span><br><span class="line">17 4391790</span><br><span class="line">18 0</span><br><span class="line">19 139360</span><br><span class="line">20 192</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/05/03/Go/Pointer/" data-id="ckd1soflr0013om55j9w7xa4o" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/07/23/Go/somebugs/" data-id="ckd1soflx001kom557dy40ni7" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
 
     </footer>
   </div>
@@ -125,19 +116,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2020/06/24/Go/type/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Golang type
-        
-      </div>
-    </a>
   
-  
-    <a href="/2020/04/03/MySQL/btree/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2020/06/24/Go/type/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">MySQL InnoDB Ｂ+tree</div>
+      <div class="article-nav-title">Golang type</div>
     </a>
   
 </nav>

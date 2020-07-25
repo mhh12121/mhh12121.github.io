@@ -13,13 +13,13 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="golang内存管理 go的内存管理是基于tcmalloc，这个连接看详情 任何大小的内存页可以被分割成一系列同样大小的object,这些规定的大小size则被定义在sizetoclass,然后被一个bitmap管理 基本数据结构 类似于TCMalloc 大概概括: 其目的是 减少多线程对内存请求时候的锁竞争，在对小内存的申请时甚至可以无锁操作，获取大内存时用spinlocks；但是其在TLS会">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2020/02/24/Go/memManage/img/tinyObjects.png">
-<meta property="og:image" content="https://mhh12121.github.io/2020/02/24/Go/memManage/img/stackCache.png">
-<meta property="og:updated_time" content="2020-07-23T14:29:52.573Z">
+<meta property="og:image" content="https://mhh12121.github.io/img/tinyObjects.png">
+<meta property="og:image" content="https://mhh12121.github.io/img/stackCache.png">
+<meta property="og:updated_time" content="2020-07-25T06:28:31.238Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang Memory Allocator">
 <meta name="twitter:description" content="golang内存管理 go的内存管理是基于tcmalloc，这个连接看详情 任何大小的内存页可以被分割成一系列同样大小的object,这些规定的大小size则被定义在sizetoclass,然后被一个bitmap管理 基本数据结构 类似于TCMalloc 大概概括: 其目的是 减少多线程对内存请求时候的锁竞争，在对小内存的申请时甚至可以无锁操作，获取大内存时用spinlocks；但是其在TLS会">
-<meta name="twitter:image" content="https://mhh12121.github.io/2020/02/24/Go/memManage/img/tinyObjects.png">
+<meta name="twitter:image" content="https://mhh12121.github.io/img/tinyObjects.png">
   
     <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
   
@@ -114,13 +114,19 @@
 <p>全局有 67 × 2 (?) 个对应不同size的span <strong>后备</strong>mcentral
 收集所有特定size的span，如果也被用完，则再次转向mheap申请</p>
 </li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> mheap <span class="keyword">struct</span>&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// central free lists for small size classes.</span></span><br><span class="line">	<span class="comment">// the padding makes sure that the mcentrals are</span></span><br><span class="line">	<span class="comment">// spaced CacheLinePadSize bytes apart, so that each mcentral.lock</span></span><br><span class="line">	<span class="comment">// gets its own cache line.</span></span><br><span class="line">	<span class="comment">// central is indexed by spanClass.</span></span><br><span class="line">	<span class="comment">//numSpanClasses = _NumSizeClasses &lt;&lt; 1 = 134</span></span><br><span class="line">	central [numSpanClasses]<span class="keyword">struct</span> &#123;</span><br><span class="line">		mcentral <span class="keyword">type</span> mcentral <span class="keyword">struct</span> &#123;</span><br><span class="line">					lock      mutex</span><br><span class="line">					spanclass spanClass</span><br><span class="line">					nonempty  mSpanList <span class="comment">// list of spans with a free object, ie a nonempty free list</span></span><br><span class="line">					empty     mSpanList <span class="comment">// list of spans with no free objects (or cached in an mcache)</span></span><br><span class="line"></span><br><span class="line">					<span class="comment">// nmalloc is the cumulative count of objects allocated from</span></span><br><span class="line">					<span class="comment">// this mcentral, assuming all spans in mcaches are</span></span><br><span class="line">					<span class="comment">// fully-allocated. Written atomically, read under STW.</span></span><br><span class="line">					nmalloc <span class="keyword">uint64</span></span><br><span class="line">				&#125;</span><br><span class="line">		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral&#123;&#125;)%cpu.CacheLinePadSize]<span class="keyword">byte</span></span><br><span class="line">	&#125;</span><br><span class="line">	....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码中的pad是用作分割多个mcentral，以CacheLinePadSize个Bytes分割开，所以每一个mcentral的lock可以得到自己的cache line
+我认为可以看做是内存对齐的一种方法(???是不是捏)</p>
+<ul>
 <li>
 <p>mcache</p>
 <p>多层次的cache用来减少分配冲突，mcache是per-P的，所以无锁，mspan的每个P(process)下的可用cache空间；小于16B直接使用P中的macache</p>
 </li>
-<li>
-<p>fixalloc</p>
-</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">// Per-thread (in Go, per-P) cache for small objects.</span></span><br><span class="line"><span class="comment">// No locking needed because it is per-thread (per-P).</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// mcaches are allocated from non-GC'd memory, so any heap pointers</span></span><br><span class="line"><span class="comment">// must be specially handled.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//因为只用作local P，所以自然无锁</span></span><br><span class="line"><span class="comment">//go:notinheap</span></span><br><span class="line"><span class="comment">//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中</span></span><br><span class="line"><span class="keyword">type</span> mcache <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// The following members are accessed on every malloc,</span></span><br><span class="line">	<span class="comment">// so they are grouped here for better caching.</span></span><br><span class="line">	next_sample <span class="keyword">uintptr</span> <span class="comment">// trigger heap sample after allocating this many bytes</span></span><br><span class="line">	local_scan  <span class="keyword">uintptr</span> <span class="comment">// bytes of scannable heap allocated</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Allocator cache for tiny objects w/o pointers.</span></span><br><span class="line">	<span class="comment">// See "Tiny allocator" comment in malloc.go.</span></span><br><span class="line">	<span class="comment">//具体可以见下面的tiny allocator分配器</span></span><br><span class="line">	<span class="comment">// tiny points to the beginning of the current tiny block, or</span></span><br><span class="line">	<span class="comment">// nil if there is no current tiny block.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// tiny is a heap pointer. Since mcache is in non-GC'd memory,</span></span><br><span class="line">	<span class="comment">// we handle it by clearing it in releaseAll during mark</span></span><br><span class="line">	<span class="comment">// termination.</span></span><br><span class="line">	tiny             <span class="keyword">uintptr</span></span><br><span class="line">	tinyoffset       <span class="keyword">uintptr</span></span><br><span class="line">	local_tinyallocs <span class="keyword">uintptr</span> <span class="comment">// number of tiny allocs not counted in other stats</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// The rest is not accessed on every malloc.</span></span><br><span class="line"></span><br><span class="line">	alloc [numSpanClasses]*mspan <span class="comment">// spans to allocate from, indexed by spanClass</span></span><br><span class="line"></span><br><span class="line">	stackcache [_NumStackOrders]stackfreelist</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Local allocator stats, flushed during GC.</span></span><br><span class="line">	local_largefree  <span class="keyword">uintptr</span>                  <span class="comment">// bytes freed for large objects (&gt;maxsmallsize)</span></span><br><span class="line">	local_nlargefree <span class="keyword">uintptr</span>                  <span class="comment">// number of frees for large objects (&gt;maxsmallsize)</span></span><br><span class="line">	local_nsmallfree [_NumSizeClasses]<span class="keyword">uintptr</span> <span class="comment">// number of frees for small objects (&lt;=maxsmallsize)</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// flushGen indicates the sweepgen during which this mcache</span></span><br><span class="line">	<span class="comment">// was last flushed. If flushGen != mheap_.sweepgen, the spans</span></span><br><span class="line">	<span class="comment">// in this mcache are stale and need to the flushed so they</span></span><br><span class="line">	<span class="comment">// can be swept. This is done in acquirep.</span></span><br><span class="line">	flushGen <span class="keyword">uint32</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>fixalloc</li>
 </ul>
 <p>一个不定长度的列表，用来管理<strong>不在堆上</strong>的固定的对象，这些对象都是runtime上大小固定的结构，比如mspan，mcache</p>
 <ul>
@@ -193,7 +199,7 @@ bitmap和spans功能不变</p>
 <p>主要的对象是一些小字符串和一些独立的变量，json的benchmark使用了这个分配器，减少了20%的堆size</p>
 </li>
 </ul>
-<p>其结构<img src="img/tinyObjects.png" alt="如图"></p>
+<p>其结构<img src="/img/tinyObjects.png" alt="如图"></p>
 <ul>
 <li>每个P在本地维护了专门的memory block来存储tinyObject，分配时根据tinyoffset和需要的size及对齐来判断该block是否容纳该object，如果可以就返回地址</li>
 </ul>
@@ -211,7 +217,7 @@ bitmap和spans功能不变</p>
 <h4>stackCache</h4>
 <p>在mcache结构上</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Number of orders that get caching. Order 0 is FixedStack</span></span><br><span class="line">	<span class="comment">// and each successive order is twice as large.</span></span><br><span class="line">	<span class="comment">// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks</span></span><br><span class="line">	<span class="comment">// will be allocated directly.</span></span><br><span class="line">	<span class="comment">// Since FixedStack is different on different systems, we</span></span><br><span class="line">	<span class="comment">// must vary NumStackOrders to keep the same maximum cached size.</span></span><br><span class="line">	<span class="comment">//   OS               | FixedStack | NumStackOrders</span></span><br><span class="line">	<span class="comment">//   -----------------+------------+---------------</span></span><br><span class="line">	<span class="comment">//   linux/darwin/bsd | 2KB        | 4</span></span><br><span class="line">	<span class="comment">//   windows/32       | 4KB        | 3</span></span><br><span class="line">	<span class="comment">//   windows/64       | 8KB        | 2</span></span><br><span class="line">	<span class="comment">//   plan9            | 4KB        | 3</span></span><br><span class="line">_NumStackOrders = <span class="number">4</span> - sys.PtrSize/<span class="number">4</span>*sys.GoosWindows - <span class="number">1</span>*sys.GoosPlan9</span><br><span class="line"><span class="keyword">type</span> mcache <span class="keyword">struct</span>&#123;</span><br><span class="line">	...</span><br><span class="line">	stackcache [_NumStackOrders]stackfreelist </span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> stackfreelist <span class="keyword">struct</span> &#123;</span><br><span class="line">	list gclinkptr <span class="comment">// linked list of free stacks</span></span><br><span class="line">	size <span class="keyword">uintptr</span>   <span class="comment">// total size of stacks in list</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>大概结构<img src="img/stackCache.png" alt="如图"></p>
+<p>大概结构<img src="/img/stackCache.png" alt="如图"></p>
 <p>stackCache是per-P的，在另外一篇文章<a href="../goroutine.html">goroutine</a>上讲过，主要用于分配goroutine的stack，同普通内存一样
 其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级</p>
 <p>其中 &gt; 16K的直接从全局stacklarge分配
@@ -248,10 +254,11 @@ bitmap和spans功能不变</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">roundupsize</span><span class="params">(size <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="comment">//size&lt;32768</span></span><br><span class="line">	<span class="keyword">if</span> size &lt; _MaxSmallSize &#123;</span><br><span class="line">		<span class="keyword">if</span> size &lt;= smallSizeMax<span class="number">-8</span> &#123;</span><br><span class="line">			<span class="comment">//这里面的字段是go对特定class设定的对应大小</span></span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class8[(size+smallSizeDiv<span class="number">-1</span>)/smallSizeDiv]])</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class128[(size-smallSizeMax+largeSizeDiv<span class="number">-1</span>)/largeSizeDiv]])</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//size为负数,_PageSize=1&lt;&lt;13 </span></span><br><span class="line">	<span class="keyword">if</span> size+_PageSize &lt; size &#123;</span><br><span class="line">		<span class="keyword">return</span> size</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> round(size, _PageSize)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//该运算在下面会提到</span></span><br><span class="line"><span class="comment">// round n up to a multiple of a.  a must be a power of 2.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">round</span><span class="params">(n, a <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (n + a - <span class="number">1</span>) &amp;^ (a - <span class="number">1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>注意到<strong>class_to_size</strong>和<strong>size_to_class</strong>等等字段</p>
 <p><a id="sizetoclass">[sizetoclass]</a>
-实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：</p>
+实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：
+每个span都带有一个sizeclass，即表明该span的page应该被怎么用；</p>
 <blockquote>
 <blockquote>
-<p>class0表示单独分配一个&gt;32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	=134个class</p>
+<p>class0表示单独分配一个&gt;32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	= 134个class (即上面提到的numSpanClasses)</p>
 </blockquote>
 </blockquote>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// class  bytes/obj  bytes/span  objects  tail waste  max waste</span></span><br><span class="line"><span class="comment">//     1          8        8192     1024           0     87.50%</span></span><br><span class="line"><span class="comment">//     2         16        8192      512           0     43.75%</span></span><br><span class="line"><span class="comment">//     3         32        8192      256           0     46.88%</span></span><br><span class="line"><span class="comment">//     4         48        8192      170          32     31.52%</span></span><br><span class="line"><span class="comment">//     5         64        8192      128           0     23.44%</span></span><br><span class="line"><span class="comment">//     6         80        8192      102          32     19.07%</span></span><br><span class="line"><span class="comment">//     7         96        8192       85          32     15.95%</span></span><br><span class="line"><span class="comment">//     8        112        8192       73          16     13.56%</span></span><br><span class="line"><span class="comment">//     9        128        8192       64           0     11.72%</span></span><br><span class="line"><span class="comment">//    10        144        8192       56         128     11.82%</span></span><br><span class="line"><span class="comment">//    11        160        8192       51          32      9.73%</span></span><br><span class="line">......</span><br><span class="line"><span class="comment">//    60      19072       57344        3         128      3.57%</span></span><br><span class="line"><span class="comment">//    61      20480       40960        2           0      6.87%</span></span><br><span class="line"><span class="comment">//    62      21760       65536        3         256      6.25%</span></span><br><span class="line"><span class="comment">//    63      24576       24576        1           0     11.45%</span></span><br><span class="line"><span class="comment">//    64      27264       81920        3         128     10.00%</span></span><br><span class="line"><span class="comment">//    65      28672       57344        2           0      4.91%</span></span><br><span class="line"><span class="comment">//    66      32768       32768        1           0     12.50%</span></span><br></pre></td></tr></table></figure>
@@ -291,7 +298,7 @@ bitmap和spans功能不变</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckcyw74xu001fke55rxzc7w3u" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckd1soflw001gom5559o09w6c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -302,19 +309,19 @@ bitmap和spans功能不变</p>
     
 <nav id="article-nav">
   
-    <a href="/2020/02/24/Go/gc/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2020/03/01/redis/basic/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Golang Garbage Collection
+          Redis basis
         
       </div>
     </a>
   
   
-    <a href="/2020/02/10/Comcon/consensus/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2020/02/24/Go/gc/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Consensus</div>
+      <div class="article-nav-title">Golang Garbage Collection</div>
     </a>
   
 </nav>
@@ -352,7 +359,7 @@ bitmap和spans功能不变</p>
   <div class="widget-wrap">
     <h3 class="widget-title">归档</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
     </div>
   </div>
 
@@ -363,6 +370,10 @@ bitmap和spans功能不变</p>
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
+          </li>
         
           <li>
             <a href="/2020/06/24/Go/type/">Golang type</a>
@@ -378,10 +389,6 @@ bitmap和spans功能不变</p>
         
           <li>
             <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
           </li>
         
       </ul>
