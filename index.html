@@ -97,7 +97,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/07/23/Go/somebugs/" data-id="ckd1soflx001kom557dy40ni7" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/07/23/Go/somebugs/" data-id="ckd2x8nvp001gzn55905owtdf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -131,13 +131,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>类型</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// a copy of runtime.typeAlg</span></span><br><span class="line"><span class="keyword">type</span> typeAlg <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// function for hashing objects of this type</span></span><br><span class="line">    <span class="comment">// (ptr to object, seed) -&gt; hash</span></span><br><span class="line">    <span class="comment">//用作识别</span></span><br><span class="line">	hash <span class="function"><span class="keyword">func</span><span class="params">(unsafe.Pointer, <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span></span><br><span class="line"><span class="function">	// <span class="title">function</span> <span class="title">for</span> <span class="title">comparing</span> <span class="title">objects</span> <span class="title">of</span> <span class="title">this</span> <span class="title">type</span></span></span><br><span class="line"><span class="function">    // <span class="params">(ptr to object A, ptr to object B)</span> -&gt; ==?</span></span><br><span class="line"><span class="function">    //用作表明该类型是不是可比较的<span class="params">(<span class="keyword">string</span>就是不可比较的,</span></span></span><br><span class="line"><span class="function"><span class="params">    //context.WithValue传入的key就是要求要是可比较的)</span></span></span><br><span class="line"><span class="function">	<span class="title">equal</span> <span class="title">func</span><span class="params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
-
+        <p>//todo</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/06/24/Go/type/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/06/24/Go/type/" data-id="ckd1sofly001mom55jsywt9hs" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/06/24/Go/type/" data-id="ckd2x8nvt001qzn55cocqz239" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -194,7 +197,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/05/03/Go/Pointer/" data-id="ckd1soflr0013om55j9w7xa4o" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/05/03/Go/Pointer/" data-id="ckd2x8nvk0013zn551wd8swja" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -234,7 +237,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/04/03/MySQL/btree/" data-id="ckd1soflz001qom55xnvbtc9l" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/04/03/MySQL/btree/" data-id="ckd2x8nvu001szn556jh9f6su" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
@@ -273,7 +276,7 @@
 <h3>1. reflect.Type</h3>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <h3>2. reflect.Kind</h3>
-<h3>Interface{}</h3>
+<h2>Interface{}</h2>
 <p>接下来说一说经常用到的 interface{} 结构体，
 传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；</p>
 <p>我们可以先看一个问题:</p>
@@ -290,7 +293,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckd1sofls0015om55n42k2mhd" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckd2x8nvl0015zn555f2k4bem" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -432,7 +435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/03/24/Go/syncPool/" data-id="ckd1sofm1001tom554wr4tj9w" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/03/24/Go/syncPool/" data-id="ckd2x8nvr001kzn55rhzm5ibh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -482,10 +485,53 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/03/01/redis/basic/" data-id="ckd1sofmb002gom55oohs3j3x" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/03/01/redis/basic/" data-id="ckd2x8nw4002fzn55v568ynqv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Go/gc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/24/Go/gc/" class="article-date">
+  <time datetime="2020-02-24T14:10:00.000Z" itemprop="datePublished">2020-02-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/24/Go/gc/">Golang Garbage Collection</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>看了下runtime的<s>代码</s>（注释），总结一哈</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/24/Go/gc/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckd2x8nvq001izn553hi4kpzl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
 
     </footer>
   </div>
@@ -720,50 +766,7 @@ bitmap和spans功能不变</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckd1soflw001gom5559o09w6c" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Go/gc" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/02/24/Go/gc/" class="article-date">
-  <time datetime="2020-02-24T14:10:00.000Z" itemprop="datePublished">2020-02-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/02/24/Go/gc/">Golang Garbage Collection</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>看了下runtime的代码（注释），总结一哈</p>
-        
-          <p class="article-more-link">
-            <a href="/2020/02/24/Go/gc/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckd1soflz001nom55udh33e13" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckd2x8nvs001mzn55ngzrg7ad" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -806,7 +809,7 @@ bitmap和spans功能不变</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/10/Comcon/consensus/" data-id="ckd1soflm000pom55gl8jbukn" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/10/Comcon/consensus/" data-id="ckd2x8nvf000pzn55zrrn6ufb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>

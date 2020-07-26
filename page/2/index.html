@@ -95,7 +95,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/03/Comcon/os/" data-id="ckd1sofln000rom55bhbbwqqm" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/03/Comcon/os/" data-id="ckd2x8nvg000rzn557o30ce5f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OS/">OS</a></li></ul>
@@ -129,36 +129,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>我们比较熟悉的时间包：</p>
-<h2>定义</h2>
-<ol>
-<li>timer.C 是 一个channel，在timer过期后，这个只读chan会有一个值</li>
-<li>除了AfterFunc方法外，一个timer一定要由NewTimer创建</li>
-</ol>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The Timer type represents a single event.</span></span><br><span class="line"><span class="comment">// When the Timer expires, the current time will be sent on C,</span></span><br><span class="line"><span class="comment">// unless the Timer was created by AfterFunc.</span></span><br><span class="line"><span class="comment">// A Timer must be created with NewTimer or AfterFunc.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Timer <span class="keyword">struct</span> &#123;</span><br><span class="line">	C &lt;-<span class="keyword">chan</span> Time <span class="comment">//一个channel，在timer过期后，这个只读chan会有一个值</span></span><br><span class="line">	r runtimeTimer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>runtimeTimer结构:
-是一个接口</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface to timers implemented in package runtime.</span></span><br><span class="line"><span class="comment">// Must be in sync with ../runtime/time.go:/^type timer</span></span><br><span class="line"><span class="keyword">type</span> runtimeTimer <span class="keyword">struct</span> &#123;</span><br><span class="line">	tb <span class="keyword">uintptr</span></span><br><span class="line">	i  <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line">	when   <span class="keyword">int64</span></span><br><span class="line">	period <span class="keyword">int64</span></span><br><span class="line">	f      <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">uintptr</span>)</span> // <span class="title">NOTE</span>: <span class="title">must</span> <span class="title">not</span> <span class="title">be</span> <span class="title">closure</span>,不能是闭包？？？，初始化计时器</span></span><br><span class="line"><span class="function">	<span class="title">arg</span>    <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line">	seq    <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4>Reset(d Duration)方法</h4>
-<ol>
-<li>返回true，如果这个timer被激活；返回false如果这个timer被停止或者过期(返回值最主要用来保持兼容性)</li>
-<li>Reset只能被 停止或者过期的带有空(队列已经为空)channels的timers 调用</li>
-<li></li>
-</ol>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Reset changes the timer to expire after duration d.</span></span><br><span class="line"><span class="comment">// It returns true if the timer had been active, false if the timer had</span></span><br><span class="line"><span class="comment">// expired or been stopped.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Reset should be invoked only on stopped or expired timers with drained channels.</span></span><br><span class="line"><span class="comment">// If a program has already received a value from t.C, the timer is known</span></span><br><span class="line"><span class="comment">// to have expired and the channel drained, so t.Reset can be used directly.</span></span><br><span class="line"><span class="comment">// If a program has not yet received a value from t.C, however,</span></span><br><span class="line"><span class="comment">// the timer must be stopped and—if Stop reports that the timer expired</span></span><br><span class="line"><span class="comment">// before being stopped—the channel explicitly drained:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// 	if !t.Stop() &#123;</span></span><br><span class="line"><span class="comment">// 		&lt;-t.C</span></span><br><span class="line"><span class="comment">// 	&#125;</span></span><br><span class="line"><span class="comment">// 	t.Reset(d)</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// This should not be done concurrent to other receives from the Timer's</span></span><br><span class="line"><span class="comment">// channel.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Note that it is not possible to use Reset's return value correctly, as there</span></span><br><span class="line"><span class="comment">// is a race condition between draining the channel and the new timer expiring.</span></span><br><span class="line"><span class="comment">// Reset should always be invoked on stopped or expired channels, as described above.</span></span><br><span class="line"><span class="comment">// The return value exists to preserve compatibility with existing programs.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Timer)</span> <span class="title">Reset</span><span class="params">(d Duration)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> t.r.f == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(<span class="string">"time: Reset called on uninitialized Timer"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	w := when(d)</span><br><span class="line">	active := stopTimer(&amp;t.r)</span><br><span class="line">	t.r.when = w</span><br><span class="line">	startTimer(&amp;t.r)</span><br><span class="line">	<span class="keyword">return</span> active</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2>引出</h2>
-<h3>Race Detector(竞态条件检测)</h3>
-<p>很简单:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> run -race main.<span class="keyword">go</span> </span><br><span class="line"><span class="keyword">go</span> build -race mycmd   <span class="comment">// build the command</span></span><br><span class="line"><span class="keyword">go</span> install -race mypkg <span class="comment">// install the package</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//官网的例子：</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">     start := time.Now()</span><br><span class="line">    <span class="keyword">var</span> t *time.Timer</span><br><span class="line">     t = time.AfterFunc(randomDuration(), <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;<span class="comment">//这里的t是写入</span></span><br><span class="line">         fmt.Println(time.Now().Sub(start))</span><br><span class="line">         t.Reset(randomDuration()) <span class="comment">//这里的t是读取，可能在一定情况下，randomDuration使得在这里读取前将t置为nil，所以读取了空值，会报nil pointer错误</span></span><br><span class="line">     &#125;)</span><br><span class="line">     time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line"> &#125;</span><br><span class="line">  <span class="function"><span class="keyword">func</span> <span class="title">randomDuration</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Duration</span></span> &#123;</span><br><span class="line">     <span class="keyword">return</span> time.Duration(rand.Int63n(<span class="number">1e9</span>))</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>改成以下版本:
-主要是让t变量只能从main的goroutine中读取和写入</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    start := time.Now()</span><br><span class="line">    reset := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">bool</span>)</span><br><span class="line">    <span class="keyword">var</span> t *time.Timer</span><br><span class="line">    t = time.AfterFunc(randomDuration(), <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">        fmt.Println(time.Now().Sub(start))</span><br><span class="line">        reset &lt;- <span class="literal">true</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="keyword">for</span> time.Since(start) &lt; <span class="number">5</span>*time.Second &#123;</span><br><span class="line">        &lt;-reset</span><br><span class="line">        t.Reset(randomDuration())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+        <p>//TODO</p>
+        
+          <p class="article-more-link">
+            <a href="/2020/02/03/Go/timer/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/03/Go/timer/" data-id="ckd1soflx001iom55xl1fbxmo" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/03/Go/timer/" data-id="ckd2x8nvs001nzn55f052w7g4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -198,7 +178,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/01/30/Comcon/DesignIO/" data-id="ckd1sofld000aom55gmbyy7p4" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/01/30/Comcon/DesignIO/" data-id="ckd2x8nv7000azn55brwi4uo3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li></ul>
@@ -253,7 +233,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/01/15/Comcon/IOModel/" data-id="ckd1soflh000fom55iyjhk0y6" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/01/15/Comcon/IOModel/" data-id="ckd2x8nva000fzn55q64ohjw3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -281,7 +261,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/12/15/Go/Practice/" data-id="ckd1sofkx0009om55ws0hmqrg" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/12/15/Go/Practice/" data-id="ckd2x8nuw0009zn5579iimyjf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -322,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/08/18/Comcon/StringCompare/" data-id="ckd1sofll000nom55p8j0svfa" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/08/18/Comcon/StringCompare/" data-id="ckd2x8nvf000nzn55sydz8vny" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/String/">String</a></li></ul>
@@ -365,7 +345,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckd1soflq0011om556b1z4ivm" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckd2x8nvl0016zn55w42vfmzd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -408,7 +388,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckd1sofm0001rom552x90evf3" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckd2x8nvv001vzn55vh0pdczw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
@@ -452,7 +432,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/SoftwareEngineer/" data-id="ckd1sofll000mom55t9u31thp" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/SoftwareEngineer/" data-id="ckd2x8nve000mzn55n32h7ob5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/se/">se</a></li></ul>
@@ -495,7 +475,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckd1soflo000uom556wiy3b2a" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckd2x8nvi000wzn55j73bjeli" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>

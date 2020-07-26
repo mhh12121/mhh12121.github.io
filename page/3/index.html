@@ -119,7 +119,7 @@ Cons:</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ckd1soflk000jom55gag70md0" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ckd2x8nvd000jzn55w2y9obl2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LOCK/">LOCK</a></li></ul>
@@ -162,7 +162,7 @@ Cons:</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckd1soflv001eom55fqv0bdy2" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckd2x8nvp001ezn55d004jw9j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -202,7 +202,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="ckd1sofkm0000om5534txugtz" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="ckd2x8nun0001zn55cf3tmn74" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Love/">Love</a></li></ul>
@@ -245,7 +245,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="ckd1sofls0016om5550uukv0r" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/Context/" data-id="ckd2x8nvj0010zn559c7yd4cu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -279,41 +279,16 @@ So I found the whole world</p>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>关于这个包，其实有不少很不错的实现
-留个坑----
-比如：
-fmt.Output()</p>
-<h3>pool</h3>
-<p>存储暂时的对象，这些对象很可能会被存储以及调用</p>
-<p>使用sync/pool，创建了一个动态长度的buffer，可以根据需求扩展以及收缩,
-但是不适用于短时间生存的</p>
-<h2>Sprintf</h2>
-<p>直接看一道题</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> yoyo <span class="keyword">struct</span>&#123;</span><br><span class="line">    Name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(y *yoyo)</span> <span class="title">do</span><span class="params">()</span> <span class="title">string</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> fmt.Sprintf(<span class="string">"%+v"</span>,y)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    p:=&amp;yoyo&#123;&#125;</span><br><span class="line">    p.do()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>答案是输出stack overflow</p>
-<p>二话不说直接dlv进去看:
-贴图先不给，
-大概流程是,fmt.sprintf里面会调用
-doPrintf(format,a)
-这个函数就是loop  format里面的字符串（即我们传入的 “%+v”)
-遇到% ， +v这种特殊字符就停止 调用</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printArgs(arg ,verb <span class="keyword">rune</span>)</span><br></pre></td></tr></table></figure>
-<p>这个函数会进行一个简单的判断，arg的类型，有些类型如果用cast (T.(type)这种模式)可以转换，则不需要使用反射，
-如果要用反射，
-即上面题目中，传入的指针y;
-进入 handleMethods(verb rune)</p>
-<ol>
-<li>判断是不是formatter？</li>
-<li>判断这个verb的类型(v,s,x,X,q)中的一种，如果是，会继续判断传入的p.arg.(type)
-是否是error还是一个Stringer</li>
-</ol>
-<p>进入p.fmtString(v.String(),verb),其中v=p.arg.(type)实际就是最一开始传入的参数 <strong>y</strong></p>
-<p>这时候就会发现，这个v.String()就又回到最初的yoyo.String()方法，就会造成死循环，栈溢出;</p>
-
+        <p>留个坑----</p>
+        
+          <p class="article-more-link">
+            <a href="/2019/06/21/Go/fmt/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckd1soflu001com55we4qcc5k" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckd2x8nvm0019zn555ouid2mw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -360,7 +335,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckd1soflt0019om555ms4fq0t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckd2x8nvo001czn55iqpo6rlp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -404,7 +379,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="ckd1soflp000zom557oj4m6py" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="ckd2x8nvi000yzn55qwluqxh9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -447,7 +422,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckd1soflj000iom55nkaromp0" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckd2x8nvc000izn5566vsuiyt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -481,7 +456,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>其实里面只涉及部分concurrency问题，一些实用例子，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
+        <p>其实里面只涉及部分concurrency问题，一些<strong>实用例子</strong>，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
         
           <p class="article-more-link">
             <a href="/2019/06/05/Go/Concurrency/#more">Read More</a>
@@ -490,7 +465,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckd1soflp000wom55hb82b25y" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckd2x8nvh000uzn555ujvtc8t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Golang/">Golang</a></li></ul>
@@ -533,7 +508,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ckd1soflu001aom55ezj5m355" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ckd2x8nvn001azn55ywro48va" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

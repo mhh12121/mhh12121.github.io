@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://blog.golang.org/go-maps-in-action">
 <meta property="og:image" content="https://golang.org/pkg/sort/">
 <meta property="og:image" content="https://mhh12121.github.io/Concurrency">
-<meta property="og:updated_time" content="2019-12-15T09:39:50.674Z">
+<meta property="og:updated_time" content="2020-07-26T09:41:58.104Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something should be noted in golang&#39;s map">
 <meta name="twitter:description" content="There is SortedMap or LinkedHashMap in Java Both can ensure the inserted order of elements, but f ** k myself, I found that Go only supports basic HashMap which means you have to do SortedMap and Link">
@@ -175,7 +175,7 @@ here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 //todo我实在写不动了</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>那么把红黑树放在map上呢：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//todo</span></span><br></pre></td></tr></table></figure>
 <h4>LinkedHashMap实现</h4>
 <p>真正的实现，先讲一下：</p>
 <ol>
@@ -187,7 +187,8 @@ The above code may use O(2n) space, but time complexity reduce to O(n)
 <strong>!!!Everything seems done!!!</strong></p>
 <p>So what if we use a <strong>large file?</strong></p>
 <h3>Large File</h3>
-<p>Solution: Split the large file into several files, it depends on your MEM:</p>
+<p>Solution: Split the large file into several files, it depends on your MEM:
+针对大文件，其实普通的思想就是&quot;分而治之&quot;，更多可以参考MapReduce</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">HashFile</span><span class="params">(url <span class="keyword">string</span>)</span> <span class="title">int</span></span>&#123;<span class="comment">//pass a url</span></span><br><span class="line">    seed:=<span class="number">131</span></span><br><span class="line">    hash:=<span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> _,v:=<span class="keyword">range</span> url&#123;</span><br><span class="line">        hash=hash*seed+v</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> hash &amp; <span class="number">0x7FFFFFFF</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">//........</span></span><br><span class="line">    <span class="comment">//url:=fp.ReadLine()</span></span><br><span class="line">    pos:=HashFile(url)</span><br><span class="line">    file:=pos%<span class="number">10</span><span class="comment">//we assume that it split into 10 files</span></span><br><span class="line">    bufio.newWriter(file+<span class="string">".txt"</span>)</span><br><span class="line">    Writer.Write(file+<span class="string">".txt"</span>)<span class="comment">//write it into specific file</span></span><br><span class="line">    <span class="comment">//........</span></span><br><span class="line">    urls:=<span class="built_in">make</span>([]<span class="keyword">string</span>,<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++&#123;</span><br><span class="line">        urlPlusTimes:=LoopEachFile(files)<span class="comment">//calculate each files' urls</span></span><br><span class="line">        urls=<span class="built_in">append</span>(urls,urlPlusTimes...)<span class="comment">// Here comes to the question??? how to ensure sequence???</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3>最终解决办法</h3>
 <p>几天了，想不出来啊</p>
@@ -204,7 +205,7 @@ About that, can refer to <img src="/Concurrency" alt="my previous blog"></p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckd1soflt0019om555ms4fq0t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckd2x8nvo001czn55iqpo6rlp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

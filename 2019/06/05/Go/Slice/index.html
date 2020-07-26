@@ -14,7 +14,7 @@
 <meta property="og:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/2019/06/05/img/golangusergroups.png">
-<meta property="og:updated_time" content="2020-07-13T14:50:38.022Z">
+<meta property="og:updated_time" content="2020-07-26T09:47:44.737Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about Slice in Go">
 <meta name="twitter:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
@@ -126,7 +126,7 @@
 </ol>
 <p>详情可以看下<a href="./gc.md">之前的那篇笔记gc</a></p>
 <h2>3. Enlarge Capcity</h2>
-<p>你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 <strong>×2</strong>，或者是超过了1024的只会库容1.25倍,自己注释的文档：</p>
+<p>你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 <strong>×2</strong>，或者是超过了1024的只会库容1.25倍（也不一定奥，可以接着看）：</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growslice</span><span class="params">(et *_type, old slice, <span class="built_in">cap</span> <span class="keyword">int</span>)</span> <span class="title">slice</span></span> &#123;<span class="comment">// et 指的是？？？？， old是老的slice，cap是申请的容量</span></span><br><span class="line">    <span class="comment">//前面是一些判断racecodition以及调试，防止cap设置不合理的判断</span></span><br><span class="line">    ........</span><br><span class="line">    <span class="comment">//-------------这里开始计算扩容数量-----------------</span></span><br><span class="line">    newcap := old.<span class="built_in">cap</span></span><br><span class="line">    doublecap := newcap + newcap</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">cap</span> &gt; doublecap &#123;<span class="comment">//申请容量 &gt; 2 * 旧的容量</span></span><br><span class="line">        newcap = <span class="built_in">cap</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> old.<span class="built_in">len</span> &lt; <span class="number">1024</span> &#123;<span class="comment">//老容量 &lt; 1024，直接扩成旧的两倍</span></span><br><span class="line">            newcap = doublecap</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Check 0 &lt; newcap to detect overflow</span></span><br><span class="line">            <span class="comment">// and prevent an infinite loop.</span></span><br><span class="line">            <span class="keyword">for</span> <span class="number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="built_in">cap</span> &#123;<span class="comment">//好像看见有文章說是1.25倍，但实际并不是，可以往下继续看capmen变量</span></span><br><span class="line">                newcap += newcap / <span class="number">4</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// Set newcap to the requested cap when</span></span><br><span class="line">            <span class="comment">// the newcap calculation overflowed.</span></span><br><span class="line">            <span class="keyword">if</span> newcap &lt;= <span class="number">0</span> &#123;<span class="comment">//溢出的话就使之等于申请的容量</span></span><br><span class="line">                newcap = <span class="built_in">cap</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>但是，那些只针对于没有定义 *** cap *** 字段的slice，万一规定了，像</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">10</span>, <span class="number">15</span>)</span><br></pre></td></tr></table></figure>
@@ -169,11 +169,13 @@
 <p>结果是1024和1280 ，符合&gt;1024 则 ×1.25倍</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1025</span>, <span class="number">1025</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br><span class="line">t = <span class="built_in">append</span>(t, <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br></pre></td></tr></table></figure>
 <p>1025,1360 ,符合</p>
+<h2>4. 回收</h2>
+<p>//todo</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ckd1soflu001aom55ezj5m355" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ckd2x8nvn001azn55ywro48va" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
