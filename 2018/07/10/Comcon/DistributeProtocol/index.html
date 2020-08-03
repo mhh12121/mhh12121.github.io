@@ -14,7 +14,7 @@
 <meta property="og:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk">
-<meta property="og:updated_time" content="2020-06-09T02:34:54.105Z">
+<meta property="og:updated_time" content="2020-08-03T03:09:52.999Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Notes about Raft and Paxos">
 <meta name="twitter:description" content="复习一些分布式理论: Raft和Paxos(暂时只讨论算法情况，工程情况留坑)">
@@ -106,15 +106,19 @@
 </ol>
 <p>只是负责发起request到分布式系统并等待相应</p>
 <ol start="2">
-<li>Proposer（发起者）</li>
-</ol>
-<p>它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行（propser可以不断发起提议，不用等提议完成）</p>
-<ol start="3">
-<li>Acceptor（Voter）</li>
-</ol>
-<p><strong>多个Acceptor</strong>组成一个Quorums（法定多数），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum,不会同意比自己以前接受过的提案编号小的提案，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？</p>
-<ol start="4">
-<li>Quorums（多数派）</li>
+<li>
+<p>Proposer（发起者）
+每个Proposer也是一个Acceptor
+它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行（propser可以不断发起提议，不用等提议完成）</p>
+</li>
+<li>
+<p>Acceptor（Voter）
+每个Acceptor也是一个Proposer
+<strong>多个Acceptor</strong>组成一个Quorums（法定多数），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum,不会同意比自己以前接受过的提案编号小的提案，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？</p>
+</li>
+<li>
+<p>Quorums（多数派）</p>
+</li>
 </ol>
 <p>Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都会有至少一个Acceptor交集，而且Quorums总会是包含大部分的Acceptor;比如：有一个Accetpros的集合{A，B，C，D}，大部分的Quorums可以是任意三个Acceptor组成：{A，B，C}，{A，C，D}等等
 而经常Acceptor还会携带不同的权值，但保证的是Quorums所包含的所有Acceptors的权值和都会<strong>大于</strong>总的权值和（所有的Acceptors）的一半;</p>
@@ -126,23 +130,38 @@
 <h4>基本流程</h4>
 <p>每个basic-paxos的实例（或执行者）决定于一个输出值。该协议在多轮通信中进行;
 成功的有两轮，每轮有a，b，我们假定是在一个异步模型里面，即一个processor可能在第一轮，另一个可能在第二轮</p>
+<p>首先进行典型的2PC 协议</p>
 <p>Phase 1：</p>
 <ol>
 <li>1a：Prepare</li>
 </ol>
-<p>Proposer创建一个信息，我们称为Prepare，附带一个唯一标识数字 n 。而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
-然后，Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的<a href>跳到如何决定</a>)，
-如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos</p>
+<p>Proposer创建一个信息，我们称为<strong>Prepare</strong>，附带一个<strong>唯一标识数字 n</strong> 。</p>
+<ul>
+<li>而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;</li>
+<li>每次n = ++maxProposal;</li>
+<li>Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的???)</li>
+</ul>
+<p>如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos</p>
 <ol start="2">
 <li>1b：Promise
 （两个承诺，一个应答）</li>
 </ol>
 <p>每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：</p>
 <ol>
-<li>如果<strong>n比之前收到的所有proposal n都大,不接受proposal n&lt;当前请求的propose请求</strong>（从任何Proposer收到的），这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
-如果这个Acceptor以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会持久化提议）</li>
-<li>如果<strong>n出现&lt;=之前收到的任何一个proposal n,不接受proposal n&lt;=当前请求的prepare请求</strong>，Acceptor能忽略这个提议;
-为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了</li>
+<li>
+<p>如果<strong>n比之前收到的所有proposal n都大</strong></p>
+<ul>
+<li>这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。</li>
+<li>如果这个Acceptor以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会<strong>持久化</strong>该proposal值）</li>
+</ul>
+</li>
+<li>
+<p>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong></p>
+<ul>
+<li>则不接受proposal n&lt;=当前请求的prepare请求，Acceptor能忽略这个提议;</li>
+<li>为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新</li>
+</ul>
+</li>
 </ol>
 <p>Phase 2：</p>
 <ol>
@@ -151,14 +170,20 @@
 <p>如果一个Proposer收到了的从Quorum返回的response，</p>
 <ol>
 <li>如果未超过一半的Acceptors同意，提议失败</li>
-<li>如果超过了一半：
-如果<strong>所有</strong>Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的<strong>proposal n</strong>，向所有Acceptor再发送提议;
-如果有<strong>部分</strong>Acceptor接到过内容，会从所有接受过的内容中，<strong>选择proposal n最大</strong>的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;</li>
+<li>如果超过了一半：</li>
 </ol>
+<pre><code>- 如果**所有**Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
+
+- 如果有**部分**Acceptor接到过内容，会从所有接受过的内容中，**选择proposal n最大**的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;
+</code></pre>
 <ol start="2">
 <li>2b：Accepted
-如果Acceptor接收到了提议后，他必须遵循：如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(持久化）<strong>当前proposal n 和内容</strong>;
+如果Acceptor接收到了提议后，他必须遵循：
+<ul>
+<li>如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(<strong>持久化</strong>）<strong>当前proposal n 和内容</strong>;
 最后Proposer收到Quorum返回的Accept response后，形成决议</li>
+</ul>
+</li>
 </ol>
 <h4>图解在算法异常的情况下（工程下更加复杂，先占坑）：</h4>
 <ol>
@@ -198,7 +223,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Client   Leader         Acceptor     Learner</span><br><span class="line">   |      |             |  |  |       |  |</span><br><span class="line">   X-----&gt;|             |  |  |       |  |  Request</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(1)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Promise(1,&#123;null,null,null&#125;)</span><br><span class="line">   |      !             |  |  |       |  |  !! LEADER FAILS</span><br><span class="line">   |         |          |  |  |       |  |  !! NEW LEADER (knows last number was 1)</span><br><span class="line">   |         X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(2)</span><br><span class="line">   |         |&lt;---------X--X--X       |  |  Promise(2,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER recovers</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER tries 2, denied</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(2)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Nack(2)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER tries 3</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Prepare(3)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Promise(3,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! NEW LEADER proposes, denied</span><br><span class="line">   |      |  X---------&gt;|-&gt;|-&gt;|       |  |  Accept!(2,Va)</span><br><span class="line">   |      |  |&lt;---------X--X--X       |  |  Nack(3)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! NEW LEADER tries 4</span><br><span class="line">   |      |  X---------&gt;|-&gt;|-&gt;|       |  |  Prepare(4)</span><br><span class="line">   |      |  |&lt;---------X--X--X       |  |  Promise(4,&#123;null,null,null&#125;)</span><br><span class="line">   |      |  |          |  |  |       |  |  !! OLD LEADER proposes, denied</span><br><span class="line">   |      X------------&gt;|-&gt;|-&gt;|       |  |  Accept!(3,Vb)</span><br><span class="line">   |      |&lt;------------X--X--X       |  |  Nack(4)</span><br><span class="line">   |      |  |          |  |  |       |  |  ... and so on ...</span><br></pre></td></tr></table></figure>
 <h3>Multi-Paxos</h3>
 <p>multi-Paxos将集群分为两种状态</p>
-<p>以上参考 *** <img src="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&amp;cd=2&amp;hl=en&amp;ct=clnk" alt="wiki-Paxos"> ***//这两天不知道为啥上不去？只能看cached版（哭</p>
+<p>以上参考 *** <img src="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&amp;cd=2&amp;hl=en&amp;ct=clnk" alt="wiki-Paxos"> ***</p>
 <h2>Raft</h2>
 <p>解决一致性问题的三个子问题</p>
 <p>比较简单，可以从几个方面进行理解，为</p>
@@ -269,7 +294,7 @@ log entries会被复制到新旧配置中的所有server
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ckd2x8nv8000dzn55m9qcnjy5" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2018/07/10/Comcon/DistributeProtocol/" data-id="ckde42xb3000bf3559ovz25c5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Distributed/">Distributed</a></li></ul>
@@ -321,7 +346,7 @@ log entries会被复制到新旧配置中的所有server
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 12.5px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -347,6 +372,10 @@ log entries会被复制到新旧配置中的所有server
           </li>
         
           <li>
+            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
+          </li>
+        
+          <li>
             <a href="/2020/06/24/Go/type/">Golang type</a>
           </li>
         
@@ -356,10 +385,6 @@ log entries会被复制到新旧配置中的所有server
         
           <li>
             <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
           </li>
         
       </ul>

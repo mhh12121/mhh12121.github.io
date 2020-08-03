@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="看了下runtime的代码（注释），总结一哈">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-07-26T09:44:44.399Z">
+<meta property="og:updated_time" content="2020-07-26T14:43:58.086Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang Garbage Collection">
 <meta name="twitter:description" content="看了下runtime的代码（注释），总结一哈">
@@ -93,6 +93,19 @@
       
         <p>看了下runtime的<s>代码</s>（注释），总结一哈</p>
 <a id="more"></a>
+<h2>目的</h2>
+<p>对于所有的垃圾回收器的目的（指标）无非就是以下几个：</p>
+<ol>
+<li>所占用程序的时间，停顿时间</li>
+<li>频率</li>
+<li>CPU占比</li>
+<li>内存占比（堆开销）</li>
+<li>内存的分配方式（碎片化程度）</li>
+<li>内存释放方式</li>
+<li>并发效果</li>
+<li>是否智能化（根据某些系统条件进行调节）</li>
+<li>是否可以自定义化参数</li>
+</ol>
 <h2>现在有的比较流行的GC</h2>
 <ol>
 <li>
@@ -166,7 +179,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckd2x8nvq001izn553hi4kpzl" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckde42xbn001lf3554uwiwzr3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -218,7 +231,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 12.5px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Golang/" style="font-size: 17.5px;">Golang</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
     </div>
   </div>
 
@@ -244,6 +257,10 @@
           </li>
         
           <li>
+            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
+          </li>
+        
+          <li>
             <a href="/2020/06/24/Go/type/">Golang type</a>
           </li>
         
@@ -253,10 +270,6 @@
         
           <li>
             <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
-          </li>
-        
-          <li>
-            <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
           </li>
         
       </ul>
