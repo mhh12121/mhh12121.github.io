@@ -7,6 +7,7 @@ tags: golang
 Golang's Slice is kinda diffrent===>
 
 <!--more-->
+
 当前版本go 1.13
 ![group](../../img/golangusergroups.png)
 
@@ -81,7 +82,7 @@ func makeslice(et *_type, len, cap int) unsafe.Pointer{}
 
 ## 3. Enlarge Capcity
 
-你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 **×2**，或者是超过了1024的只会库容1.25倍,自己注释的文档：
+你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 **×2**，或者是超过了1024的只会库容1.25倍（也不一定奥，可以接着看）：
 
 ```golang
 func growslice(et *_type, old slice, cap int) slice {// et 指的是？？？？， old是老的slice，cap是申请的容量
@@ -351,3 +352,6 @@ log.Printf("%+v", cap(t))
 
 
 
+
+## 4. 回收
+//todo

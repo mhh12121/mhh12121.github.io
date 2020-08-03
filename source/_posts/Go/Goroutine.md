@@ -5,6 +5,7 @@ tags: Golang
 ---
 
 Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑
+
 <!--more-->
 
 ## 为什么有这个东西？

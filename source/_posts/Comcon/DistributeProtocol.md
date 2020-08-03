@@ -22,11 +22,11 @@ paxos实际上是一系列的协议，有basic-paxos, multi-paxos
 只是负责发起request到分布式系统并等待相应
 
 2. Proposer（发起者）
-
+每个Proposer也是一个Acceptor
 它负责从client 发起请求，尝试让Acceptor来同意这个请求，也会在冲突发生的时候作为一个合作者来使协议继续执行（propser可以不断发起提议，不用等提议完成）
 
 3. Acceptor（Voter）
-
+每个Acceptor也是一个Proposer
 **多个Acceptor**组成一个Quorums（法定多数），所有发向一个Acceptor的必须要发给Acceptor的一个Quorum,不会同意比自己以前接受过的提案编号小的提案，任何从一个Acceptor来的信息会被忽略，除非能接受到一个从这个Quorum里所有的Acceptor来的拷贝？？？
 
 4. Quorums（多数派）
@@ -44,11 +44,16 @@ Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都�
 每个basic-paxos的实例（或执行者）决定于一个输出值。该协议在多轮通信中进行;
 成功的有两轮，每轮有a，b，我们假定是在一个异步模型里面，即一个processor可能在第一轮，另一个可能在第二轮
 
+首先进行典型的2PC 协议
+
 Phase 1：
 1.  1a：Prepare
 
- Proposer创建一个信息，我们称为Prepare，附带一个唯一标识数字 n 。而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
- 然后，Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的[跳到如何决定]())，
+ Proposer创建一个信息，我们称为**Prepare**，附带一个**唯一标识数字 n** 。
+  - 而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
+  - 每次n = ++maxProposal;
+  - Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的???)
+
  如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos
  
 
@@ -56,10 +61,13 @@ Phase 1：
 （两个承诺，一个应答）
 
  每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：
-   1. 如果**n比之前收到的所有proposal n都大,不接受proposal n<当前请求的propose请求**（从任何Proposer收到的），这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
-   如果这个Acceptor以前接收过**其他提议**，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会持久化提议）
-   2. 如果**n出现<=之前收到的任何一个proposal n,不接受proposal n<=当前请求的prepare请求**，Acceptor能忽略这个提议;
-   为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了
+   1. 如果**n比之前收到的所有proposal n都大**
+      - 这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
+      - 如果这个Acceptor以前接收过**其他提议**，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会**持久化**该proposal值）
+
+   2. 如果**n出现<=之前收到的任何一个proposal n**
+      - 则不接受proposal n<=当前请求的prepare请求，Acceptor能忽略这个提议;
+      - 为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新
 
 Phase 2：
 1.  2a： Accept(propose)
@@ -67,12 +75,14 @@ Phase 2：
   如果一个Proposer收到了的从Quorum返回的response，
   1. 如果未超过一半的Acceptors同意，提议失败
   2. 如果超过了一半：
-    如果**所有**Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
-    如果有**部分**Acceptor接到过内容，会从所有接受过的内容中，**选择proposal n最大**的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;
+    - 如果**所有**Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
+
+    - 如果有**部分**Acceptor接到过内容，会从所有接受过的内容中，**选择proposal n最大**的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;
   
 
 2. 2b：Accepted
-  如果Acceptor接收到了提议后，他必须遵循：如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(持久化）**当前proposal n 和内容**;
+  如果Acceptor接收到了提议后，他必须遵循：
+    - 如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(**持久化**）**当前proposal n 和内容**;
   最后Proposer收到Quorum返回的Accept response后，形成决议
 
 #### 图解在算法异常的情况下（工程下更加复杂，先占坑）：
@@ -185,7 +195,7 @@ multi-Paxos将集群分为两种状态
 
 
 
-以上参考 *** ![wiki-Paxos](https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk) ***//这两天不知道为啥上不去？只能看cached版（哭
+以上参考 *** ![wiki-Paxos](https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&cd=2&hl=en&ct=clnk) ***
 
 
 

@@ -6,6 +6,7 @@ tags: golang
 
 常用的rpc框架，我们先从它的proto开始了解吧//todo
 <!--more-->
+
 我们这里只讨论go语法，语言方面其他都是大同小异
 ## proto
 
@@ -53,4 +54,8 @@ message toServerData{
 }
 ```
 
+## 提供的一些连接方式
 
+
+单向stream
+双向stream

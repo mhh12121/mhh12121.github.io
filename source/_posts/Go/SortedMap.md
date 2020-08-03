@@ -393,7 +393,7 @@ func (brtree *BRTree) insertCheck(pnode *BRNode) {
 那么把红黑树放在map上呢：
 
 ```go
-
+//todo
 ```
 #### LinkedHashMap实现
 
@@ -412,7 +412,7 @@ So what if we use a **large file?**
 ### Large File
 
 Solution: Split the large file into several files, it depends on your MEM:
-
+针对大文件，其实普通的思想就是"分而治之"，更多可以参考MapReduce
 
 ```go
 func HashFile(url string) int{//pass a url

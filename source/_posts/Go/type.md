@@ -4,6 +4,10 @@ date: 2020-06-24 22:10
 tags: golang
 ---
 
+//todo
+
+<!--more-->
+
 类型
 
 ```go

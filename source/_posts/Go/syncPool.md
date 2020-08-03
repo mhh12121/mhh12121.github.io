@@ -5,6 +5,7 @@ tags: golang
 ---
 
 <!--more-->
+
 golang进程池
 
 # Sync.Pool
@@ -316,6 +317,9 @@ type poolChainElt struct {
 #### pushHead
 
 生产者增加元素,注意在当前ring buffer满了之后会初始化一个新的poolChainElt，其中poolDequque大小为原来的2倍
+- 该链表poolChain的初始化大小为8
+- 每次增多一个poolDequeue是前一个的2倍，且一定是2的幂次
+- poolDequeue的最大的长度是2^30，再多的poolDequeue也不会变
 
 ```go
 func (c *poolChain) pushHead(val interface{}) {
@@ -429,6 +433,12 @@ func (c *poolChain) popHead() (interface{}, bool) {
 
 综合上面的各个结构，大概画了![一个图](/img/syncpool.png)
 
+
+
+
+
+看到这里可能就有点疑问了，**为啥有popTail，又要有popHead呢？？？**
+这也是其设计的 "喵啊喵啊" 之处，具体可以继续看下面的**Get()**方法
 
 ### 由功能出发，猜结构
 
@@ -552,7 +562,9 @@ func (p *Pool) Get() interface{} {
 		// Try to pop the head of the local shard. We prefer
 		// the head over the tail for temporal locality of
 		// reuse.
+		//首先会从本地的sharedpopHead
 		x, _ = l.shared.popHead()
+		//如果没有，就会进行getSlow()
 		if x == nil {
 			x = p.getSlow(pid)
 		}
@@ -571,8 +583,15 @@ func (p *Pool) Get() interface{} {
 }
 
 ```
+这里就可以回答上面的问题了（**为啥有popTail，又要有popHead呢？？？**)：
 
-如果在poollocal中找不到对象，则要调用**getSlow()**获得对象
+- 首先会从本地的sharedpopHead
+- 如果在poollocal中找不到对象，则要调用**getSlow()**获得对象,getslow()代码如下
+- 下面代码中 **l.shared.popTail()** 就发现是从其他P steal **尾部**获得poolChain
+
+这里都可以解释为什么有些地方不用锁: 
+
+>>> 本地的就从head取对象，steal其他的P的对象就从其他P的tail取对象
 
 ```go
 func (p *Pool) getSlow(pid int) interface{} {
@@ -582,6 +601,7 @@ func (p *Pool) getSlow(pid int) interface{} {
 	// Try to steal one element from other procs.
 	for i := 0; i < int(size); i++ {
 		l := indexLocal(locals, (pid+i+1)%int(size))
+		//从其他P的tail获得对象
 		if x, _ := l.shared.popTail(); x != nil {
 			return x
 		}
@@ -675,7 +695,7 @@ func poolCleanup() {
 func poolCleanup() {
 	// 该函数会注册到运行时 GC 阶段(前)，此时为 STW 状态，不需要加锁
 	// 它必须不处理分配且不调用任何运行时函数，防御性的将一切归零，有以下两点原因:
-	// 1. 防止整个 Pool 的 false retention
+	// 1. 防止整个 Pool 的 false retention???
 	// 2. 如果 GC 发生在当有 goroutine 与 l.shared 进行 Put/Get 时，它会保留整个 Pool.
 	//   那么下个 GC 周期的内存消耗将会翻倍。
 	// 遍历所有 Pool 实例，接触相关引用，交由 GC 进行回收

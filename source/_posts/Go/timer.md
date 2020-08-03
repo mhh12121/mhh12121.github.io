@@ -3,6 +3,8 @@ title: Golang timer
 date: 2020-02-03 14:20
 tags: Golang
 ---
+//TODO
+<!--more-->
 
 我们比较熟悉的时间包：
 ## 定义

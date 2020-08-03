@@ -18,7 +18,7 @@ tags: golang
 
 
 
-### Interface{}
+## Interface{}
 接下来说一说经常用到的 interface{} 结构体，
 传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；
 
