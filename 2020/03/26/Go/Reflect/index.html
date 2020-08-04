@@ -94,14 +94,12 @@
         <h2>Reflect Package</h2>
 <a id="more"></a>
 <h3>1. reflect.Type</h3>
-<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <h3>2. reflect.Kind</h3>
 <h2>Interface{}</h2>
 <p>接下来说一说经常用到的 interface{} 结构体，
 传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；</p>
 <p>我们可以先看一个问题:</p>
-<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Animal <span class="keyword">interface</span>&#123;</span><br><span class="line">    Walk()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Cat <span class="keyword">struct</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cat)</span> <span class="title">Walk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    log.Println(<span class="string">"walking! cat"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> i2 <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> </span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> t1 i1</span><br><span class="line">    <span class="keyword">var</span> t2 i2</span><br><span class="line">    <span class="keyword">if</span> t1==t2&#123;</span><br><span class="line">        log.Println(<span class="string">"equal!"</span>)</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        log.Println(<span class="string">"nope!"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>除了反射其还可以当做原本的用途： 多态 （OOP）的特征之一，只是golang是ducktype类型，实现多态的几个要求：</p>
 <ol>
@@ -110,13 +108,12 @@
 </ol>
 <p>满足以上就可以实现<strong>多态</strong></p>
 <p>一般有两种写法：</p>
-<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//方法内嵌</span></span><br><span class="line"><span class="keyword">type</span> doInterfaceWithMethod <span class="keyword">interface</span>&#123;</span><br><span class="line">    Do1(<span class="keyword">string</span>) <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//方法放在外面</span></span><br><span class="line"><span class="keyword">type</span> doInterfaceWithoutMethod <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *doInterfaceWithoutMethod)</span> <span class="title">Do1</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">string</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckdf9qo0500175e5529rwbnwq" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckdf9zxms0014op55o343q2zw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

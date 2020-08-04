@@ -113,21 +113,16 @@
 <pre><code>header.payload.signature
 </code></pre>
 <p>header结构：</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"typ"</span>: <span class="string">"JWT"</span>,</span><br><span class="line">    <span class="attr">"alg"</span>: <span class="string">"HS256"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims）
 例如iss(Issuer签发者)，aud（接受jwt的一方），jti（jwt唯一身份标识，主要作为一次性token）, sub(Subject面向的用户), exp(Expiration time)</p>
 <p>也可以塞入自定义的字段，比如 userId:</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"userId"</span>: <span class="string">"yjqweqw0019-aq"</span>//但一般不要敏感信息，因为会被看见</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Signature结构</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">secret</span>=<span class="string">"mhh12121"</span>//存在服务器上的密钥</span><br><span class="line"><span class="class"><span class="keyword">data</span> = base64( <span class="title">header</span> ) + “.” + base64( <span class="title">payload</span> )</span></span><br><span class="line"><span class="title">signature</span> = <span class="type">Hash</span>( <span class="class"><span class="keyword">data</span>, secret )//这里我们用<span class="type">HMACSHA256</span></span></span><br></pre></td></tr></table></figure>
 <p>假设我们的header 和paylaod如下</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//header</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">"typ"</span>: <span class="string">"JWT"</span>,</span><br><span class="line">    <span class="string">"alg"</span>: <span class="string">"HS256"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//payload</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">"userId"</span>: <span class="string">"yjqweqw0019-aq"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//服务器上的secret</span></span><br><span class="line">secret=<span class="string">"mhh12121"</span></span><br></pre></td></tr></table></figure>
 <p>可以通过这个网站<img src="https://jwt.io/" alt="jwtio">验证你的signature准确性</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//我们的signature应该是这个</span></span><br><span class="line">eyJhbGciOiJIUzI<span class="number">1</span><span class="symbol">NiIsInR5</span>cCI<span class="number">6</span>IkpX<span class="attr">VCJ9</span>.eyJ<span class="number">1</span>c<span class="number">2</span>VySWQiOiJ<span class="number">5</span>a<span class="symbol">nF3</span>ZXF<span class="number">3</span>MDAxOS<span class="number">1</span>hcSJ<span class="number">9.7</span>jRvE_F<span class="number">8</span>lriMHlTZPJulRPg_V<span class="number">66</span>I<span class="number">6</span>r-f<span class="number">7</span>caMuI<span class="number">82</span>u<span class="number">1</span>o</span><br></pre></td></tr></table></figure>
 <h2>TLS (HTTPS=HTTP+TLS，TLS1.2=SSL3.3)</h2>
 <p>TLS (Transport layer security) mainly works in Application Layer. TLS is the 3rd edition of SSL(Secure Socket Layer) so that it can work on any application over TCP.</p>
@@ -210,7 +205,6 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
 <li>那么每次client端生成的key放在哪里呢？</li>
 </ol>
 <p>改变环境变量SSLKEYLOGFILE，浏览器会从以下地址记录生成的对称密钥（linux）</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="builtin-name">export</span> <span class="attribute">SSLKEYLOGFILE</span>=~/tls/key.log</span><br></pre></td></tr></table></figure>
 <ol start="2">
 <li>被劫持咋办？
@@ -241,7 +235,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdf9qnzw000i5e55gitaouqz" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdf9zxmk000iop552ejvmig4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>

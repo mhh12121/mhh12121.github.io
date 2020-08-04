@@ -101,10 +101,8 @@
 <h4>值得注意的问题</h4>
 <p>以前想过setTimeout(func,0)指的是不是立即执行呢？
 下面看个例子:</p>
-<p class="code-caption" data-lang="javascript" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">alert(<span class="number">1</span>);</span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	alert(<span class="number">2</span>);</span><br><span class="line">&#125;,<span class="number">0</span>);</span><br><span class="line">alert(<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
 <p>结果却是</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">2</span></span><br></pre></td></tr></table></figure>
 <p>是不是感到很奇怪，这个意思就是setTimeout(func,0)并不是立即执行;</p>
 <p>在网上查了资料，发现这个要从<span style="color:#f92672">js引擎</span>说起</p>
@@ -114,7 +112,6 @@
 <p>js引擎是单线程的这个没错，但是，就因为js引擎是单线程的，它没法再为其他功能服务；
 同时，<span style="color:#f92672">浏览器是多线程的</span>,这就说的通了：比如浏览器事件触发、定时器计时、网络请求、渲染等都是由浏览器内核分配的其他线程完成的，js引擎只占其中一个线程。</p>
 <p>再举个经典例子：</p>
-<p class="code-caption" data-lang="javascript" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> end = ture;</span><br><span class="line"><span class="built_in">window</span>.setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	end = <span class="literal">false</span>;</span><br><span class="line">&#125;,<span class="number">1000</span>);</span><br><span class="line"><span class="keyword">while</span>(end);</span><br><span class="line">alert(<span class="string">'end'</span>);</span><br></pre></td></tr></table></figure>
 <p>上面的例子结果就是 while(end)处死循环，永远到不了alert(‘end’)，意思就是setTimeout里边的函数没有执行;</p>
 <p>下面就引入这个事件队列的问题，用一张图表示：
@@ -126,10 +123,8 @@
 <pre><code>&lt;link rel=&quot;prefetch&quot; href=&quot;http://&quot;&gt; &lt;!--利用空余时间加载剩下的网页--&gt;
 </code></pre>
 <p>2.HTML5的defer async标签实现异步加载</p>
-<p class="code-caption" data-lang="javascript" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script defer=<span class="string">"true"</span> type=<span class="string">"text/javascript"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><span class="xml"><span class="comment">&lt;!--不等js加载完成就加载后边的图片--&gt;</span></span></span><br><span class="line"><span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">async</span>=<span class="string">"true"</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
 <p>3.动态加载js</p>
-<p class="code-caption" data-lang="javascript" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.write(<span class="string">"&lt;script src="</span>a.js<span class="string">"&gt;&lt;/script&gt;"</span>);</span><br><span class="line"><span class="comment">/*还有修改src路径、创建script标签再将其放进DOM中，这些都是对DOM操作*/</span></span><br></pre></td></tr></table></figure>
 <h4>setTimeout(func,0)特殊功效</h4>
 <p><span style="color:#f92672;font-size:1.8rem">换个角度想，是不是可以用setTimeout(func,0)强行将func放到队列后边延迟执行呢？！这也算是个小技巧吧？</span></p>
@@ -138,7 +133,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2016/01/05/js/js-async/" data-id="ckdf9qo0p002j5e5548k6qlg9" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2016/01/05/js/js-async/" data-id="ckdf9zxnc002jop55a5q9klnf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>

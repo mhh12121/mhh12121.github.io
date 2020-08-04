@@ -96,10 +96,8 @@
 <p>我们这里只讨论go语法，语言方面其他都是大同小异</p>
 <h2>proto</h2>
 <p>创建proto文件 <strong>data.proto</strong></p>
-<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">"proto2"</span>;</span><br><span class="line"></span><br><span class="line">service Authenticate&#123;</span><br><span class="line">	rpc login(toServerData) returns (ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc home(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">	rpc logout(toServerData) returns(ResponseFromServer)&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message toServerData&#123;</span><br><span class="line">	required <span class="keyword">int32</span> ctype = <span class="number">1</span>;</span><br><span class="line">	required <span class="keyword">string</span> name =<span class="number">2</span>;</span><br><span class="line">    optional bytes httpdata=<span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line">message ResponseFromServer &#123;</span><br><span class="line">	required <span class="keyword">bool</span> Success=<span class="number">1</span>;</span><br><span class="line">	optional bytes tcpData=<span class="number">2</span>;</span><br><span class="line">	<span class="comment">// Errcode int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>用安装的protoc插件生成</p>
-<p class="code-caption" data-lang="shell" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</span><br></pre></td></tr></table></figure>
 <p>生成 <strong>data.pb.proto</strong></p>
 <p>-----------这些就直接参照手册理解吧-----------------<br>
@@ -111,7 +109,6 @@
 </blockquote>
 <p>protobuf的的编码其实跟 thrift的BinaryCompact编码有点相似
 就拿上面那个例子:</p>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight protobuf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">message</span> <span class="title">toServerData</span></span>&#123;</span><br><span class="line">	<span class="keyword">required</span> <span class="built_in">int32</span> ctype = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">required</span> <span class="built_in">string</span> name =<span class="number">2</span>;</span><br><span class="line">    <span class="keyword">optional</span> <span class="built_in">bytes</span> httpdata=<span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2>提供的一些连接方式</h2>
 <p>单向stream
@@ -120,7 +117,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckdf9qo09001h5e55ev6nb5i2" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckdf9zxmx001fop55h9fmihkm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

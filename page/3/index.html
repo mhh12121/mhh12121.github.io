@@ -97,7 +97,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckdf9qo01000u5e55k23wwvye" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckdf9zxmp000uop5571i2637x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
@@ -134,7 +134,6 @@
         <h2>可重入锁（ReentranceLock）</h2>
 <p>可以进一步加强锁的封装性，简化了代码的开发，避免死锁;
 拿别人的一个例子：</p>
-<p class="code-caption" data-lang="java" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">parentDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//....</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Parent</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">childDo</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.parentDo();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>如果不可重入，super.parentDo()不可以获得Parent的锁，因为这个锁已经被childDo()持有，从而使线程阻塞，造成死锁
 所以可以用于：</p>
@@ -150,7 +149,6 @@ go不支持可重入锁，只能通过将需要锁的操作作为函数，并以
 <p>线程会反复检查锁变量是否可用。但由于线程此时一直保持执行，所以属于忙等待（busy-waiting），一旦获得了自旋锁，线程会一直保持该锁，直到显式释放;
 这里说说<strong>互斥锁</strong>，区别就是，互斥锁的调用者一方如果发现锁被拿走了，就会<strong>进入睡眠状态</strong>
 盗取别人例子：</p>
-<p class="code-caption" data-lang="java" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpinLock</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> AtomicReference&lt;Thread&gt; cas = <span class="keyword">new</span> AtomicReference&lt;Thread&gt;();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> lock&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        <span class="comment">//CAS</span></span><br><span class="line">        <span class="comment">//第一个线程得到锁，就会跳过while循环，第二个线程会一直在while循环，直到满足CAS</span></span><br><span class="line">        <span class="keyword">while</span> (!cas.compareAndSet(<span class="keyword">null</span>,cur))&#123;</span><br><span class="line">            <span class="comment">//Do sth...</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Thread cur=Thread.currentThread();</span><br><span class="line">        cas.compareAndSet(cur,<span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Pros:
 自旋锁避免上下文切换（？），只要阻塞很短时间的场景下可以使用<br>
@@ -164,7 +162,7 @@ Cons:</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ckdf9qnzw000j5e55i3xb2ez9" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/07/01/Comcon/ReentranceLock/" data-id="ckdf9zxmm000nop55es611u04" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LOCK/">LOCK</a></li></ul>
@@ -207,7 +205,7 @@ Cons:</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckdf9qo09001h5e55ev6nb5i2" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/29/Go/gRPC/" data-id="ckdf9zxmx001fop55h9fmihkm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -247,7 +245,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="ckdf9qnz200015e55orxpemqk" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/26/ToMyLover/" data-id="ckdf9zxlu0001op5541q0x2zy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Love/">Love</a></li></ul>
@@ -290,7 +288,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/21/Go/Context/" data-id="ckdf9qo0300115e5578fabbou" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/21/Go/Context/" data-id="ckdf9zxmr0011op558tur9365" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -333,7 +331,7 @@ So I found the whole world</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckdf9qo08001d5e55tt34kmj3" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckdf9zxmv001bop55ucc9sg9x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -380,7 +378,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckdf9qo08001f5e55k8pfw9ip" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckdf9zxmx001hop55mwjz3faf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -424,7 +422,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="ckdf9qo0500165e55fzldf1dg" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/08/Go/GolangMux/" data-id="ckdf9zxmt0016op55zk1mx118" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
@@ -467,7 +465,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdf9qnzw000i5e55gitaouqz" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdf9zxmk000iop552ejvmig4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>
@@ -510,7 +508,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckdf9qo02000z5e55rn7777pm" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckdf9zxmq000zop55scj7xyxb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

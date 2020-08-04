@@ -140,7 +140,6 @@ This is an H2
 </ol>
 <h2><strong>图片</strong></h2>
 <h4>写法:</h4>
-<p class="code-caption" data-lang data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">![<span class="string">Alt text</span>](<span class="link">/path/to/img.jpg</span>)</span><br><span class="line">![<span class="string">Alt text</span>](<span class="link">/path/to/img.jpg "Optional title"</span>)</span><br></pre></td></tr></table></figure>
 <h4>即：</h4>
 <ul>
@@ -154,20 +153,40 @@ This is an H2
 <h2><strong>代码</strong></h2>
 <h4>写法:</h4>
 <p>1、可以用三个```包裹一段代码,第一个```后面加个<span style="color:#f92672">空格</span>，再加上代码类型：比如javascript、python等,可以高亮</p>
-<p class="code-caption" data-lang="javascript" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;div style=<span class="string">"color:#eee;"</span>&gt;foo&lt;<span class="regexp">/div&gt;</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">&lt;p class="code-caption" data-lang="" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"&gt;&lt;span class="code-caption-label"&gt;&lt;/span&gt;&lt;a class="code-caption-copy"&gt;Copy Code&lt;/a&gt;&lt;/p&gt;</span><br><span class="line"></span><br><span class="line">```  </span><br><span class="line"></span><br><span class="line"><span class="number">2</span>、可以用一个\`包裹一段代码</span><br><span class="line">`&lt;div style="color:#eee;"&gt;foo&lt;/div&gt;`</span><br><span class="line"></span><br><span class="line">&lt;div style="text-decoration:line-through"&gt;&lt;h4&gt; 3、可以用4空格缩进&lt;/h4&gt;&lt;/div&gt;</span><br><span class="line">&lt;div style="color:#f92672"&gt;这里很奇怪,不知道为啥↑,初步估计是html标签是不能直接tab的,如下&lt;span style="color: #4d8fc0"&gt;链接&lt;/span&gt;写法就可以&lt;/div&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment">## **引用**</span></span><br><span class="line"><span class="comment">#### 写法:</span></span><br><span class="line"></span><br><span class="line">加上 \&gt;\&gt;</span><br><span class="line">&gt;&gt;This <span class="keyword">is</span> a quote</span><br><span class="line"></span><br><span class="line"><span class="comment">## **链接**</span></span><br><span class="line"><span class="comment">#### 写法:</span></span><br><span class="line"><span class="number">1</span>、文字连接:</span><br><span class="line">	[链接文字](http://链接网址)</span><br><span class="line"><span class="number">2</span>、网址链接:</span><br><span class="line">	&lt;http://链接网址&gt;</span><br><span class="line"><span class="number">3</span>、链接到本页锚处:</span><br><span class="line">	[link](<span class="comment">#anchor_lowercase_name)</span></span><br><span class="line"></span><br><span class="line">&lt;span style=<span class="string">"color:#f92672"</span>&gt;PS:一般只对header有用,还会遵循以下原则（不清楚为什么部分不生效）:</span><br><span class="line"><span class="number">1.</span> 标点符号会被丢弃</span><br><span class="line"><span class="number">2.</span> 首空格会被丢弃</span><br><span class="line"><span class="number">3.</span> 大写字母会被转换为小写字母（并不会。。。）</span><br><span class="line">4. 字母之间的空格会被转换为 -  (实际上.也会被转化)&lt;/span&gt;</span><br></pre></td></tr></table></figure>
-<pre><code>[link1](#hello)
-[link2](#new-hello)
-
-#Hello or &lt;a name=&quot;hello&quot;&gt;&lt;/a&gt;
-#New Hello
-</code></pre>
-<pre><code>#### 效果:
-[百度](https://www.baidu.com)
-&lt;https://www.baidu.com&gt;
-
-[GoToTest](#1-12-Test)
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fun</span><span class="params">()</span>:</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>2、可以用一个`包裹一段代码
+<code>&lt;div style=&quot;color:#eee;&quot;&gt;foo&lt;/div&gt;</code></p>
+<div style="text-decoration:line-through"><h4> 3、可以用4空格缩进</h4></div>
+<div style="color:#f92672">这里很奇怪,不知道为啥↑,初步估计是html标签是不能直接tab的,如下<span style="color: #4d8fc0">链接</span>写法就可以</div>
+<h2><strong>引用</strong></h2>
+<h4>写法:</h4>
+<p>加上 &gt;&gt;</p>
+<blockquote>
+<blockquote>
+<p>This is a quote</p>
+</blockquote>
+</blockquote>
+<h2><strong>链接</strong></h2>
+<h4>写法:</h4>
+<p>1、文字连接:
+	<a href="http://xn--ses510ahtve0t" target="_blank" rel="noopener">链接文字</a>
+2、网址链接:
+	<a href="http://xn--ses510ahtve0t" target="_blank" rel="noopener">http://链接网址</a>
+3、链接到本页锚处:
+	<a href="#anchor_lowercase_name">link</a></p>
+<p><span style="color:#f92672">PS:一般只对header有用,还会遵循以下原则（不清楚为什么部分不生效）:</span></p>
+<ol>
+<li>标点符号会被丢弃</li>
+<li>首空格会被丢弃</li>
+<li>大写字母会被转换为小写字母（并不会。。。）</li>
+<li>字母之间的空格会被转换为 -  (实际上.也会被转化)</li>
+</ol>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">link1</span>](<span class="link">#hello</span>)</span><br><span class="line">[<span class="string">link2</span>](<span class="link">#new-hello</span>)</span><br><span class="line"></span><br><span class="line"><span class="section">#Hello or &lt;a name="hello"&gt;&lt;/a&gt;</span></span><br><span class="line"><span class="section">#New Hello</span></span><br></pre></td></tr></table></figure>
+<h4>效果:</h4>
+<p><a href="https://www.baidu.com" target="_blank" rel="noopener">百度</a>
+<a href="https://www.baidu.com" target="_blank" rel="noopener">https://www.baidu.com</a></p>
+<p><a href="#1-12-Test">GoToTest</a>
 .
 .
 .
@@ -180,15 +199,13 @@ This is an H2
 .
 .
 .
-test
-
-### 1.12 Test
-&lt;div style=&quot;color: #f92672&quot;&gt;暂时记录到这里吧，差不多够用了，这些都是从网上找的教程，在此感谢那些博客主Orz&lt;/div&gt;</code></pre>
-
+test</p>
+<h3>1.12 Test</h3>
+<div style="color: #f92672">暂时记录到这里吧，差不多够用了，这些都是从网上找的教程，在此感谢那些博客主Orz</div>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://mhh12121.github.io/2017/02/01/markdown/" data-id="ckdf9qnz500035e55q8krgyn2" class="article-share-link">Share</a>
+      <a data-url="http://mhh12121.github.io/2017/02/01/markdown/" data-id="ckdf9zxlx0003op55ooifowcm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Markdown/">Markdown</a></li></ul>
