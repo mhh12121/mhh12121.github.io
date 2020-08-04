@@ -1,12 +1,13 @@
 ---
 title: Golang指针
 date: 2020-05-03 14:20
-tags: Golang
+tags: golang
 ---
 
+比较容易混淆三种值:
 <!--more-->
 
-比较容易混淆三种值:
+
 
 指针值(Pointer value):比如stirng,int这种其实是一种指针值
 

@@ -10,6 +10,7 @@ which means you have to do SortedMap and LinkedHashMap by yourself.
 
                                     ----From a damn interview test
 <!--more-->
+
 I met a problem in an interview test:
 
 Given a file containing URLs on every line,you must record all of their occurence times, then save it into a new file

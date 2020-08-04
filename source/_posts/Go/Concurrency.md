@@ -1,7 +1,7 @@
 ---
 title: Concurrency Problem
 date: 2019-06-05 23:48
-tags: Golang
+tags: golang
 ---
 其实里面只涉及部分concurrency问题，一些**实用例子**，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新
 

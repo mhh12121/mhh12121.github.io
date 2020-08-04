@@ -3,10 +3,10 @@ title: Golang Memory Allocator
 date: 2020-02-24 22:10
 tags: golang
 ---
-
+# golang内存管理
 <!--more-->
 
-# golang内存管理
+
 go的内存管理是基于tcmalloc，[这个连接](http://goog-perftools.sourceforge.net/doc/tcmalloc.html)看详情
 
 任何大小的内存页可以被分割成**一系列同样大小的object**,这些规定的大小size则被定义在[sizetoclass](#sizetoclass),然后被一个**bitmap**管理
@@ -64,7 +64,7 @@ type mheap struct{
 - mcache
 
 	多层次的cache用来减少分配冲突，mcache是per-P的，所以无锁，mspan的每个P(process)下的可用cache空间；小于16B直接使用P中的macache
-```go
+```golang mcache
 	// Per-thread (in Go, per-P) cache for small objects.
 // No locking needed because it is per-thread (per-P).
 //

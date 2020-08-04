@@ -1,7 +1,7 @@
 ---
 title: Goroutine Notes
 date: 2019-07-09 01:00
-tags: Golang
+tags: golang
 ---
 
 Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑

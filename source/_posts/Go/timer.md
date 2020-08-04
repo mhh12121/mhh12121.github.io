@@ -1,7 +1,7 @@
 ---
 title: Golang timer
 date: 2020-02-03 14:20
-tags: Golang
+tags: golang
 ---
 //TODO
 <!--more-->
