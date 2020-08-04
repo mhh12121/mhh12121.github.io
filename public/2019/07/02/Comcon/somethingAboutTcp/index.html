@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Something about Networking | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="记录了一些很基础的但经常被问到的问题">
+<meta name="keywords" content="networking">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Something about Networking">
+<meta property="og:url" content="http://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="记录了一些很基础的但经常被问到的问题">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://mhh12121.github.io/img/tcpWindow.jpg">
+<meta property="og:image" content="http://mhh12121.github.io/img/TCPshakeFhand.jpg">
+<meta property="og:image" content="http://mhh12121.github.io/img/TCPgoodbye.jpg">
+<meta property="og:image" content="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS">
+<meta property="og:updated_time" content="2020-07-26T11:56:00.351Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Something about Networking">
+<meta name="twitter:description" content="记录了一些很基础的但经常被问到的问题">
+<meta name="twitter:image" content="http://mhh12121.github.io/img/tcpWindow.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Comcon/somethingAboutTcp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/02/Comcon/somethingAboutTcp/" class="article-date">
+  <time datetime="2019-07-02T07:01:00.000Z" itemprop="datePublished">2019-07-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Something about Networking
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>记录了一些很基础的但经常被问到的问题</p>
+<a id="more"></a>
+<h3>1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
+<p>一开始看见，这不是显而易见的吗？？？</p>
+<p>后来发现，其实他想听到的答案是：</p>
+<ol>
+<li>tcp的流量窗口rwnd(接收方),拥塞控制cwnd(发送方)
+如下图(盗图)：
+<img src="/img/tcpWindow.jpg" alt="tcpwindow">
+绿色为 发送者发送，且接收者acked
+黄色为 发送者发送，接收者未确认（in-flight）
+蓝色为 可用但为发送</li>
+</ol>
+<p>cwnd= width（in-flight）+width（not sent）</p>
+<p>发送速率：
+<strong>rate = cwnd / RTT byte/sec</strong>
+即发送速率在RTT（往返时延）一定的情况下，只受cwnd影响</p>
+<ol start="2">
+<li>慢启动，拥塞避免</li>
+</ol>
+<p>tcp会进行<strong>慢启动</strong>直到丢包,每接到一个ack就会把窗口（cwnd）×2，超过ssThreshold就进行拥塞避免只增加 1/cwnd;</p>
+<p>当出现丢包的，有以下两种状况：</p>
+<ul>
+<li>接收者发送给发送者的ACK丢失，会导致 timeout</li>
+<li>发送者发送给接收者的数据丢失，发送者会收到接受者的重复ACK，如果收到三个重复的ACK，可以确认为丢包</li>
+</ul>
+<ol start="3">
+<li>路由器（多个TCP有拥塞控制）
+给出带宽为R，有K个连接经过
+最后每个连接平均分的都会是 R/K</li>
+</ol>
+<p>终上：</p>
+<p>一个tcp连接很可能不能把当前路由的带宽都用完，而且连接也有重传的情况，所以多个tcp连接可以最大保证速率</p>
+<p><strong><em>但是这个问题在HTTP/2则不是一回事了，因为其靠帧来实现有序性，而且是连接复用(同域名下)，所以多个连接反而会浪费资源</em></strong></p>
+<h3>总结</h3>
+<p>回答问题，要从特么原理开始一步步推导来說，不能想当然</p>
+<h3>2. 各种握手挥手（我求求我自己把这些gdx记得滚瓜烂熟，每次都漏一点点）</h3>
+<h4>TCP三次握手连接(three-way handshake)</h4>
+<p>直接上他🐎图：
+<img src="/img/TCPshakeFhand.jpg" alt="tcpconn"></p>
+<ol>
+<li>client发送server<br>
+<strong>SYN=1</strong>（同步位，这种报文不能携带数据，但要<strong>消耗一个序号</strong>）
+自己的序号 <strong>Seq=client_w ( isn )</strong> 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）</li>
+</ol>
+<blockquote>
+<blockquote>
+<p>ps: <strong>isn</strong>泛指一种计算序号的算法，有一种是每4μs+1，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；</p>
+</blockquote>
+</blockquote>
+<ol start="2">
+<li>server收到报文，把确认报文段中的SYN和ACK都设为1
+<strong>SYN=1</strong>(同理<strong>要消耗一个序号</strong>) 和 <strong>ACK=1</strong>
+自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）</li>
+<li>client收到确认报文后，还要给server发送确认收到。
+把<strong>确认ACK=1</strong>,ack=server_w+1(之前SYN消耗了序号)
+自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,<strong>但如果不携带数据则不消耗序号</strong>，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）</li>
+<li>server收到确认报文后，进入established状态，全部连接完成</li>
+</ol>
+<h5>三次握手能避免啥🐔儿东西呢（为啥两次不行？）</h5>
+<p>我们假设client给server发了个连接请求，但是请求丢失，然后client再发一个，server收到这个然后建立连接，这里面client发送了两个请求
+会有以下情况出现：</p>
+<p>client发出的第一个请求没有丢，只是网络阻塞;
+但接下来，server收到后以为是新的一个连接，server返回一个确认报文，但client收到server确认报文会发现自己并没有建立连接请求，所以会忽视server的确认报文，也不会向server发送数据
+但server会<strong>一直开着连接等client的数据，白白浪费资源!</strong>
+（但采用三次握手的话就没得事，server端没有接到client的第三次确认，就知道client没有要建立连接）</p>
+<h4>TCP四次挥手</h4>
+<p><img src="/img/TCPgoodbye.jpg" alt="tcpfour"></p>
+<ol>
+<li>
+<p>client 发送
+<strong>FIN=1</strong>（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，<strong>无论带不带数据，这厮都要消耗一个序号！</strong>）
+<strong>seq=client_u</strong> （这里序号是<strong>前面一个传送过的数据最后一个字节的序号+1</strong>）;(client进入FIN-WAIT-1状态)</p>
+</li>
+<li>
+<p>server收到释放报文返回
+<strong>ACK=1</strong>
+<strong>Seq=server_u</strong>(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server-&gt;client方向的连接保持，但client-&gt;server已经没有<strong>数据</strong>要传输了)</p>
+</li>
+<li>
+<p>client收到server的确认后，进入FIN-WAIT2状态，等待server的连接释放报文</p>
+</li>
+<li>
+<p>如果server没有数据要发给client了（server持续发送数据到client，也可以不发），
+携带报文 <strong>FIN=1</strong>， ACK=1
+<strong>seq=server_u2</strong>(新，可能发送了一些数据)
+<strong>ack=client_u+1</strong>（重复上次已发送的确认号）
+(server进入LAST-ACK状态)</p>
+</li>
+<li>
+<p>(紧接3)client收到释放报文后，返回确认报文：
+ACK=1
+确认号<strong>ack=server_u2+1</strong>
+序号<strong>seq=client_u+1</strong> （前面1的FIN报文消耗了一个序号client_u）
+然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值）再进入CLOSED状态
+client撤销相应的TCB（传输控制块）后，结束连接</p>
+</li>
+</ol>
+<h5>为啥要等2MSL</h5>
+<ol>
+<li>
+<p>保证client发送的最后一个ACK报文能够到达server;
+因为这个报文可能会丢失，然后处在LAST-ACK的server收不到已发送的FIN+ACK报文的确认。正常情况下，server会重传FIN+ACK报文，client接着重传最后一个ACK报文，重新计时;
+但如果client不等待，发送完ACK报文直接释放连接进入CLOSED，client就没法收到server重传的FIN+ACK报文，也不会再发送一次确认报文（因为关闭了啊！），这样server重传的东西client就收不到，server也就不会正常进入CLOSED状态</p>
+</li>
+<li>
+<p>防止出现 ‘已失效的连接请求报文段’(如同三次握手时间的client第一次发出的报文);
+client发送完最后一个ACK报文段后，经过2MSL，可以确定本连接持续时间内的所有报文段都从网络消失，这样就不会出现旧的连接报文段了</p>
+</li>
+</ol>
+<h5>为啥连接用三次，断开要四次呢？</h5>
+<ul>
+<li>主要区别还是在连接时，server收到连接请求后可以直接返回SYN+ACK报文；</li>
+<li>但是断开时，server收到了client的FIN报文后，可能还有数据没有传完，只能先发回一个ACK，等到最后数据都传完了才会发FIN，所以为了避免没传完数据就关闭了的情况，只能加多一次连接;如果是三次(最后一次server返回的ACK+FIN还有一堆数据合并为最后一次response)，会造成长时间阻塞，导致客户端以为上一次的FIN没有到server，然后重传;</li>
+</ul>
+<p>PS：server的cclosed状态要比client的要早一点
+MSL&gt;=TTL</p>
+<p>连接当中如果用HTTPS，参考之前写的</p>
+<h5>keepalive timer</h5>
+<p>存在header里面的keep-alive是http协议的，可以维持长连接,HTTP/1.1开启;</p>
+<p>2MSL是被client的一个TIME-WAIT timer设置的，实际上TCP<strong>还有</strong>另外一个keepalive timer，主要用来探测端到端的连接有没有失效
+linux命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysctl -a | grep keepalive</span><br></pre></td></tr></table></figure>
+<p>默认7200s检测一次，一次最多重传9个包,每个包间隔75s</p>
+<p>但是因为该设置不太合理，比如检测间隔太长等,很多应用没有开启</p>
+<h5>TCP fast open</h5>
+<p>顾名思义是一个减少连接时延的方法，实现在第二次握手就可以传输响应数据,主要就是使用SYN cookie实现
+具体做法：</p>
+<ol>
+<li>
+<p>首轮的三次握手中，服务端接到SYN不会立即回复SYN+ACK，而是通过计算得到一个SYN Cookie,然后将这个Cookie放到TCP报文的fast open选项，然后返回，接下来就是正常的三次握手余下的流程;</p>
+</li>
+<li>
+<p>接下来的握手中，客户端会将之前缓存的<strong>cookie</strong>，<strong>SYN</strong>和<strong>HTTP request</strong> 一起发给服务端，如果合法(不合法可能是过期的原因)直接返回SYN+ACK;</p>
+</li>
+<li>
+<p>(重要！！！)接下来服务端就可以直接发送数据而不用等客户端的ACK了！！！</p>
+</li>
+<li>
+<p>但是确保三次握手协议不变，client端最后还是会返回ACK</p>
+</li>
+</ol>
+<p>linux可以通过</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/sys/net/ipv4/tcp_fastopen</span><br></pre></td></tr></table></figure>
+<p>检查是否开启，1为client端，2为server，3为both</p>
+<p><strong>注意一下这个功能可能被一些防火墙隔离</strong></p>
+<h3>3. 有哪些字段，一些字段的意义</h3>
+<p>比较关键的字段</p>
+<ul>
+<li>明确方向
+源端口(2B)，目的端口(2B)</li>
+<li>明确报文本身信息
+头部长度(4bit)</li>
+<li>可靠性
+ack(8B)，seq号码(8B) , 窗口大小(16B),校验和(16B)</li>
+<li>一些标志的bit
+ACK,SYN,FIN ,RST,PSH(不放入缓存直接被程序用),…???</li>
+<li>额外的字段
+kind(1B)+length(1B)+info(8B)
+比如有<strong>timestamp</strong>字段:
+kind = 8 , length = 10, info由timestamp(4B)和timestamp echo(4B)组成</li>
+</ul>
+<h3>4. Nagle算法和延迟确认</h3>
+<h4>Nagle</h4>
+<p>有一种情景是client端不断发给server端很小的包，一次1B，这样发1KB就要1K次；
+Nagle就是解决这种问题，具体做法</p>
+<ul>
+<li>第一次发1B，立即发送</li>
+<li>后面的发送要满足
+<ol>
+<li>数据要达到MSS</li>
+<li>之前所有包ACK都收到</li>
+</ol>
+</li>
+</ul>
+<h4>延迟确认</h4>
+<p>指的是把一段时间内ACK合并然后延迟回复,tcp要求这个时延必须小于500ms，unix一般不超过200ms
+但是有一些<strong>不能</strong>延迟确认</p>
+<ul>
+<li>接收到一个大于一个帧的报文，且需要调整窗口大小</li>
+<li>TCP处于quick ack模式(tcp_in_quick_mode)</li>
+<li>有乱序的包</li>
+</ul>
+<h3>5. 其他</h3>
+<h4>DNS协议</h4>
+<p>首先这🐔是<strong>应用层</strong>协议！！！
+功能主要就是<strong>把域名转换为IP地址</strong>
+然后，主要是在<strong>UDP</strong>上面跑，端口<strong>53</strong>
+长度最多是<strong>512Bytes</strong>，若过多要用 <img src="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS" alt="EDNS"></p>
+<h4>URI 和 URL 和域名</h4>
+<p>URI（统一资源标识符） 包括 URL（统一资源定位符）和URN（统一资源名称）</p>
+<p>URI通用模式：</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scheme：<span class="comment">[// <span class="comment">[user：password @]</span> host <span class="comment">[：port]</span>]</span> <span class="comment">[/]</span> path <span class="comment">[？查询]</span> <span class="comment">[#片段]</span></span><br></pre></td></tr></table></figure>
+<p>URL：主要用于连接网页或部分部件，借助访问的协议（http，ftp等）来检索定位资源位置
+URL包含了</p>
+<ol>
+<li>访问资源的协议</li>
+<li>服务器位置</li>
+<li>端口</li>
+<li>资源在服务器上的位置</li>
+<li>片段标识符（就是锚点#something）</li>
+</ol>
+<p>域名（domain name）指的是任一主机或路由器连接在因特网上都有<strong>唯一</strong>的 <strong>层次结构的名字</strong>,只是一个<strong>逻辑概念</strong></p>
+<h3>6. 浏览器输入url发生了什么 （个人感觉按照这个🐔来复习会比较好）</h3>
+<ol>
+<li>输入URL，浏览器会解析url，这里面是通过DNS域名解析，找到url对应的服务器地址，其中可能会从HOSTS文件找</li>
+<li>找到主机地址，就会连接主机，这里面tcp三次握手，发送HTTP请求
+然后封装发送的包，http包放在tcp包里，tcp包放在IP包里，层层往下，每一层会通过网管（gateway）</li>
+<li>到了IP协议处会将其通过ARP解析出相应的在链路层的物理地址（通过路由器），在网络层和以上使用都是IP地址，以下都是硬件地址了，所以数据链路层看不见IP地址了</li>
+<li>网络层通过物理地址找到路由器，把层层封装的包通过网桥（或桥接器等）等发送到链路层上，当前只能看见MAC帧，链路层负责开始传输数据了</li>
+<li>物理层只是把传输数据 变成电信号真正地传到网线上</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mhh12121.github.io/2019/07/02/Comcon/somethingAboutTcp/" data-id="ckdf9zxmp000uop5571i2637x" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/networking/">networking</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/07/02/Comcon/SoftwareEngineer/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Something about Software Enginnering
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/07/01/Comcon/ReentranceLock/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Something about LOCK</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/24/Go/type/">Golang type</a>
+          </li>
+        
+          <li>
+            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

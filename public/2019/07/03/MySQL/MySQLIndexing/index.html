@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Notes about MySQL indexing | 兜的破烂</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="一些注意事项">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Notes about MySQL indexing">
+<meta property="og:url" content="http://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/index.html">
+<meta property="og:site_name" content="兜的破烂">
+<meta property="og:description" content="一些注意事项">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-07-01T14:05:26.175Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Notes about MySQL indexing">
+<meta name="twitter:description" content="一些注意事项">
+  
+    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">兜的破烂</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">学习☆记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://mhh12121.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-MySQL/MySQLIndexing" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/07/03/MySQL/MySQLIndexing/" class="article-date">
+  <time datetime="2019-07-03T06:20:00.000Z" itemprop="datePublished">2019-07-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Notes about MySQL indexing
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一些注意事项</p>
+<a id="more"></a>
+<h2>主键的问题</h2>
+<h3>复合主键和单个主键</h3>
+<h4>复合主键</h4>
+<p>好处显而易见，可以依据多个列进行排序，但明显地，字符类的列相比int会比较复杂</p>
+<h3>自增主键和自定义主键</h3>
+<h4>自增主键</h4>
+<p>好处：</p>
+<ol>
+<li>由系统生成，顺序递增，速度肯定快</li>
+<li>int占用空间小，易排序</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>自增主键可能不连续</li>
+<li>水平分片架构会出问题，全局不能保证唯一</li>
+</ol>
+<h4>自定义主键</h4>
+<p>好处：</p>
+<ol>
+<li>水平分片</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>随机I/O，影响查找等操作</li>
+</ol>
+<h2>聚簇索引</h2>
+<p>当表有聚簇索引的时候，它的数据行实际上存放在索引的叶子页（leaf page）上
+聚簇代表了数据行和相邻的键值紧凑地存储在一起</p>
+<p>InnoDB使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）。</p>
+<p>如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。这样就会形成一个紧凑的索引结构，近似顺序填满。由于每次插入时也不需要移动已有数据，因此效率很高，也不会增加很多开销在维护索引上。</p>
+<h2>大数据问题</h2>
+<h3>1. 一次性插入大量数据</h3>
+<p>MySQL 5.7 Refman官方文件给出的提示：
+8.2.4.1 Optimizing INSERT operation
+8.5.5 Bulk data loading in INNODB</p>
+<blockquote>
+<blockquote>
+<p>To optimize insert speed, combine many small operations into a single large operation. Ideally, you make a single connection, send the data for many new rows at once, and delay all index updates and consistency checking until the very end.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>If you are inserting many rows from the same client at the same time, use INSERT statements with multiple VALUES lists to insert several rows at a time. This is considerably faster (many times faster in some cases) than using separate single-row INSERT statements. If you are adding data to a nonempty table, you can tune the bulk_insert_buffer_size variable to make data insertion even faster. See Section 5.1.7, “Server System Variables”.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>When loading a table from a text file, use LOAD DATA. This is usually 20 times faster than using INSERT statements. See Section 13.2.6, “LOAD DATA Syntax”.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<p>Take advantage of the fact that columns have default values. Insert values explicitly only when the value to be inserted differs from the default. This reduces the parsing that MySQL must do and improves the insert speed.</p>
+</blockquote>
+</blockquote>
+<h4>如果是从一个客户端同时插入多行</h4>
+<ol>
+<li>就是要合并多个插入操作成一个，如：</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>开启 <strong>bulk_insert_buffer_size</strong> 更加加速插入</li>
+</ol>
+<h4>从文件中导入数据</h4>
+<p>使用 <strong>LOAD DATA</strong></p>
+<h4>利用default value</h4>
+<p>每当插入数据不同于default值的时候再插入，使用ignore</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">ignore</span> <span class="keyword">into</span> table1 <span class="keyword">values</span> (<span class="number">1</span>,<span class="string">'a'</span>，<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>甚至还区分了 InnoDB引擎和MyISAM引擎的做法：</p>
+<h4>InnoDB：</h4>
+<ol>
+<li>关闭autocommit，因为每次插入，InnoDB都会写log;</li>
+<li>如果有unqiue 限制插入的列，可以暂时关闭 unique_checks;</li>
+<li>如果有外键在列，可以暂时关闭外键约束foreign_key_checks;</li>
+<li>插入数据的时候，如果数据能按照primary key的顺序插入，会大大加快速度（因为主键是聚簇索引）</li>
+<li>数据有自增主键的时候，把innodb_autoinc_lock_mode从1改为2（14.6.1.4)</li>
+</ol>
+<h4>MyISAM</h4>
+<p>//todo</p>
+<h2>Log</h2>
+<p>Undo日志记录某数据被修改前的值，可以用来在事务失败时进行回滚；Redo日志记录某数据块被修改后的值，可以用来恢复未写入data file的已成功事务更新的数据。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckdf9zxn3001wop55y5qei426" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/07/09/Go/Goroutine/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Goroutine Notes
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/07/02/Comcon/SoftwareEngineer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Something about Software Enginnering</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">十二月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
+          </li>
+        
+          <li>
+            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/24/Go/type/">Golang type</a>
+          </li>
+        
+          <li>
+            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Doujohner<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
