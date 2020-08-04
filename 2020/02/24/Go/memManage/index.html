@@ -118,31 +118,7 @@
 </li>
 </ul>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">type mheap struct{
-	...
-	// central free lists for small size classes.
-	// the padding makes sure that the mcentrals are
-	// spaced CacheLinePadSize bytes apart, so that each mcentral.lock
-	// gets its own cache line.
-	// central is indexed by spanClass.
-	//numSpanClasses = _NumSizeClasses &lt;&lt; 1 = 134
-	central [numSpanClasses]struct {
-		mcentral type mcentral struct {
-					lock      mutex
-					spanclass spanClass
-					nonempty  mSpanList // list of spans with a free object, ie a nonempty free list
-					empty     mSpanList // list of spans with no free objects (or cached in an mcache)
-
-					// nmalloc is the cumulative count of objects allocated from
-					// this mcentral, assuming all spans in mcaches are
-					// fully-allocated. Written atomically, read under STW.
-					nmalloc uint64
-				}
-		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral{})%cpu.CacheLinePadSize]byte
-	}
-	....
-}
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> mheap <span class="keyword">struct</span>&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// central free lists for small size classes.</span></span><br><span class="line">	<span class="comment">// the padding makes sure that the mcentrals are</span></span><br><span class="line">	<span class="comment">// spaced CacheLinePadSize bytes apart, so that each mcentral.lock</span></span><br><span class="line">	<span class="comment">// gets its own cache line.</span></span><br><span class="line">	<span class="comment">// central is indexed by spanClass.</span></span><br><span class="line">	<span class="comment">//numSpanClasses = _NumSizeClasses &lt;&lt; 1 = 134</span></span><br><span class="line">	central [numSpanClasses]<span class="keyword">struct</span> &#123;</span><br><span class="line">		mcentral <span class="keyword">type</span> mcentral <span class="keyword">struct</span> &#123;</span><br><span class="line">					lock      mutex</span><br><span class="line">					spanclass spanClass</span><br><span class="line">					nonempty  mSpanList <span class="comment">// list of spans with a free object, ie a nonempty free list</span></span><br><span class="line">					empty     mSpanList <span class="comment">// list of spans with no free objects (or cached in an mcache)</span></span><br><span class="line"></span><br><span class="line">					<span class="comment">// nmalloc is the cumulative count of objects allocated from</span></span><br><span class="line">					<span class="comment">// this mcentral, assuming all spans in mcaches are</span></span><br><span class="line">					<span class="comment">// fully-allocated. Written atomically, read under STW.</span></span><br><span class="line">					nmalloc <span class="keyword">uint64</span></span><br><span class="line">				&#125;</span><br><span class="line">		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral&#123;&#125;)%cpu.CacheLinePadSize]<span class="keyword">byte</span></span><br><span class="line">	&#125;</span><br><span class="line">	....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>代码中的pad是用作分割多个mcentral，以CacheLinePadSize个Bytes分割开，所以每一个mcentral的lock可以得到自己的cache line
 我认为可以看做是内存对齐的一种方法(???是不是捏)</p>
 <ul>
@@ -152,52 +128,7 @@
 </li>
 </ul>
 <p class="code-caption" data-lang="golang" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code" data-hide="false" data-title="mcache"><span class="code-caption-label">(`mcache`)</span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-golang">// Per-thread (in Go, per-P) cache for small objects.
-// No locking needed because it is per-thread (per-P).
-//
-// mcaches are allocated from non-GC'd memory, so any heap pointers
-// must be specially handled.
-//
-//因为只用作local P，所以自然无锁
-//go:notinheap
-//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中
-type mcache struct {
-// The following members are accessed on every malloc,
-// so they are grouped here for better caching.
-next_sample uintptr // trigger heap sample after allocating this many bytes
-local_scan  uintptr // bytes of scannable heap allocated
-
-// Allocator cache for tiny objects w/o pointers.
-// See &quot;Tiny allocator&quot; comment in malloc.go.
-//具体可以见下面的tiny allocator分配器
-// tiny points to the beginning of the current tiny block, or
-// nil if there is no current tiny block.
-//
-// tiny is a heap pointer. Since mcache is in non-GC'd memory,
-// we handle it by clearing it in releaseAll during mark
-// termination.
-tiny             uintptr
-tinyoffset       uintptr
-local_tinyallocs uintptr // number of tiny allocs not counted in other stats
-
-// The rest is not accessed on every malloc.
-
-alloc [numSpanClasses]*mspan // spans to allocate from, indexed by spanClass
-
-stackcache [_NumStackOrders]stackfreelist
-
-// Local allocator stats, flushed during GC.
-local_largefree  uintptr                  // bytes freed for large objects (&gt;maxsmallsize)
-local_nlargefree uintptr                  // number of frees for large objects (&gt;maxsmallsize)
-local_nsmallfree [_NumSizeClasses]uintptr // number of frees for small objects (&lt;=maxsmallsize)
-
-// flushGen indicates the sweepgen during which this mcache
-// was last flushed. If flushGen != mheap_.sweepgen, the spans
-// in this mcache are stale and need to the flushed so they
-// can be swept. This is done in acquirep.
-flushGen uint32
-}
-</code></pre>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Per-thread (in Go, per-P) cache for small objects.</span></span><br><span class="line"><span class="comment">// No locking needed because it is per-thread (per-P).</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// mcaches are allocated from non-GC'd memory, so any heap pointers</span></span><br><span class="line"><span class="comment">// must be specially handled.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//因为只用作local P，所以自然无锁</span></span><br><span class="line"><span class="comment">//go:notinheap</span></span><br><span class="line"><span class="comment">//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中</span></span><br><span class="line"><span class="keyword">type</span> mcache <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="comment">// The following members are accessed on every malloc,</span></span><br><span class="line"><span class="comment">// so they are grouped here for better caching.</span></span><br><span class="line">next_sample <span class="keyword">uintptr</span> <span class="comment">// trigger heap sample after allocating this many bytes</span></span><br><span class="line">local_scan  <span class="keyword">uintptr</span> <span class="comment">// bytes of scannable heap allocated</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Allocator cache for tiny objects w/o pointers.</span></span><br><span class="line"><span class="comment">// See "Tiny allocator" comment in malloc.go.</span></span><br><span class="line"><span class="comment">//具体可以见下面的tiny allocator分配器</span></span><br><span class="line"><span class="comment">// tiny points to the beginning of the current tiny block, or</span></span><br><span class="line"><span class="comment">// nil if there is no current tiny block.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// tiny is a heap pointer. Since mcache is in non-GC'd memory,</span></span><br><span class="line"><span class="comment">// we handle it by clearing it in releaseAll during mark</span></span><br><span class="line"><span class="comment">// termination.</span></span><br><span class="line">tiny             <span class="keyword">uintptr</span></span><br><span class="line">tinyoffset       <span class="keyword">uintptr</span></span><br><span class="line">local_tinyallocs <span class="keyword">uintptr</span> <span class="comment">// number of tiny allocs not counted in other stats</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// The rest is not accessed on every malloc.</span></span><br><span class="line"></span><br><span class="line">alloc [numSpanClasses]*mspan <span class="comment">// spans to allocate from, indexed by spanClass</span></span><br><span class="line"></span><br><span class="line">stackcache [_NumStackOrders]stackfreelist</span><br><span class="line"></span><br><span class="line"><span class="comment">// Local allocator stats, flushed during GC.</span></span><br><span class="line">local_largefree  <span class="keyword">uintptr</span>                  <span class="comment">// bytes freed for large objects (&gt;maxsmallsize)</span></span><br><span class="line">local_nlargefree <span class="keyword">uintptr</span>                  <span class="comment">// number of frees for large objects (&gt;maxsmallsize)</span></span><br><span class="line">local_nsmallfree [_NumSizeClasses]<span class="keyword">uintptr</span> <span class="comment">// number of frees for small objects (&lt;=maxsmallsize)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// flushGen indicates the sweepgen during which this mcache</span></span><br><span class="line"><span class="comment">// was last flushed. If flushGen != mheap_.sweepgen, the spans</span></span><br><span class="line"><span class="comment">// in this mcache are stale and need to the flushed so they</span></span><br><span class="line"><span class="comment">// can be swept. This is done in acquirep.</span></span><br><span class="line">flushGen <span class="keyword">uint32</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>fixalloc</li>
 </ul>
@@ -215,93 +146,7 @@ flushGen uint32
 </ul>
 <h3>mspan的结构体</h3>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">type mspan struct {
-	next *mspan     // next span in list, or nil if none
-	prev *mspan     // previous span in list, or nil if none
-	list *mSpanList // For debugging. TODO: Remove.
-
-	startAddr uintptr // address of first byte of span aka s.base()
-	npages    uintptr // number of pages in span
-
-	manualFreeList gclinkptr // list of free objects in mSpanManual spans
-
-	// freeindex is the slot index between 0 and nelems at which to begin scanning
-	// for the next free object in this span.
-	// Each allocation scans allocBits starting at freeindex until it encounters a 0
-	// indicating a free object. freeindex is then adjusted so that subsequent scans begin
-	// just past the newly discovered free object.
-	//
-	// If freeindex == nelem, this span has no free objects.
-	//
-	// allocBits is a bitmap of objects in this span.
-	// If n &gt;= freeindex and allocBits[n/8] &amp; (1&lt;&lt;(n%8)) is 0
-	// then object n is free;
-	// otherwise, object n is allocated. Bits starting at nelem are
-	// undefined and should never be referenced.
-	//
-	// Object n starts at address n*elemsize + (start &lt;&lt; pageShift).
-	freeindex uintptr
-	// TODO: Look up nelems from sizeclass and remove this field if it
-	// helps performance.
-	nelems uintptr // number of object in the span.
-
-	// Cache of the allocBits at freeindex. allocCache is shifted
-	// such that the lowest bit corresponds to the bit freeindex.
-	// allocCache holds the complement of allocBits, thus allowing
-	// ctz (count trailing zero) to use it directly.
-	// allocCache may contain bits beyond s.nelems; the caller must ignore
-	// these.
-	allocCache uint64
-
-	// allocBits and gcmarkBits hold pointers to a span's mark and
-	// allocation bits. The pointers are 8 byte aligned.
-	// There are three arenas where this data is held.
-	// free: Dirty arenas that are no longer accessed
-	//       and can be reused.
-	// next: Holds information to be used in the next GC cycle.
-	// current: Information being used during this GC cycle.
-	// previous: Information being used during the last GC cycle.
-	// A new GC cycle starts with the call to finishsweep_m.
-	// finishsweep_m moves the previous arena to the free arena,
-	// the current arena to the previous arena, and
-	// the next arena to the current arena.
-	// The next arena is populated as the spans request
-	// memory to hold gcmarkBits for the next GC cycle as well
-	// as allocBits for newly allocated spans.
-	//
-	// The pointer arithmetic is done &quot;by hand&quot; instead of using
-	// arrays to avoid bounds checks along critical performance
-	// paths.
-	// The sweep will free the old allocBits and set allocBits to the
-	// gcmarkBits. The gcmarkBits are replaced with a fresh zeroed
-	// out memory.
-	allocBits  *gcBits
-	gcmarkBits *gcBits
-
-	// sweep generation:
-	// if sweepgen == h-&gt;sweepgen - 2, the span needs sweeping
-	// if sweepgen == h-&gt;sweepgen - 1, the span is currently being swept
-	// if sweepgen == h-&gt;sweepgen, the span is swept and ready to use
-	// if sweepgen == h-&gt;sweepgen + 1, the span was cached before sweep began and is still cached, and needs sweeping
-	// if sweepgen == h-&gt;sweepgen + 3, the span was swept and then cached and is still cached
-	// h-&gt;sweepgen is incremented by 2 after every GC
-
-	sweepgen    uint32
-	divMul      uint16     // for divide by elemsize - divMagic.mul
-	baseMask    uint16     // if non-0, elemsize is a power of 2, &amp; this will get object allocation base
-	allocCount  uint16     // number of allocated objects
-	spanclass   spanClass  // size class and noscan (uint8)
-	state       mSpanState // mspaninuse etc
-	needzero    uint8      // needs to be zeroed before allocation
-	divShift    uint8      // for divide by elemsize - divMagic.shift
-	divShift2   uint8      // for divide by elemsize - divMagic.shift2
-	scavenged   bool       // whether this span has had its pages released to the OS
-	elemsize    uintptr    // computed from sizeclass or from npages
-	limit       uintptr    // end of data in span
-	speciallock mutex      // guards specials list
-	specials    *special   // linked list of special records sorted by offset.
-}
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> mspan <span class="keyword">struct</span> &#123;</span><br><span class="line">	next *mspan     <span class="comment">// next span in list, or nil if none</span></span><br><span class="line">	prev *mspan     <span class="comment">// previous span in list, or nil if none</span></span><br><span class="line">	list *mSpanList <span class="comment">// For debugging. <span class="doctag">TODO:</span> Remove.</span></span><br><span class="line"></span><br><span class="line">	startAddr <span class="keyword">uintptr</span> <span class="comment">// address of first byte of span aka s.base()</span></span><br><span class="line">	npages    <span class="keyword">uintptr</span> <span class="comment">// number of pages in span</span></span><br><span class="line"></span><br><span class="line">	manualFreeList gclinkptr <span class="comment">// list of free objects in mSpanManual spans</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// freeindex is the slot index between 0 and nelems at which to begin scanning</span></span><br><span class="line">	<span class="comment">// for the next free object in this span.</span></span><br><span class="line">	<span class="comment">// Each allocation scans allocBits starting at freeindex until it encounters a 0</span></span><br><span class="line">	<span class="comment">// indicating a free object. freeindex is then adjusted so that subsequent scans begin</span></span><br><span class="line">	<span class="comment">// just past the newly discovered free object.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// If freeindex == nelem, this span has no free objects.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// allocBits is a bitmap of objects in this span.</span></span><br><span class="line">	<span class="comment">// If n &gt;= freeindex and allocBits[n/8] &amp; (1&lt;&lt;(n%8)) is 0</span></span><br><span class="line">	<span class="comment">// then object n is free;</span></span><br><span class="line">	<span class="comment">// otherwise, object n is allocated. Bits starting at nelem are</span></span><br><span class="line">	<span class="comment">// undefined and should never be referenced.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Object n starts at address n*elemsize + (start &lt;&lt; pageShift).</span></span><br><span class="line">	freeindex <span class="keyword">uintptr</span></span><br><span class="line">	<span class="comment">// <span class="doctag">TODO:</span> Look up nelems from sizeclass and remove this field if it</span></span><br><span class="line">	<span class="comment">// helps performance.</span></span><br><span class="line">	nelems <span class="keyword">uintptr</span> <span class="comment">// number of object in the span.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Cache of the allocBits at freeindex. allocCache is shifted</span></span><br><span class="line">	<span class="comment">// such that the lowest bit corresponds to the bit freeindex.</span></span><br><span class="line">	<span class="comment">// allocCache holds the complement of allocBits, thus allowing</span></span><br><span class="line">	<span class="comment">// ctz (count trailing zero) to use it directly.</span></span><br><span class="line">	<span class="comment">// allocCache may contain bits beyond s.nelems; the caller must ignore</span></span><br><span class="line">	<span class="comment">// these.</span></span><br><span class="line">	allocCache <span class="keyword">uint64</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// allocBits and gcmarkBits hold pointers to a span's mark and</span></span><br><span class="line">	<span class="comment">// allocation bits. The pointers are 8 byte aligned.</span></span><br><span class="line">	<span class="comment">// There are three arenas where this data is held.</span></span><br><span class="line">	<span class="comment">// free: Dirty arenas that are no longer accessed</span></span><br><span class="line">	<span class="comment">//       and can be reused.</span></span><br><span class="line">	<span class="comment">// next: Holds information to be used in the next GC cycle.</span></span><br><span class="line">	<span class="comment">// current: Information being used during this GC cycle.</span></span><br><span class="line">	<span class="comment">// previous: Information being used during the last GC cycle.</span></span><br><span class="line">	<span class="comment">// A new GC cycle starts with the call to finishsweep_m.</span></span><br><span class="line">	<span class="comment">// finishsweep_m moves the previous arena to the free arena,</span></span><br><span class="line">	<span class="comment">// the current arena to the previous arena, and</span></span><br><span class="line">	<span class="comment">// the next arena to the current arena.</span></span><br><span class="line">	<span class="comment">// The next arena is populated as the spans request</span></span><br><span class="line">	<span class="comment">// memory to hold gcmarkBits for the next GC cycle as well</span></span><br><span class="line">	<span class="comment">// as allocBits for newly allocated spans.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// The pointer arithmetic is done "by hand" instead of using</span></span><br><span class="line">	<span class="comment">// arrays to avoid bounds checks along critical performance</span></span><br><span class="line">	<span class="comment">// paths.</span></span><br><span class="line">	<span class="comment">// The sweep will free the old allocBits and set allocBits to the</span></span><br><span class="line">	<span class="comment">// gcmarkBits. The gcmarkBits are replaced with a fresh zeroed</span></span><br><span class="line">	<span class="comment">// out memory.</span></span><br><span class="line">	allocBits  *gcBits</span><br><span class="line">	gcmarkBits *gcBits</span><br><span class="line"></span><br><span class="line">	<span class="comment">// sweep generation:</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen - 2, the span needs sweeping</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen - 1, the span is currently being swept</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen, the span is swept and ready to use</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen + 1, the span was cached before sweep began and is still cached, and needs sweeping</span></span><br><span class="line">	<span class="comment">// if sweepgen == h-&gt;sweepgen + 3, the span was swept and then cached and is still cached</span></span><br><span class="line">	<span class="comment">// h-&gt;sweepgen is incremented by 2 after every GC</span></span><br><span class="line"></span><br><span class="line">	sweepgen    <span class="keyword">uint32</span></span><br><span class="line">	divMul      <span class="keyword">uint16</span>     <span class="comment">// for divide by elemsize - divMagic.mul</span></span><br><span class="line">	baseMask    <span class="keyword">uint16</span>     <span class="comment">// if non-0, elemsize is a power of 2, &amp; this will get object allocation base</span></span><br><span class="line">	allocCount  <span class="keyword">uint16</span>     <span class="comment">// number of allocated objects</span></span><br><span class="line">	spanclass   spanClass  <span class="comment">// size class and noscan (uint8)</span></span><br><span class="line">	state       mSpanState <span class="comment">// mspaninuse etc</span></span><br><span class="line">	needzero    <span class="keyword">uint8</span>      <span class="comment">// needs to be zeroed before allocation</span></span><br><span class="line">	divShift    <span class="keyword">uint8</span>      <span class="comment">// for divide by elemsize - divMagic.shift</span></span><br><span class="line">	divShift2   <span class="keyword">uint8</span>      <span class="comment">// for divide by elemsize - divMagic.shift2</span></span><br><span class="line">	scavenged   <span class="keyword">bool</span>       <span class="comment">// whether this span has had its pages released to the OS</span></span><br><span class="line">	elemsize    <span class="keyword">uintptr</span>    <span class="comment">// computed from sizeclass or from npages</span></span><br><span class="line">	limit       <span class="keyword">uintptr</span>    <span class="comment">// end of data in span</span></span><br><span class="line">	speciallock mutex      <span class="comment">// guards specials list</span></span><br><span class="line">	specials    *special   <span class="comment">// linked list of special records sorted by offset.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>主要的字段:</p>
 <ul>
 <li>
@@ -343,153 +188,7 @@ bitmap和spans功能不变</p>
 拿的过程会roundup一下大小，然后在当前P的mcachexmspan</li>
 </ol>
 <p class="code-caption" data-lang="golang" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-golang">// Allocate an object of size bytes.
-// Small objects are allocated from the per-P cache's free lists.
-// Large objects (&gt; 32 kB) are allocated straight from the heap.
-//typ有两种，一种noscan，一种是scan，表示分配对象是否包含指针
-func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
-	if gcphase == _GCmarktermination {
-		throw(&quot;mallocgc called with gcphase == _GCmarktermination&quot;)
-	}
-
-	if size == 0 {
-		return unsafe.Pointer(&amp;zerobase)
-	}
-	......
-	
-	// assistG is the G to charge for this allocation, or nil if
-	// GC is not currently active.
-	var assistG *g
-	if gcBlackenEnabled != 0 {
-		// Charge the current user G for this allocation.
-		assistG = getg()
-		if assistG.m.curg != nil {
-			assistG = assistG.m.curg
-		}
-		// Charge the allocation against the G. We'll account
-		// for internal fragmentation at the end of mallocgc.
-		assistG.gcAssistBytes -= int64(size)
-
-		if assistG.gcAssistBytes &lt; 0 {
-			// This G is in debt. Assist the GC to correct
-			// this before allocating. This must happen
-			// before disabling preemption.
-			gcAssistAlloc(assistG)
-		}
-	}
-
-	// Set mp.mallocing to keep from being preempted by GC.
-	mp := acquirem()
-	if mp.mallocing != 0 {
-		throw(&quot;malloc deadlock&quot;)
-	}
-	if mp.gsignal == getg() {
-		throw(&quot;malloc during signal&quot;)
-	}
-	mp.mallocing = 1
-
-	shouldhelpgc := false
-	dataSize := size
-	c := gomcache()
-	var x unsafe.Pointer
-
-	noscan := typ == nil || typ.ptrdata == 0
-	if size &lt;= maxSmallSize {
-		...
-		//tiny allocator分配方式的代码
-	} else {
-		var s *mspan
-		shouldhelpgc = true
-		systemstack(func() {
-			s = largeAlloc(size, needzero, noscan)
-		})
-		s.freeindex = 1
-		s.allocCount = 1
-		x = unsafe.Pointer(s.base())
-		size = s.elemsize
-	}
-
-	var scanSize uintptr
-	if !noscan {
-		// If allocating a defer+arg block, now that we've picked a malloc size
-		// large enough to hold everything, cut the &quot;asked for&quot; size down to
-		// just the defer header, so that the GC bitmap will record the arg block
-		// as containing nothing at all (as if it were unused space at the end of
-		// a malloc block caused by size rounding).
-		// The defer arg areas are scanned as part of scanstack.
-		if typ == deferType {
-			dataSize = unsafe.Sizeof(_defer{})
-		}
-		heapBitsSetType(uintptr(x), size, dataSize, typ)
-		if dataSize &gt; typ.size {
-			// Array allocation. If there are any
-			// pointers, GC has to scan to the last
-			// element.
-			if typ.ptrdata != 0 {
-				scanSize = dataSize - typ.size + typ.ptrdata
-			}
-		} else {
-			scanSize = typ.ptrdata
-		}
-		c.local_scan += scanSize
-	}
-
-	// Ensure that the stores above that initialize x to
-	// type-safe memory and set the heap bits occur before
-	// the caller can make x observable to the garbage
-	// collector. Otherwise, on weakly ordered machines,
-	// the garbage collector could follow a pointer to x,
-	// but see uninitialized memory or stale heap bits.
-	publicationBarrier()
-
-	// Allocate black during GC.
-	// All slots hold nil so no scanning is needed.
-	// This may be racing with GC so do it atomically if there can be
-	// a race marking the bit.
-	if gcphase != _GCoff {
-		gcmarknewobject(uintptr(x), size, scanSize)
-	}
-
-	if raceenabled {
-		racemalloc(x, size)
-	}
-
-	if msanenabled {
-		msanmalloc(x, size)
-	}
-
-	mp.mallocing = 0
-	releasem(mp)
-
-	if debug.allocfreetrace != 0 {
-		tracealloc(x, size, typ)
-	}
-
-	if rate := MemProfileRate; rate &gt; 0 {
-		if rate != 1 &amp;&amp; size &lt; c.next_sample {
-			c.next_sample -= size
-		} else {
-			mp := acquirem()
-			profilealloc(mp, x, size)
-			releasem(mp)
-		}
-	}
-
-	if assistG != nil {
-		// Account for internal fragmentation in the assist
-		// debt now that we know it.
-		assistG.gcAssistBytes -= int64(size - dataSize)
-	}
-
-	if shouldhelpgc {
-		if t := (gcTrigger{kind: gcTriggerHeap}); t.test() {
-			gcStart(t)
-		}
-	}
-
-	return x
-}
-</code></pre>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Allocate an object of size bytes.</span></span><br><span class="line"><span class="comment">// Small objects are allocated from the per-P cache's free lists.</span></span><br><span class="line"><span class="comment">// Large objects (&gt; 32 kB) are allocated straight from the heap.</span></span><br><span class="line"><span class="comment">//typ有两种，一种noscan，一种是scan，表示分配对象是否包含指针</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mallocgc</span><span class="params">(size <span class="keyword">uintptr</span>, typ *_type, needzero <span class="keyword">bool</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> gcphase == _GCmarktermination &#123;</span><br><span class="line">		throw(<span class="string">"mallocgc called with gcphase == _GCmarktermination"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> size == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> unsafe.Pointer(&amp;zerobase)</span><br><span class="line">	&#125;</span><br><span class="line">	......</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// assistG is the G to charge for this allocation, or nil if</span></span><br><span class="line">	<span class="comment">// GC is not currently active.</span></span><br><span class="line">	<span class="keyword">var</span> assistG *g</span><br><span class="line">	<span class="keyword">if</span> gcBlackenEnabled != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// Charge the current user G for this allocation.</span></span><br><span class="line">		assistG = getg()</span><br><span class="line">		<span class="keyword">if</span> assistG.m.curg != <span class="literal">nil</span> &#123;</span><br><span class="line">			assistG = assistG.m.curg</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// Charge the allocation against the G. We'll account</span></span><br><span class="line">		<span class="comment">// for internal fragmentation at the end of mallocgc.</span></span><br><span class="line">		assistG.gcAssistBytes -= <span class="keyword">int64</span>(size)</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> assistG.gcAssistBytes &lt; <span class="number">0</span> &#123;</span><br><span class="line">			<span class="comment">// This G is in debt. Assist the GC to correct</span></span><br><span class="line">			<span class="comment">// this before allocating. This must happen</span></span><br><span class="line">			<span class="comment">// before disabling preemption.</span></span><br><span class="line">			gcAssistAlloc(assistG)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Set mp.mallocing to keep from being preempted by GC.</span></span><br><span class="line">	mp := acquirem()</span><br><span class="line">	<span class="keyword">if</span> mp.mallocing != <span class="number">0</span> &#123;</span><br><span class="line">		throw(<span class="string">"malloc deadlock"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> mp.gsignal == getg() &#123;</span><br><span class="line">		throw(<span class="string">"malloc during signal"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	mp.mallocing = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">	shouldhelpgc := <span class="literal">false</span></span><br><span class="line">	dataSize := size</span><br><span class="line">	c := gomcache()</span><br><span class="line">	<span class="keyword">var</span> x unsafe.Pointer</span><br><span class="line"></span><br><span class="line">	noscan := typ == <span class="literal">nil</span> || typ.ptrdata == <span class="number">0</span></span><br><span class="line">	<span class="keyword">if</span> size &lt;= maxSmallSize &#123;</span><br><span class="line">		...</span><br><span class="line">		<span class="comment">//tiny allocator分配方式的代码</span></span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">var</span> s *mspan</span><br><span class="line">		shouldhelpgc = <span class="literal">true</span></span><br><span class="line">		systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			s = largeAlloc(size, needzero, noscan)</span><br><span class="line">		&#125;)</span><br><span class="line">		s.freeindex = <span class="number">1</span></span><br><span class="line">		s.allocCount = <span class="number">1</span></span><br><span class="line">		x = unsafe.Pointer(s.base())</span><br><span class="line">		size = s.elemsize</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> scanSize <span class="keyword">uintptr</span></span><br><span class="line">	<span class="keyword">if</span> !noscan &#123;</span><br><span class="line">		<span class="comment">// If allocating a defer+arg block, now that we've picked a malloc size</span></span><br><span class="line">		<span class="comment">// large enough to hold everything, cut the "asked for" size down to</span></span><br><span class="line">		<span class="comment">// just the defer header, so that the GC bitmap will record the arg block</span></span><br><span class="line">		<span class="comment">// as containing nothing at all (as if it were unused space at the end of</span></span><br><span class="line">		<span class="comment">// a malloc block caused by size rounding).</span></span><br><span class="line">		<span class="comment">// The defer arg areas are scanned as part of scanstack.</span></span><br><span class="line">		<span class="keyword">if</span> typ == deferType &#123;</span><br><span class="line">			dataSize = unsafe.Sizeof(_defer&#123;&#125;)</span><br><span class="line">		&#125;</span><br><span class="line">		heapBitsSetType(<span class="keyword">uintptr</span>(x), size, dataSize, typ)</span><br><span class="line">		<span class="keyword">if</span> dataSize &gt; typ.size &#123;</span><br><span class="line">			<span class="comment">// Array allocation. If there are any</span></span><br><span class="line">			<span class="comment">// pointers, GC has to scan to the last</span></span><br><span class="line">			<span class="comment">// element.</span></span><br><span class="line">			<span class="keyword">if</span> typ.ptrdata != <span class="number">0</span> &#123;</span><br><span class="line">				scanSize = dataSize - typ.size + typ.ptrdata</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			scanSize = typ.ptrdata</span><br><span class="line">		&#125;</span><br><span class="line">		c.local_scan += scanSize</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Ensure that the stores above that initialize x to</span></span><br><span class="line">	<span class="comment">// type-safe memory and set the heap bits occur before</span></span><br><span class="line">	<span class="comment">// the caller can make x observable to the garbage</span></span><br><span class="line">	<span class="comment">// collector. Otherwise, on weakly ordered machines,</span></span><br><span class="line">	<span class="comment">// the garbage collector could follow a pointer to x,</span></span><br><span class="line">	<span class="comment">// but see uninitialized memory or stale heap bits.</span></span><br><span class="line">	publicationBarrier()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Allocate black during GC.</span></span><br><span class="line">	<span class="comment">// All slots hold nil so no scanning is needed.</span></span><br><span class="line">	<span class="comment">// This may be racing with GC so do it atomically if there can be</span></span><br><span class="line">	<span class="comment">// a race marking the bit.</span></span><br><span class="line">	<span class="keyword">if</span> gcphase != _GCoff &#123;</span><br><span class="line">		gcmarknewobject(<span class="keyword">uintptr</span>(x), size, scanSize)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">		racemalloc(x, size)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> msanenabled &#123;</span><br><span class="line">		msanmalloc(x, size)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mp.mallocing = <span class="number">0</span></span><br><span class="line">	releasem(mp)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> debug.allocfreetrace != <span class="number">0</span> &#123;</span><br><span class="line">		tracealloc(x, size, typ)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> rate := MemProfileRate; rate &gt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> rate != <span class="number">1</span> &amp;&amp; size &lt; c.next_sample &#123;</span><br><span class="line">			c.next_sample -= size</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			mp := acquirem()</span><br><span class="line">			profilealloc(mp, x, size)</span><br><span class="line">			releasem(mp)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> assistG != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// Account for internal fragmentation in the assist</span></span><br><span class="line">		<span class="comment">// debt now that we know it.</span></span><br><span class="line">		assistG.gcAssistBytes -= <span class="keyword">int64</span>(size - dataSize)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> shouldhelpgc &#123;</span><br><span class="line">		<span class="keyword">if</span> t := (gcTrigger&#123;kind: gcTriggerHeap&#125;); t.test() &#123;</span><br><span class="line">			gcStart(t)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3>各种分配器</h3>
 <h4>TinyAllocator</h4>
 <p>上面的源代码中，当size&lt;=maxSmallSize时，实际上调用了一种tinyAllocator的分配器</p>
@@ -511,105 +210,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 <li>每个P在本地维护了专门的memory block来存储tinyObject，分配时根据tinyoffset和需要的size及对齐来判断该block是否容纳该object，如果可以就返回地址</li>
 </ul>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">
-func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
-	....
-	//maxSmallsize = 32786
-	if size&lt;=maxSmallSize {
-		//申请对象不含指针且小于16B则会调用tiny allocator
-		if noscan &amp;&amp; size &lt; maxTinySize {
-			// Tiny allocator.
-			//
-			//一种分配器
-			// Tiny allocator combines several tiny allocation requests
-			// into a single memory block. The resulting memory block
-			// is freed when all subobjects are unreachable. The subobjects
-			// must be noscan (don't have pointers), this ensures that
-			// the amount of potentially wasted memory is bounded.
-			//
-			// Size of the memory block used for combining (maxTinySize) is tunable.
-			// Current setting is 16 bytes, which relates to 2x worst case memory
-			// wastage (when all but one subobjects are unreachable).
-			// 8 bytes would result in no wastage at all, but provides less
-			// opportunities for combining.
-			// 32 bytes provides more opportunities for combining,
-			// but can lead to 4x worst case wastage.
-			// The best case winning is 8x regardless of block size.
-			//
-			// Objects obtained from tiny allocator must not be freed explicitly.
-			// So when an object will be freed explicitly, we ensure that
-			// its size &gt;= maxTinySize.
-			//
-			// SetFinalizer has a special case for objects potentially coming
-			// from tiny allocator, it such case it allows to set finalizers
-			// for an inner byte of a memory block.
-			//
-			// The main targets of tiny allocator are small strings and
-			// standalone escaping variables. On a json benchmark
-			// the allocator reduces number of allocations by ~12% and
-			// reduces heap size by ~20%.
-			off := c.tinyoffset
-			// Align tiny pointer for required (conservative) alignment.
-			if size&amp;7 == 0 {
-				off = round(off, 8)
-			} else if size&amp;3 == 0 {
-				off = round(off, 4)
-			} else if size&amp;1 == 0 {
-				off = round(off, 2)
-			}
-			if off+size &lt;= maxTinySize &amp;&amp; c.tiny != 0 {
-				// The object fits into existing tiny block.
-				//该对象适合于已有的tinyblock
-				x = unsafe.Pointer(c.tiny + off)
-				c.tinyoffset = off + size
-				c.local_tinyallocs++
-				mp.mallocing = 0
-				releasem(mp)
-				return x
-			}
-			// Allocate a new maxTinySize block.
-			span := c.alloc[tinySpanClass]
-			v := nextFreeFast(span)
-			if v == 0 {
-				v, _, shouldhelpgc = c.nextFree(tinySpanClass)
-			}
-			x = unsafe.Pointer(v)
-			(*[2]uint64)(x)[0] = 0
-			(*[2]uint64)(x)[1] = 0
-			// See if we need to replace the existing tiny block with the new one
-			// based on amount of remaining free space.
-			if size &lt; c.tinyoffset || c.tiny == 0 {
-				c.tiny = uintptr(x)
-				c.tinyoffset = size
-			}
-			size = maxTinySize
-		} else {
-			//在32KB以内，16B以上的
-			var sizeclass uint8
-			//smallSizeMax = 1024
-			if size &lt;= smallSizeMax-8 {
-				sizeclass = size_to_class8[(size+smallSizeDiv-1)/smallSizeDiv]
-			} else {
-				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv-1)/largeSizeDiv]
-			}
-			size = uintptr(class_to_size[sizeclass])
-			spc := makeSpanClass(sizeclass, noscan)
-			span := c.alloc[spc]
-			v := nextFreeFast(span)
-			if v == 0 {
-				v, span, shouldhelpgc = c.nextFree(spc)
-			}
-			x = unsafe.Pointer(v)
-			if needzero &amp;&amp; span.needzero != 0 {
-				memclrNoHeapPointers(unsafe.Pointer(v), size)
-			}
-		}
-	}else{
-		....
-	}
-	....
-}
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mallocgc</span><span class="params">(size <span class="keyword">uintptr</span>, typ *_type, needzero <span class="keyword">bool</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</span><br><span class="line">	....</span><br><span class="line">	<span class="comment">//maxSmallsize = 32786</span></span><br><span class="line">	<span class="keyword">if</span> size&lt;=maxSmallSize &#123;</span><br><span class="line">		<span class="comment">//申请对象不含指针且小于16B则会调用tiny allocator</span></span><br><span class="line">		<span class="keyword">if</span> noscan &amp;&amp; size &lt; maxTinySize &#123;</span><br><span class="line">			<span class="comment">// Tiny allocator.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">//一种分配器</span></span><br><span class="line">			<span class="comment">// Tiny allocator combines several tiny allocation requests</span></span><br><span class="line">			<span class="comment">// into a single memory block. The resulting memory block</span></span><br><span class="line">			<span class="comment">// is freed when all subobjects are unreachable. The subobjects</span></span><br><span class="line">			<span class="comment">// must be noscan (don't have pointers), this ensures that</span></span><br><span class="line">			<span class="comment">// the amount of potentially wasted memory is bounded.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// Size of the memory block used for combining (maxTinySize) is tunable.</span></span><br><span class="line">			<span class="comment">// Current setting is 16 bytes, which relates to 2x worst case memory</span></span><br><span class="line">			<span class="comment">// wastage (when all but one subobjects are unreachable).</span></span><br><span class="line">			<span class="comment">// 8 bytes would result in no wastage at all, but provides less</span></span><br><span class="line">			<span class="comment">// opportunities for combining.</span></span><br><span class="line">			<span class="comment">// 32 bytes provides more opportunities for combining,</span></span><br><span class="line">			<span class="comment">// but can lead to 4x worst case wastage.</span></span><br><span class="line">			<span class="comment">// The best case winning is 8x regardless of block size.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// Objects obtained from tiny allocator must not be freed explicitly.</span></span><br><span class="line">			<span class="comment">// So when an object will be freed explicitly, we ensure that</span></span><br><span class="line">			<span class="comment">// its size &gt;= maxTinySize.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// SetFinalizer has a special case for objects potentially coming</span></span><br><span class="line">			<span class="comment">// from tiny allocator, it such case it allows to set finalizers</span></span><br><span class="line">			<span class="comment">// for an inner byte of a memory block.</span></span><br><span class="line">			<span class="comment">//</span></span><br><span class="line">			<span class="comment">// The main targets of tiny allocator are small strings and</span></span><br><span class="line">			<span class="comment">// standalone escaping variables. On a json benchmark</span></span><br><span class="line">			<span class="comment">// the allocator reduces number of allocations by ~12% and</span></span><br><span class="line">			<span class="comment">// reduces heap size by ~20%.</span></span><br><span class="line">			off := c.tinyoffset</span><br><span class="line">			<span class="comment">// Align tiny pointer for required (conservative) alignment.</span></span><br><span class="line">			<span class="keyword">if</span> size&amp;<span class="number">7</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">8</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> size&amp;<span class="number">3</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">4</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> size&amp;<span class="number">1</span> == <span class="number">0</span> &#123;</span><br><span class="line">				off = round(off, <span class="number">2</span>)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> off+size &lt;= maxTinySize &amp;&amp; c.tiny != <span class="number">0</span> &#123;</span><br><span class="line">				<span class="comment">// The object fits into existing tiny block.</span></span><br><span class="line">				<span class="comment">//该对象适合于已有的tinyblock</span></span><br><span class="line">				x = unsafe.Pointer(c.tiny + off)</span><br><span class="line">				c.tinyoffset = off + size</span><br><span class="line">				c.local_tinyallocs++</span><br><span class="line">				mp.mallocing = <span class="number">0</span></span><br><span class="line">				releasem(mp)</span><br><span class="line">				<span class="keyword">return</span> x</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// Allocate a new maxTinySize block.</span></span><br><span class="line">			span := c.alloc[tinySpanClass]</span><br><span class="line">			v := nextFreeFast(span)</span><br><span class="line">			<span class="keyword">if</span> v == <span class="number">0</span> &#123;</span><br><span class="line">				v, _, shouldhelpgc = c.nextFree(tinySpanClass)</span><br><span class="line">			&#125;</span><br><span class="line">			x = unsafe.Pointer(v)</span><br><span class="line">			(*[<span class="number">2</span>]<span class="keyword">uint64</span>)(x)[<span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">			(*[<span class="number">2</span>]<span class="keyword">uint64</span>)(x)[<span class="number">1</span>] = <span class="number">0</span></span><br><span class="line">			<span class="comment">// See if we need to replace the existing tiny block with the new one</span></span><br><span class="line">			<span class="comment">// based on amount of remaining free space.</span></span><br><span class="line">			<span class="keyword">if</span> size &lt; c.tinyoffset || c.tiny == <span class="number">0</span> &#123;</span><br><span class="line">				c.tiny = <span class="keyword">uintptr</span>(x)</span><br><span class="line">				c.tinyoffset = size</span><br><span class="line">			&#125;</span><br><span class="line">			size = maxTinySize</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">//在32KB以内，16B以上的</span></span><br><span class="line">			<span class="keyword">var</span> sizeclass <span class="keyword">uint8</span></span><br><span class="line">			<span class="comment">//smallSizeMax = 1024</span></span><br><span class="line">			<span class="keyword">if</span> size &lt;= smallSizeMax<span class="number">-8</span> &#123;</span><br><span class="line">				sizeclass = size_to_class8[(size+smallSizeDiv<span class="number">-1</span>)/smallSizeDiv]</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				sizeclass = size_to_class128[(size-smallSizeMax+largeSizeDiv<span class="number">-1</span>)/largeSizeDiv]</span><br><span class="line">			&#125;</span><br><span class="line">			size = <span class="keyword">uintptr</span>(class_to_size[sizeclass])</span><br><span class="line">			spc := makeSpanClass(sizeclass, noscan)</span><br><span class="line">			span := c.alloc[spc]</span><br><span class="line">			v := nextFreeFast(span)</span><br><span class="line">			<span class="keyword">if</span> v == <span class="number">0</span> &#123;</span><br><span class="line">				v, span, shouldhelpgc = c.nextFree(spc)</span><br><span class="line">			&#125;</span><br><span class="line">			x = unsafe.Pointer(v)</span><br><span class="line">			<span class="keyword">if</span> needzero &amp;&amp; span.needzero != <span class="number">0</span> &#123;</span><br><span class="line">				memclrNoHeapPointers(unsafe.Pointer(v), size)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		....</span><br><span class="line">	&#125;</span><br><span class="line">	....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4>fixAlloc</h4>
 <p>因为我们的都知道go分配对象是在go gc heap中，并且由mspan，mcache，mcentral这些结构管理，但是这些结构的对象又是在哪里管理和分配呢？</p>
 <p>fixalloc就是做这个的：
@@ -620,44 +221,11 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 </ul>
 <p>大概的分配有以下集中</p>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">type mheap struct{
-	...
-	spanalloc             fixalloc // allocator for span*
-	cachealloc            fixalloc // allocator for mcache*
-	treapalloc            fixalloc // allocator for treapNodes*
-	specialfinalizeralloc fixalloc // allocator for specialfinalizer*
-	specialprofilealloc   fixalloc // allocator for specialprofile*
-	speciallock           mutex    // lock for special record allocators.
-	arenaHintAlloc        fixalloc // allocator for arenaHints
-	...
-}
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> mheap <span class="keyword">struct</span>&#123;</span><br><span class="line">	...</span><br><span class="line">	spanalloc             fixalloc <span class="comment">// allocator for span*</span></span><br><span class="line">	cachealloc            fixalloc <span class="comment">// allocator for mcache*</span></span><br><span class="line">	treapalloc            fixalloc <span class="comment">// allocator for treapNodes*</span></span><br><span class="line">	specialfinalizeralloc fixalloc <span class="comment">// allocator for specialfinalizer*</span></span><br><span class="line">	specialprofilealloc   fixalloc <span class="comment">// allocator for specialprofile*</span></span><br><span class="line">	speciallock           mutex    <span class="comment">// lock for special record allocators.</span></span><br><span class="line">	arenaHintAlloc        fixalloc <span class="comment">// allocator for arenaHints</span></span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4>stackCache</h4>
 <p>在mcache结构上</p>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">// Number of orders that get caching. Order 0 is FixedStack
-	// and each successive order is twice as large.
-	// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks
-	// will be allocated directly.
-	// Since FixedStack is different on different systems, we
-	// must vary NumStackOrders to keep the same maximum cached size.
-	//   OS               | FixedStack | NumStackOrders
-	//   -----------------+------------+---------------
-	//   linux/darwin/bsd | 2KB        | 4
-	//   windows/32       | 4KB        | 3
-	//   windows/64       | 8KB        | 2
-	//   plan9            | 4KB        | 3
-_NumStackOrders = 4 - sys.PtrSize/4*sys.GoosWindows - 1*sys.GoosPlan9
-type mcache struct{
-	...
-	stackcache [_NumStackOrders]stackfreelist 
-	...
-}
-type stackfreelist struct {
-	list gclinkptr // linked list of free stacks
-	size uintptr   // total size of stacks in list
-}
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Number of orders that get caching. Order 0 is FixedStack</span></span><br><span class="line">	<span class="comment">// and each successive order is twice as large.</span></span><br><span class="line">	<span class="comment">// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks</span></span><br><span class="line">	<span class="comment">// will be allocated directly.</span></span><br><span class="line">	<span class="comment">// Since FixedStack is different on different systems, we</span></span><br><span class="line">	<span class="comment">// must vary NumStackOrders to keep the same maximum cached size.</span></span><br><span class="line">	<span class="comment">//   OS               | FixedStack | NumStackOrders</span></span><br><span class="line">	<span class="comment">//   -----------------+------------+---------------</span></span><br><span class="line">	<span class="comment">//   linux/darwin/bsd | 2KB        | 4</span></span><br><span class="line">	<span class="comment">//   windows/32       | 4KB        | 3</span></span><br><span class="line">	<span class="comment">//   windows/64       | 8KB        | 2</span></span><br><span class="line">	<span class="comment">//   plan9            | 4KB        | 3</span></span><br><span class="line">_NumStackOrders = <span class="number">4</span> - sys.PtrSize/<span class="number">4</span>*sys.GoosWindows - <span class="number">1</span>*sys.GoosPlan9</span><br><span class="line"><span class="keyword">type</span> mcache <span class="keyword">struct</span>&#123;</span><br><span class="line">	...</span><br><span class="line">	stackcache [_NumStackOrders]stackfreelist </span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> stackfreelist <span class="keyword">struct</span> &#123;</span><br><span class="line">	list gclinkptr <span class="comment">// linked list of free stacks</span></span><br><span class="line">	size <span class="keyword">uintptr</span>   <span class="comment">// total size of stacks in list</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>大概结构<img src="/img/stackCache.png" alt="如图"></p>
 <p>stackCache是per-P的，在另外一篇文章<a href="../goroutine.html">goroutine</a>上讲过，主要用于分配goroutine的stack，同普通内存一样
 其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级</p>
@@ -693,28 +261,7 @@ type stackfreelist struct {
 <h2>内存对齐以及一些分配规则</h2>
 <p>runtime/msize.go</p>
 <p class="code-caption" data-lang="golang" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-golang">func roundupsize(size uintptr) uintptr {
-	//size&lt;32768
-	if size &lt; _MaxSmallSize {
-		if size &lt;= smallSizeMax-8 {
-			//这里面的字段是go对特定class设定的对应大小
-			return uintptr(class_to_size[size_to_class8[(size+smallSizeDiv-1)/smallSizeDiv]])
-		} else {
-			return uintptr(class_to_size[size_to_class128[(size-smallSizeMax+largeSizeDiv-1)/largeSizeDiv]])
-		}
-	}
-	//size为负数,_PageSize=1&lt;&lt;13 
-	if size+_PageSize &lt; size {
-		return size
-	}
-	return round(size, _PageSize)
-}
-//该运算在下面会提到
-// round n up to a multiple of a.  a must be a power of 2.
-func round(n, a uintptr) uintptr {
-	return (n + a - 1) &amp;^ (a - 1)
-}
-</code></pre>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">roundupsize</span><span class="params">(size <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="comment">//size&lt;32768</span></span><br><span class="line">	<span class="keyword">if</span> size &lt; _MaxSmallSize &#123;</span><br><span class="line">		<span class="keyword">if</span> size &lt;= smallSizeMax<span class="number">-8</span> &#123;</span><br><span class="line">			<span class="comment">//这里面的字段是go对特定class设定的对应大小</span></span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class8[(size+smallSizeDiv<span class="number">-1</span>)/smallSizeDiv]])</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">uintptr</span>(class_to_size[size_to_class128[(size-smallSizeMax+largeSizeDiv<span class="number">-1</span>)/largeSizeDiv]])</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//size为负数,_PageSize=1&lt;&lt;13 </span></span><br><span class="line">	<span class="keyword">if</span> size+_PageSize &lt; size &#123;</span><br><span class="line">		<span class="keyword">return</span> size</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> round(size, _PageSize)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//该运算在下面会提到</span></span><br><span class="line"><span class="comment">// round n up to a multiple of a.  a must be a power of 2.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">round</span><span class="params">(n, a <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (n + a - <span class="number">1</span>) &amp;^ (a - <span class="number">1</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>注意到<strong>class_to_size</strong>和<strong>size_to_class</strong>等等字段</p>
 <p><a id="sizetoclass">[sizetoclass]</a>
 实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：
@@ -725,35 +272,13 @@ func round(n, a uintptr) uintptr {
 </blockquote>
 </blockquote>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">// class  bytes/obj  bytes/span  objects  tail waste  max waste
-//     1          8        8192     1024           0     87.50%
-//     2         16        8192      512           0     43.75%
-//     3         32        8192      256           0     46.88%
-//     4         48        8192      170          32     31.52%
-//     5         64        8192      128           0     23.44%
-//     6         80        8192      102          32     19.07%
-//     7         96        8192       85          32     15.95%
-//     8        112        8192       73          16     13.56%
-//     9        128        8192       64           0     11.72%
-//    10        144        8192       56         128     11.82%
-//    11        160        8192       51          32      9.73%
-......
-//    60      19072       57344        3         128      3.57%
-//    61      20480       40960        2           0      6.87%
-//    62      21760       65536        3         256      6.25%
-//    63      24576       24576        1           0     11.45%
-//    64      27264       81920        3         128     10.00%
-//    65      28672       57344        2           0      4.91%
-//    66      32768       32768        1           0     12.50%
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// class  bytes/obj  bytes/span  objects  tail waste  max waste</span></span><br><span class="line"><span class="comment">//     1          8        8192     1024           0     87.50%</span></span><br><span class="line"><span class="comment">//     2         16        8192      512           0     43.75%</span></span><br><span class="line"><span class="comment">//     3         32        8192      256           0     46.88%</span></span><br><span class="line"><span class="comment">//     4         48        8192      170          32     31.52%</span></span><br><span class="line"><span class="comment">//     5         64        8192      128           0     23.44%</span></span><br><span class="line"><span class="comment">//     6         80        8192      102          32     19.07%</span></span><br><span class="line"><span class="comment">//     7         96        8192       85          32     15.95%</span></span><br><span class="line"><span class="comment">//     8        112        8192       73          16     13.56%</span></span><br><span class="line"><span class="comment">//     9        128        8192       64           0     11.72%</span></span><br><span class="line"><span class="comment">//    10        144        8192       56         128     11.82%</span></span><br><span class="line"><span class="comment">//    11        160        8192       51          32      9.73%</span></span><br><span class="line">......</span><br><span class="line"><span class="comment">//    60      19072       57344        3         128      3.57%</span></span><br><span class="line"><span class="comment">//    61      20480       40960        2           0      6.87%</span></span><br><span class="line"><span class="comment">//    62      21760       65536        3         256      6.25%</span></span><br><span class="line"><span class="comment">//    63      24576       24576        1           0     11.45%</span></span><br><span class="line"><span class="comment">//    64      27264       81920        3         128     10.00%</span></span><br><span class="line"><span class="comment">//    65      28672       57344        2           0      4.91%</span></span><br><span class="line"><span class="comment">//    66      32768       32768        1           0     12.50%</span></span><br></pre></td></tr></table></figure>
 <p>可以看到bytes/obj一栏，就是go预定义object大小，最小是8B，最大是32KB（注意这里只是在32KB以内，还有大于32KB以外的），所以都可以解释到<strong>slice</strong>在扩容的时候可能会不遵守*2和1.25倍扩容的规则；</p>
 <p>相关的main方法可以在classToSize的转换runtime/mksizeclass.go中找到</p>
 <h3>golang的位运算</h3>
 <p>有时候会经常看见会用一些全局常量：</p>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">//指针大小,一般64位就是8
-const PtrSize = 4 &lt;&lt; (^uintptr(0) &gt;&gt; 63) //8
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//指针大小,一般64位就是8</span></span><br><span class="line"><span class="keyword">const</span> PtrSize = <span class="number">4</span> &lt;&lt; (^<span class="keyword">uintptr</span>(<span class="number">0</span>) &gt;&gt; <span class="number">63</span>) <span class="comment">//8</span></span><br></pre></td></tr></table></figure>
 <p>sys.PtrSize, sys.RegSize等等</p>
 <h4>1. ^运算</h4>
 <ul>
@@ -763,14 +288,7 @@ const PtrSize = 4 &lt;&lt; (^uintptr(0) &gt;&gt; 63) //8
 <p>正数取反：化为二进制，得到补码(正数补码和原码一样)，再对补码每位取反</p>
 <p>负数取反：化为二进制，得到补码(所有除符号位的每位取反，+1)，然后再对补码全部每位取反</p>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">x:=^3
-//3=》 0011=》 1100=-4 
-log.Printf(&quot;%d&quot;,x)//-4
-
-x:=^(-3)
-//-3=》 1011 =》 1100 =》 1101 =》 0010=2
-log.Printf(&quot;%d&quot;,x)//2
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">x:=^<span class="number">3</span></span><br><span class="line"><span class="comment">//3=》 0011=》 1100=-4 </span></span><br><span class="line">log.Printf(<span class="string">"%d"</span>,x)<span class="comment">//-4</span></span><br><span class="line"></span><br><span class="line">x:=^(<span class="number">-3</span>)</span><br><span class="line"><span class="comment">//-3=》 1011 =》 1100 =》 1101 =》 0010=2</span></span><br><span class="line">log.Printf(<span class="string">"%d"</span>,x)<span class="comment">//2</span></span><br></pre></td></tr></table></figure>
 <p>也可以用比较直接的方法：
 ^a= -(a+1)</p>
 <ul>
@@ -788,21 +306,13 @@ log.Printf(&quot;%d&quot;,x)//2
 <p>经常用该符号作内存对齐
 如runtime/stubs.go里面</p>
 <p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
-<pre><code class="language-go">// round n up to a multiple of a.  a must be a power of 2.
-func round(n, a uintptr) uintptr {
-	return (n + a - 1) &amp;^ (a - 1)
-}
-//可以有这种说法：
-//找到最大位为１的位数，然后用１左移该位数即是roundup后的结果,
-//比如6 : 110,最大为为1的是在第三位，1&lt;&lt;3 = 1000 = 8,即十进制的8
-// n=6,a=2 : 110 =&gt; (6+2-1) = 111 &amp;^ 001 = 110
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// round n up to a multiple of a.  a must be a power of 2.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">round</span><span class="params">(n, a <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> (n + a - <span class="number">1</span>) &amp;^ (a - <span class="number">1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//可以有这种说法：</span></span><br><span class="line"><span class="comment">//找到最大位为１的位数，然后用１左移该位数即是roundup后的结果,</span></span><br><span class="line"><span class="comment">//比如6 : 110,最大为为1的是在第三位，1&lt;&lt;3 = 1000 = 8,即十进制的8</span></span><br><span class="line"><span class="comment">// n=6,a=2 : 110 =&gt; (6+2-1) = 111 &amp;^ 001 = 110</span></span><br></pre></td></tr></table></figure>
 <p>runtime/malloc.go</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckdekh01z001v9d55tzn4xjdm" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/24/Go/memManage/" data-id="ckdf9p6gu001i1455stsmg7cv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

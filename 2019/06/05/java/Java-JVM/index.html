@@ -124,6 +124,7 @@
 <p>一般在Survivor中没有被清除出去的对象才会进入该区域，主要使用标记-清除（mark-sweep）算法</p>
 <h4>操作</h4>
 <p>可-Xms 数字或-Xmx 数字 两个jvm参数来指定一个程序的堆内存大小，第一个是起始值，第二个是最大值</p>
+<p class="code-caption" data-lang="java" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xms1M -Xmx2M helloworld</span><br></pre></td></tr></table></figure>
 <h3>方法区（method area）</h3>
 <p>用于存放已被加载的类信息，常量，静态变量，即时编译器编译（jit）后的代码等
@@ -139,6 +140,7 @@ PS：</p>
 <li>如果不是用双引号，intern方法会<strong>从字符串常量池中查询字符串是否存在，如果不存在就会将当前字符串放入常量池</strong></li>
 </ol>
 <h5>常见面试题</h5>
+<p class="code-caption" data-lang="java" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String s=<span class="keyword">new</span> String(<span class="string">"abc"</span>);</span><br></pre></td></tr></table></figure>
 <p>如上创建了多少个对象？
 答案就是2个，一个是String在堆上的对象，一个是常量池里面的字符串”abc“</p>
@@ -153,6 +155,7 @@ PS：</p>
 <h4>操作</h4>
 <p>可以通过
 -Xss 设置jvm栈大小</p>
+<p class="code-caption" data-lang="java" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -Xss512M helloworld</span><br></pre></td></tr></table></figure>
 <h4>异常</h4>
 <p>当请求栈深度超过最大值，会抛出stackoverflow异常</p>
@@ -167,7 +170,7 @@ PS：</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ckdekh02100219d554fqvlnb8" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/java/Java-JVM/" data-id="ckdf9p6h100211455k5h0trad" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li></ul>
@@ -188,9 +191,9 @@ PS：</p>
     </a>
   
   
-    <a href="/2018/07/15/Comcon/HTTP2/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Notes about HTTP2</div>
+      <div class="article-nav-title">Concurrency Problem</div>
     </a>
   
 </nav>

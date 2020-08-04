@@ -154,8 +154,10 @@
 <ol>
 <li>就是要合并多个插入操作成一个，如：</li>
 </ol>
+<p class="code-caption" data-lang="sql" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>)</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
 <p>改为</p>
+<p class="code-caption" data-lang="sql" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> table1(<span class="string">`id`</span>,<span class="string">`name`</span>,<span class="string">`sex`</span>) <span class="keyword">values</span>(<span class="number">1</span>,<span class="string">"a"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">2</span>,<span class="string">"b"</span>,<span class="number">1</span>),</span><br><span class="line">                                            (<span class="number">3</span>,<span class="string">"c"</span>,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
 <ol start="2">
 <li>开启 <strong>bulk_insert_buffer_size</strong> 更加加速插入</li>
@@ -164,6 +166,7 @@
 <p>使用 <strong>LOAD DATA</strong></p>
 <h4>利用default value</h4>
 <p>每当插入数据不同于default值的时候再插入，使用ignore</p>
+<p class="code-caption" data-lang="sql" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">ignore</span> <span class="keyword">into</span> table1 <span class="keyword">values</span> (<span class="number">1</span>,<span class="string">'a'</span>，<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
 <p>甚至还区分了 InnoDB引擎和MyISAM引擎的做法：</p>
 <h4>InnoDB：</h4>
@@ -182,7 +185,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckdekh01n00109d5596ewmocn" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/07/03/MySQL/MySQLIndexing/" data-id="ckdf9p6gx001q1455w4cs11xa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/">MySQL</a></li></ul>

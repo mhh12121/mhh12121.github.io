@@ -104,6 +104,7 @@ fmt.Output()</p>
 但是不适用于短时间生存的</p>
 <h2>Sprintf</h2>
 <p>直接看一道题</p>
+<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> yoyo <span class="keyword">struct</span>&#123;</span><br><span class="line">    Name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(y *yoyo)</span> <span class="title">do</span><span class="params">()</span> <span class="title">string</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> fmt.Sprintf(<span class="string">"%+v"</span>,y)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    p:=&amp;yoyo&#123;&#125;</span><br><span class="line">    p.do()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>答案是输出stack overflow</p>
 <p>二话不说直接dlv进去看:
@@ -112,6 +113,7 @@ fmt.Output()</p>
 doPrintf(format,a)
 这个函数就是loop  format里面的字符串（即我们传入的 “%+v”)
 遇到% ， +v这种特殊字符就停止 调用</p>
+<p class="code-caption" data-lang="go" data-line_number="frontend" data-trim_indent="backend" data-label_position="outer" data-labels_left="Code" data-labels_right=":" data-labels_copy="Copy Code"><span class="code-caption-label"></span><a class="code-caption-copy">Copy Code</a></p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printArgs(arg ,verb <span class="keyword">rune</span>)</span><br></pre></td></tr></table></figure>
 <p>这个函数会进行一个简单的判断，arg的类型，有些类型如果用cast (T.(type)这种模式)可以转换，则不需要使用反射，
 如果要用反射，
@@ -128,7 +130,7 @@ doPrintf(format,a)
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckdekh01u001i9d55cbwdkrkn" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/21/Go/fmt/" data-id="ckdf9p6gq00181455377m3uuu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
