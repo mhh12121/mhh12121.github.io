@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="//TODO">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang timer">
 <meta name="twitter:description" content="//TODO">
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-Go/timer" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/02/03/Go/timer/" class="article-date">
-  <time datetime="2020-02-03T06:20:00.000Z" itemprop="datePublished">2020-02-03</time>
+  <time datetime="2020-02-03T14:20:00.000Z" itemprop="datePublished">2020-02-03</time>
 </a>
     
   </div>
@@ -102,7 +102,7 @@
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The Timer type represents a single event.</span></span><br><span class="line"><span class="comment">// When the Timer expires, the current time will be sent on C,</span></span><br><span class="line"><span class="comment">// unless the Timer was created by AfterFunc.</span></span><br><span class="line"><span class="comment">// A Timer must be created with NewTimer or AfterFunc.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Timer <span class="keyword">struct</span> &#123;</span><br><span class="line">	C &lt;-<span class="keyword">chan</span> Time <span class="comment">//一个channel，在timer过期后，这个只读chan会有一个值</span></span><br><span class="line">	r runtimeTimer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>runtimeTimer结构:
 是一个接口</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface to timers implemented in package runtime.</span></span><br><span class="line"><span class="comment">// Must be in sync with ../runtime/time.go:/^type timer</span></span><br><span class="line"><span class="keyword">type</span> runtimeTimer <span class="keyword">struct</span> &#123;</span><br><span class="line">	tb <span class="keyword">uintptr</span></span><br><span class="line">	i  <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line">	when   <span class="keyword">int64</span></span><br><span class="line">	period <span class="keyword">int64</span></span><br><span class="line">	f      <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">uintptr</span>)</span> // <span class="title">NOTE</span>: <span class="title">must</span> <span class="title">not</span> <span class="title">be</span> <span class="title">closure</span>,不能是闭包？？？，初始化计时器</span></span><br><span class="line"><span class="function">	<span class="title">arg</span>    <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line">	seq    <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Interface to timers implemented in package runtime.</span></span><br><span class="line"><span class="comment">// Must be in sync with ../runtime/time.go:/^type timer</span></span><br><span class="line"><span class="keyword">type</span> runtimeTimer <span class="keyword">struct</span> &#123;</span><br><span class="line">	tb <span class="keyword">uintptr</span></span><br><span class="line">	i  <span class="keyword">int</span></span><br><span class="line"></span><br><span class="line">	when   <span class="keyword">int64</span></span><br><span class="line">	period <span class="keyword">int64</span></span><br><span class="line">	f      <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">interface</span>&#123;&#125;, <span class="keyword">uintptr</span>)</span> // <span class="title">NOTE</span>: <span class="title">must</span> <span class="title">not</span> <span class="title">be</span> <span class="title">closure</span>,不能是闭包？？？，初始化计时器</span></span><br><span class="line">	arg    <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">	seq    <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4>Reset(d Duration)方法</h4>
 <ol>
 <li>返回true，如果这个timer被激活；返回false如果这个timer被停止或者过期(返回值最主要用来保持兼容性)</li>
@@ -122,7 +122,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/03/Go/timer/" data-id="ckdfen90z001vdc55zxxdawwg" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/02/03/Go/timer/" data-id="ckdfevvzx001rzshwwelez1w2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

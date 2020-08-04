@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="There’s a chinese word ‘温故而知新’.">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="From SetTimeout to Js Scope">
 <meta name="twitter:description" content="There’s a chinese word ‘温故而知新’.">
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-js/js-Scope" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/01/01/js/js-Scope/" class="article-date">
-  <time datetime="2017-01-01T13:48:00.000Z" itemprop="datePublished">2017-01-01</time>
+  <time datetime="2017-01-01T21:48:00.000Z" itemprop="datePublished">2017-01-01</time>
 </a>
     
   </div>
@@ -96,7 +96,7 @@
 <p>Today I saw a code:</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>;i&lt;=<span class="number">5</span>;i++)&#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i);</span><br><span class="line"></span><br><span class="line">    &#125;,i*<span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>And the result is:</p>
-<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">34</span><span class="comment">//a random number,it's different any time after u reopen your browser</span></span><br><span class="line"><span class="number">6</span><span class="comment">//run 5 times</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">34</span><span class="comment">//a random number,it's different any time after u reopen your browser</span></span><br><span class="line"><span class="number">6</span><span class="comment">//run 5 times</span></span><br></pre></td></tr></table></figure>
 <p>Directly go to <a href="#The-1stQ-solution">Solution</a> !!!</p>
 <p>To explain above,We begin with some of the characteristics of <a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout" target="_blank" rel="noopener">setTimeout</a>
 ##Syntax</p>
@@ -133,7 +133,7 @@ The solution:</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-Scope/" data-id="ckdfen919002gdc55bow95z6m" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2017/01/01/js/js-Scope/" data-id="ckdfevw0c002gzshwvm0o7siu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>

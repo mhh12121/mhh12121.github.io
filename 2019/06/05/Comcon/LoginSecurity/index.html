@@ -20,7 +20,7 @@
 <meta property="og:image" content="https://mhh12121.github.io/img/SSL.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/HTTPS.png">
 <meta property="og:image" content="https://mhh12121.github.io/img/CA.jpeg">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.393Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Something about authentication and authorization">
 <meta name="twitter:description" content="Wat the hack is Oauth2, JWT, HTTPS??? Followings are my notes:">
@@ -80,7 +80,7 @@
         <section id="main"><article id="post-Comcon/LoginSecurity" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/05/Comcon/LoginSecurity/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+  <time datetime="2019-06-05T23:48:00.000Z" itemprop="datePublished">2019-06-05</time>
 </a>
     
   </div>
@@ -117,7 +117,7 @@
 <p>payload 用于携带你希望向服务端传递的信息。你既可以往里添加官方字段（这里的“字段” (field) 也可以被称作“声明” claims）
 例如iss(Issuer签发者)，aud（接受jwt的一方），jti（jwt唯一身份标识，主要作为一次性token）, sub(Subject面向的用户), exp(Expiration time)</p>
 <p>也可以塞入自定义的字段，比如 userId:</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"userId"</span>: <span class="string">"yjqweqw0019-aq"</span>//但一般不要敏感信息，因为会被看见</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"userId"</span>: <span class="string">"yjqweqw0019-aq"</span><span class="comment">//但一般不要敏感信息，因为会被看见</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Signature结构</p>
 <figure class="highlight haskell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">secret</span>=<span class="string">"mhh12121"</span>//存在服务器上的密钥</span><br><span class="line"><span class="class"><span class="keyword">data</span> = base64( <span class="title">header</span> ) + “.” + base64( <span class="title">payload</span> )</span></span><br><span class="line"><span class="title">signature</span> = <span class="type">Hash</span>( <span class="class"><span class="keyword">data</span>, secret )//这里我们用<span class="type">HMACSHA256</span></span></span><br></pre></td></tr></table></figure>
 <p>假设我们的header 和paylaod如下</p>
@@ -235,7 +235,7 @@ Bob维护一个序号计数器，这个计数器不在记录中，而在MAC的�
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdfen90f000idc55orj9vqlx" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Comcon/LoginSecurity/" data-id="ckdfevvz9000izshwctagrruw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/security/">security</a></li></ul>

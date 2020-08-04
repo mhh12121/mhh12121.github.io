@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="其实里面只涉及部分concurrency问题，一些实用例子，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Concurrency Problem">
 <meta name="twitter:description" content="其实里面只涉及部分concurrency问题，一些实用例子，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新">
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-Go/Concurrency" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/06/05/Go/Concurrency/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
+  <time datetime="2019-06-05T23:48:00.000Z" itemprop="datePublished">2019-06-05</time>
 </a>
     
   </div>
@@ -129,10 +129,10 @@ channel的一些问题：</p>
 </ol>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> temp=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)<span class="comment">//不带缓冲</span></span><br><span class="line"><span class="keyword">var</span> a=<span class="string">"123"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span>&#123;</span><br><span class="line">    fmt.Println(<span class="string">"a:"</span>,a)<span class="comment">//1 </span></span><br><span class="line">    &lt;-temp<span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">go</span> foo()</span><br><span class="line">    temp&lt;<span class="number">-1</span><span class="comment">//3</span></span><br><span class="line">    fmt.Println(<span class="string">"a main:"</span>,a)<span class="comment">//4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>输出</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">a</span>: <span class="number">123</span></span><br><span class="line"><span class="selector-tag">a</span> main: <span class="number">123</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">a:</span> <span class="number">123</span></span><br><span class="line"><span class="attr">a main:</span> <span class="number">123</span></span><br></pre></td></tr></table></figure>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> temp=<span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>,<span class="number">10</span>)<span class="comment">//带缓冲</span></span><br><span class="line"><span class="keyword">var</span> a=<span class="string">"123"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">foo</span><span class="params">()</span></span>&#123;</span><br><span class="line">    fmt.Println(<span class="string">"a:"</span>,a)<span class="comment">//1 </span></span><br><span class="line">    temp&lt;<span class="number">-1</span><span class="comment">// 2</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">go</span> foo()</span><br><span class="line">    &lt;-temp<span class="comment">//3,可能先发生</span></span><br><span class="line">    fmt.Println(<span class="string">"a main:"</span>,a)<span class="comment">//4</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>不能保证1, 2 和 3 的发生顺序，就很有可能只输出</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">a</span> main: <span class="number">123</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">a main:</span> <span class="number">123</span></span><br></pre></td></tr></table></figure>
 <blockquote>
 <blockquote>
 <p>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.
@@ -172,7 +172,7 @@ Do（func(){}）: Do方法只接受 *** 无参无返回值的函数 ***</p>
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckdfen90n0011dc55n0r9qmuc" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Concurrency/" data-id="ckdfevvzj000zzshwteofewmm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

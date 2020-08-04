@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="兜的破烂">
 <meta property="og:description" content="Reflect Package">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang Reflection">
 <meta name="twitter:description" content="Reflect Package">
@@ -72,7 +72,7 @@
         <section id="main"><article id="post-Go/Reflect" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/03/26/Go/Reflect/" class="article-date">
-  <time datetime="2020-03-26T12:10:00.000Z" itemprop="datePublished">2020-03-26</time>
+  <time datetime="2020-03-26T20:10:00.000Z" itemprop="datePublished">2020-03-26</time>
 </a>
     
   </div>
@@ -100,7 +100,7 @@
 <p>接下来说一说经常用到的 interface{} 结构体，
 传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；</p>
 <p>我们可以先看一个问题:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Animal <span class="keyword">interface</span>&#123;</span><br><span class="line">    Walk()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Cat <span class="keyword">struct</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cat)</span> <span class="title">Walk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    log.Println(<span class="string">"walking! cat"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> i2 <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> </span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> t1 i1</span><br><span class="line">    <span class="keyword">var</span> t2 i2</span><br><span class="line">    <span class="keyword">if</span> t1==t2&#123;</span><br><span class="line">        log.Println(<span class="string">"equal!"</span>)</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        log.Println(<span class="string">"nope!"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Animal <span class="keyword">interface</span>&#123;</span><br><span class="line">    Walk()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> Cat <span class="keyword">struct</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cat)</span> <span class="title">Walk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    log.Println(<span class="string">"walking! cat"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> i2 <span class="keyword">interface</span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span></span> </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> t1 i1</span><br><span class="line">    <span class="keyword">var</span> t2 i2</span><br><span class="line">    <span class="keyword">if</span> t1==t2&#123;</span><br><span class="line">        log.Println(<span class="string">"equal!"</span>)</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        log.Println(<span class="string">"nope!"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>除了反射其还可以当做原本的用途： 多态 （OOP）的特征之一，只是golang是ducktype类型，实现多态的几个要求：</p>
 <ol>
 <li>有interface接口和方法，有子类把那个接口的方法都实现了，编译器就会自动认为这个结构体就是使用了这个接口</li>
@@ -113,7 +113,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckdfen90r001ddc55seaiert3" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2020/03/26/Go/Reflect/" data-id="ckdfevvzp001azshwx0p9jciw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>

@@ -14,7 +14,7 @@
 <meta property="og:description" content="格式 var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])  指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://mhh12121.github.io/2016/css/images/jsengine.jpg">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
+<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从setTimeout()看到js异步机制">
 <meta name="twitter:description" content="格式 var timeoutID = window.setTimeout(func, [delay, param1, param2, ...])  指的是若干毫秒后执行func，大概是一个闹钟的功能; MDN手册">
@@ -74,7 +74,7 @@
         <section id="main"><article id="post-js/js-async" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/01/05/js/js-async/" class="article-date">
-  <time datetime="2016-01-05T15:00:00.000Z" itemprop="datePublished">2016-01-05</time>
+  <time datetime="2016-01-05T23:00:00.000Z" itemprop="datePublished">2016-01-05</time>
 </a>
     
   </div>
@@ -123,7 +123,7 @@
 <pre><code>&lt;link rel=&quot;prefetch&quot; href=&quot;http://&quot;&gt; &lt;!--利用空余时间加载剩下的网页--&gt;
 </code></pre>
 <p>2.HTML5的defer async标签实现异步加载</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script defer=<span class="string">"true"</span> type=<span class="string">"text/javascript"</span>&gt;<span class="xml"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><span class="xml"><span class="comment">&lt;!--不等js加载完成就加载后边的图片--&gt;</span></span></span><br><span class="line"><span class="xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">async</span>=<span class="string">"true"</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script defer=<span class="string">"true"</span> type=<span class="string">"text/javascript"</span>&gt;&lt;<span class="regexp">/script&gt;&lt;!--不等js加载完成就加载后边的图片--&gt;</span></span><br><span class="line"><span class="regexp">&lt;script async="true" type="text/</span>javascript<span class="string">"&gt;&lt;/script&gt;</span></span><br></pre></td></tr></table></figure>
 <p>3.动态加载js</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.write(<span class="string">"&lt;script src="</span>a.js<span class="string">"&gt;&lt;/script&gt;"</span>);</span><br><span class="line"><span class="comment">/*还有修改src路径、创建script标签再将其放进DOM中，这些都是对DOM操作*/</span></span><br></pre></td></tr></table></figure>
 <h4>setTimeout(func,0)特殊功效</h4>
@@ -133,7 +133,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2016/01/05/js/js-async/" data-id="ckdfen919002idc55rh5d303t" class="article-share-link">Share</a>
+      <a data-url="https://mhh12121.github.io/2016/01/05/js/js-async/" data-id="ckdfevw0d002jzshww7nabkog" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
