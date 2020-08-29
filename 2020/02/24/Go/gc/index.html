@@ -1,99 +1,217 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
 <head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <title>Golang Garbage Collection | 兜的破烂</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="看了下runtime的代码（注释），总结一哈">
-<meta name="keywords" content="golang">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Golang Garbage Collection">
-<meta property="og:url" content="https://mhh12121.github.io/2020/02/24/Go/gc/index.html">
-<meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="看了下runtime的代码（注释），总结一哈">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-08-04T03:57:14.397Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Golang Garbage Collection">
-<meta name="twitter:description" content="看了下runtime的代码（注释），总结一哈">
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Golang Garbage Collection - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
   
-    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
   
 
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
 </head>
-</html>
+
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">兜的破烂</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">学习☆记录</a>
-        </h2>
-      
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-02-24 22:10" pubdate>
+      February 24, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      989 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      14
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
       </div>
     </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-Go/gc" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/02/24/Go/gc/" class="article-date">
-  <time datetime="2020-02-24T22:10:00.000Z" itemprop="datePublished">2020-02-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Golang Garbage Collection
-    </h1>
-  
+  </header>
 
-      </header>
+  <main>
     
-    <div class="article-entry" itemprop="articleBody">
       
-        <p>看了下runtime的<s>代码</s>（注释），总结一哈</p>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Golang Garbage Collection</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <p>看了下runtime的<s>代码</s>（注释），总结一哈</p>
 <a id="more"></a>
-<h2>目的</h2>
+<h2 id="目的">目的</h2>
 <p>对于所有的垃圾回收器的目的（指标）无非就是以下几个：</p>
 <ol>
 <li>所占用程序的时间，停顿时间</li>
@@ -106,7 +224,7 @@
 <li>是否智能化（根据某些系统条件进行调节）</li>
 <li>是否可以自定义化参数</li>
 </ol>
-<h2>现在有的比较流行的GC</h2>
+<h2 id="现在有的比较流行的gc">现在有的比较流行的GC</h2>
 <ol>
 <li>
 <p>简单的refcount，比如redis，即 引用多一个，refcount就+1</p>
@@ -118,24 +236,52 @@
 <p>比较牛批的分代收集，如JAVA，什么新生代，老年代，eden等；不过这些都是</p>
 </li>
 </ol>
-<h2>Go的GC</h2>
-<h3>步骤</h3>
-<h4>触发</h4>
+<h2 id="go的gc">Go的GC</h2>
+<h3 id="步骤">步骤</h3>
+<h4 id="触发">触发</h4>
 <p>触发gc可以由runtime.GC()(不一定,会判定是否执行)</p>
 <p>提供了两个参数来控制GC</p>
-<h4>1.GCPercent</h4>
+<h4 id="1-gcpercent">1.GCPercent</h4>
 <blockquote>
 <blockquote>
 <p>The first one is GCPercent. Basically this is a knob that adjusts how much CPU you want to use and how much memory you want to use. The default is 100 which means that half the heap is dedicated to live memory and half the heap is dedicated to allocation. You can modify this in either direction.</p>
 </blockquote>
 </blockquote>
 <p>代码在runtime/mgc.go中:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Initialized from $GOGC.  GOGC=off means no GC.</span></span><br><span class="line"><span class="keyword">var</span> gcpercent <span class="keyword">int32</span></span><br><span class="line">......</span><br><span class="line"><span class="comment">//go:linkname setGCPercent runtime/debug.setGCPercent</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">setGCPercent</span><span class="params">(in <span class="keyword">int32</span>)</span> <span class="params">(out <span class="keyword">int32</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Run on the system stack since we grab the heap lock.</span></span><br><span class="line">	systemstack(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		lock(&amp;mheap_.lock)</span><br><span class="line">		out = gcpercent</span><br><span class="line">		<span class="keyword">if</span> in &lt; <span class="number">0</span> &#123;</span><br><span class="line">			in = <span class="number">-1</span></span><br><span class="line">		&#125;</span><br><span class="line">		gcpercent = in</span><br><span class="line">		heapminimum = defaultHeapMinimum * <span class="keyword">uint64</span>(gcpercent) / <span class="number">100</span></span><br><span class="line">		<span class="comment">// Update pacing in response to gcpercent change.</span></span><br><span class="line">		gcSetTriggerRatio(memstats.triggerRatio)</span><br><span class="line">		unlock(&amp;mheap_.lock)</span><br><span class="line">	&#125;)</span><br><span class="line">	<span class="comment">// Pacing changed, so the scavenger should be awoken.</span></span><br><span class="line">	wakeScavenger()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If we just disabled GC, wait for any concurrent GC mark to</span></span><br><span class="line">	<span class="comment">// finish so we always return with no GC running.</span></span><br><span class="line">	<span class="keyword">if</span> in &lt; <span class="number">0</span> &#123;</span><br><span class="line">		gcWaitOnMark(atomic.Load(&amp;work.cycles))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> out</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Initialized from $GOGC.  GOGC=off means no GC.</span>
+<span class="hljs-keyword">var</span> gcpercent <span class="hljs-keyword">int32</span>
+......
+<span class="hljs-comment">//go:linkname setGCPercent runtime/debug.setGCPercent</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">setGCPercent</span><span class="hljs-params">(in <span class="hljs-keyword">int32</span>)</span> <span class="hljs-params">(out <span class="hljs-keyword">int32</span>)</span></span> &#123;
+	<span class="hljs-comment">// Run on the system stack since we grab the heap lock.</span>
+	systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+		lock(&amp;mheap_.lock)
+		out = gcpercent
+		<span class="hljs-keyword">if</span> in &lt; <span class="hljs-number">0</span> &#123;
+			in = <span class="hljs-number">-1</span>
+		&#125;
+		gcpercent = in
+		heapminimum = defaultHeapMinimum * <span class="hljs-keyword">uint64</span>(gcpercent) / <span class="hljs-number">100</span>
+		<span class="hljs-comment">// Update pacing in response to gcpercent change.</span>
+		gcSetTriggerRatio(memstats.triggerRatio)
+		unlock(&amp;mheap_.lock)
+	&#125;)
+	<span class="hljs-comment">// Pacing changed, so the scavenger should be awoken.</span>
+	wakeScavenger()
+
+	<span class="hljs-comment">// If we just disabled GC, wait for any concurrent GC mark to</span>
+	<span class="hljs-comment">// finish so we always return with no GC running.</span>
+	<span class="hljs-keyword">if</span> in &lt; <span class="hljs-number">0</span> &#123;
+		gcWaitOnMark(atomic.Load(&amp;work.cycles))
+	&#125;
+
+	<span class="hljs-keyword">return</span> out
+&#125;</code></pre></div>
 <ul>
 <li>默认值是100，意味着一半的堆会用于实时内存，另一半的堆会用来分配</li>
 <li></li>
 </ul>
-<h4>2.Maxheap</h4>
+<h4 id="2-maxheap">2.Maxheap</h4>
 <blockquote>
 <blockquote>
 <p>MaxHeap, which is not yet released but is being used and evaluated internally, lets the programmer set what the maximum heap size should be. Out of memory, OOMs, are tough on Go; temporary spikes in memory usage should be handled by increasing CPU costs, not by aborting. Basically if the GC sees memory pressure it informs the application that it should shed load. Once things are back to normal the GC informs the application that it can go back to its regular load. MaxHeap also provides a lot more flexibility in scheduling. Instead of always being paranoid about how much memory is available the runtime can size the heap up to the MaxHeap.</p>
@@ -144,7 +290,7 @@
 <ul>
 <li>还在实验中… 最主要提供一些监控，会提示程序内存不足；还会使调度更加灵活；</li>
 </ul>
-<h4>方法</h4>
+<h4 id="方法">方法</h4>
 <p>golang现在使用的是叫 <strong>三色回收</strong>的东西：
 比较旧的版本:
 大概步骤：</p>
@@ -155,159 +301,288 @@
 而这些找到的对象们就标为<strong>灰色</strong> ;</li>
 <li>重复第二,三步,直到所有</li>
 </ol>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3>做过的一些优化</h3>
-<h4>size segregated span （分片隔离）</h4>
+<div class="hljs"><pre><code class="hljs golang">
+</code></pre></div>
+<h3 id="做过的一些优化">做过的一些优化</h3>
+<h4 id="size-segregated-span-分片隔离">size segregated span （分片隔离）</h4>
 <ol>
 <li>garbage collector要快速地找到object的开始位置，如果能知道在某个span中的object的大小，就可以直接往下舍入查找到位置</li>
 <li>更小的碎片化</li>
 <li>内部结构化？</li>
 <li></li>
 </ol>
-<h3>调查一下其他部分</h3>
+<h3 id="调查一下其他部分">调查一下其他部分</h3>
 <p>有这个一个变量： <strong>gcphase</strong></p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Garbage collector phase.</span></span><br><span class="line"><span class="comment">// Indicates to write barrier and synchronization task to perform.</span></span><br><span class="line"><span class="keyword">var</span> gcphase <span class="keyword">uint32</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Garbage collector phase.</span>
+<span class="hljs-comment">// Indicates to write barrier and synchronization task to perform.</span>
+<span class="hljs-keyword">var</span> gcphase <span class="hljs-keyword">uint32</span></code></pre></div>
 <p>write barrier写屏障</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The compiler knows about this variable.</span></span><br><span class="line"><span class="comment">// If you change it, you must change builtin/runtime.go, too.</span></span><br><span class="line"><span class="comment">// If you change the first four bytes, you must also change the write</span></span><br><span class="line"><span class="comment">// barrier insertion code.</span></span><br><span class="line"><span class="keyword">var</span> writeBarrier <span class="keyword">struct</span> &#123;</span><br><span class="line">	enabled <span class="keyword">bool</span>    <span class="comment">// compiler emits a check of this before calling write barrier</span></span><br><span class="line">	pad     [<span class="number">3</span>]<span class="keyword">byte</span> <span class="comment">// compiler uses 32-bit load for "enabled" field</span></span><br><span class="line">	needed  <span class="keyword">bool</span>    <span class="comment">// whether we need a write barrier for current GC phase</span></span><br><span class="line">	cgo     <span class="keyword">bool</span>    <span class="comment">// whether we need a write barrier for a cgo check</span></span><br><span class="line">	alignme <span class="keyword">uint64</span>  <span class="comment">// guarantee alignment so that compiler can use a 32 or 64-bit load</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3>具体实现</h3>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// The compiler knows about this variable.</span>
+<span class="hljs-comment">// If you change it, you must change builtin/runtime.go, too.</span>
+<span class="hljs-comment">// If you change the first four bytes, you must also change the write</span>
+<span class="hljs-comment">// barrier insertion code.</span>
+<span class="hljs-keyword">var</span> writeBarrier <span class="hljs-keyword">struct</span> &#123;
+	enabled <span class="hljs-keyword">bool</span>    <span class="hljs-comment">// compiler emits a check of this before calling write barrier</span>
+	pad     [<span class="hljs-number">3</span>]<span class="hljs-keyword">byte</span> <span class="hljs-comment">// compiler uses 32-bit load for "enabled" field</span>
+	needed  <span class="hljs-keyword">bool</span>    <span class="hljs-comment">// whether we need a write barrier for current GC phase</span>
+	cgo     <span class="hljs-keyword">bool</span>    <span class="hljs-comment">// whether we need a write barrier for a cgo check</span>
+	alignme <span class="hljs-keyword">uint64</span>  <span class="hljs-comment">// guarantee alignment so that compiler can use a 32 or 64-bit load</span>
+&#125;</code></pre></div>
+<h3 id="具体实现">具体实现</h3>
 <ol>
 <li>bitmap
 /runtime/mbitmap.go
 使用bitmap</li>
 </ol>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2020/02/24/Go/gc/" data-id="ckdfevvzu001jzshw128okjmg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/03/01/redis/basic/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Redis basis</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/02/24/Go/memManage/">
+                        <span class="hidden-mobile">Golang Memory Allocator</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
 
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2020/03/01/redis/basic/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Redis basis
-        
+            
+          </article>
+        </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
     </a>
   
-  
-    <a href="/2020/02/24/Go/memManage/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Golang Memory Allocator</div>
-    </a>
-  
-</nav>
 
   
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签云</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">归档</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">最新文章</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2020/08/04/Go/Practice/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
-          </li>
-        
-          <li>
-            <a href="/2020/06/24/Go/type/">Golang type</a>
-          </li>
-        
-          <li>
-            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2020 Doujohner<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
     </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <script  src="/js/lazyload.js" ></script>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
 
 
-<script src="/js/script.js"></script>
 
-  </div>
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Golang Garbage Collection&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>
