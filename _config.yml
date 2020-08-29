@@ -7,7 +7,7 @@ title: 兜的破烂
 subtitle: 学习☆记录
 description: 
 author: Doujohner
-language: zh-CN
+language: en
 timezone:
 
 # URL
@@ -63,8 +63,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
-
+theme: fluid
 
 
 
@@ -87,8 +86,16 @@ markdown:
     typographer: true
     quotes: '“”‘’'
   Plugins:
-  - markdown-it-footnote
-  - markdown-it-sup
-  - markdown-it-sub
-  - markdown-it-abbr
-  - markdown-it-emoji
+    - markdown-it-footnote
+    - markdown-it-sup
+    - markdown-it-sub
+    - markdown-it-abbr
+    - markdown-it-emoji
+  anchors:
+      level: 2
+      collisionSuffix: 'v'
+      # If `true`, creates an anchor tag with a permalink besides the heading.
+      permalink: false  
+      permalinkClass: header-anchor
+      # The symbol used to make the permalink
+      permalinkSymbol: ¶

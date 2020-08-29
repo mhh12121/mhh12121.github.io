@@ -84,7 +84,7 @@ func runtime_procUnpin() //解除抢占标志
 ```
 这里我们有两种方法：
 我们可以立即block或unblock多个M，或使其自旋；
-但这里会有性能损耗和花费不必要的cpu周期，方法是使用自旋而且burn CPU cycles
+但这里会有性能损耗和花费不必要的cpu周期，方法是使用自旋而且burn CPU cycles(????)
 然而，这不应该影响在GOMAXPROCS=1的程序（command line，appengine这些）
 
 自旋有两个等级：
@@ -455,7 +455,7 @@ morestack()--> newstack()--> gopreempt_m() --> goschedImpl() --> schedule()
 
 >> The //go:nosplit directive specifies that the next function declared in the file must not include a stack overflow check. This is most commonly used by low-level runtime sources invoked at times when it is unsafe for the calling goroutine to be preempted.
 
-大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用
+大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???个人认为是设计问题，就不允许有检查栈移除代码），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用
 
 ## SystemStack
 
@@ -505,6 +505,7 @@ golang注释中有大概写明:
 //	call runtime·mstart
 // The new G calls runtime·main.
 ```
+![大概的流程图](/img/)
 
 go程序的入口点是runtime.rt0_go, 流程是:
 
@@ -528,6 +529,12 @@ go程序的入口点是runtime.rt0_go, 流程是:
 设置m0.g0 = g0
 
 设置g0.m = m0
+
+#### 特殊的m0和g0
+
+- M0 是启动程序后的编号为 0 的主线程，这个 M 对应的实例会在全局变量 runtime.m0 中，不需要在 heap 上分配，M0 负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。
+
+- G0 是每次启动一个 M 都会第一个创建的 gourtine，G0 仅用于负责调度的 G，G0 不指向任何可执行的函数，每个 M 都会有一个自己的 G0。在调度或系统调用时会使用 G0 的栈空间，全局变量的 G0 是 M0 的 G0。
 
 3. 调用runtime.check做一些检查
 

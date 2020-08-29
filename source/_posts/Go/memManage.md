@@ -603,7 +603,7 @@ stackCache是per-P的，在另外一篇文章[goroutine](../goroutine.html)上�
 
 
 
-## 内存对齐以及一些分配规则
+## 内存对齐以及一些分配规则(补充前面的tcmalloc)
 runtime/msize.go
 ```golang
 func roundupsize(size uintptr) uintptr {
@@ -634,7 +634,7 @@ func round(n, a uintptr) uintptr {
 <a id="sizetoclass">[sizetoclass]</a>
 实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：
 每个span都带有一个sizeclass，即表明该span的page应该被怎么用；
-
+PS: **可以参照tcmalloc 实现思想基本一直**
 
 >> class0表示单独分配一个>32KB对象的span，有67个size，每个size有两种，分配用于有指针和无指针对象，所以有个67*2	= 134个class (即上面提到的numSpanClasses)
 

@@ -1,114 +1,227 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
 <head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <title>Something should be noted in golang&#39;s map | 兜的破烂</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="There is SortedMap or LinkedHashMap in Java Both can ensure the inserted order of elements, but f ** k myself, I found that Go only supports basic HashMap which means you have to do SortedMap and Link">
-<meta name="keywords" content="golang">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Something should be noted in golang&#39;s map">
-<meta property="og:url" content="https://mhh12121.github.io/2019/06/19/Go/SortedMap/index.html">
-<meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="There is SortedMap or LinkedHashMap in Java Both can ensure the inserted order of elements, but f ** k myself, I found that Go only supports basic HashMap which means you have to do SortedMap and Link">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://blog.golang.org/go-maps-in-action">
-<meta property="og:image" content="https://blog.golang.org/go-maps-in-action">
-<meta property="og:image" content="https://golang.org/pkg/sort/">
-<meta property="og:image" content="https://mhh12121.github.io/Concurrency">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Something should be noted in golang&#39;s map">
-<meta name="twitter:description" content="There is SortedMap or LinkedHashMap in Java Both can ensure the inserted order of elements, but f ** k myself, I found that Go only supports basic HashMap which means you have to do SortedMap and Link">
-<meta name="twitter:image" content="https://blog.golang.org/go-maps-in-action">
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Something should be noted in golang&#39;s map - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
   
-    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
   
 
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
 </head>
-</html>
+
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">兜的破烂</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">学习☆记录</a>
-        </h2>
-      
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2019-06-19 10:36" pubdate>
+      June 19, 2019 am
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.4k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      36
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
       </div>
     </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-Go/SortedMap" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/19/Go/SortedMap/" class="article-date">
-  <time datetime="2019-06-19T02:36:00.000Z" itemprop="datePublished">2019-06-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Something should be noted in golang&#39;s map
-    </h1>
-  
+  </header>
 
-      </header>
+  <main>
     
-    <div class="article-entry" itemprop="articleBody">
       
-        <p>There is <strong>SortedMap</strong> or <strong>LinkedHashMap</strong> in Java
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Something should be noted in golang&#39;s map</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <p>There is <strong>SortedMap</strong> or <strong>LinkedHashMap</strong> in Java
 Both can ensure the inserted order of elements, but f ** k myself, I found that Go <strong>only supports basic HashMap</strong>
 which means you have to do SortedMap and LinkedHashMap by yourself.</p>
-<pre><code>                                ----From a damn interview test
-</code></pre>
+<div class="hljs"><pre><code>                                ----From a damn interview test
+</code></pre></div>
 <a id="more"></a>
 <p>I met a problem in an interview test:</p>
 <p>Given a file containing URLs on every line,you must record all of their occurence times, then save it into a new file
 format like:</p>
-<pre><code>url1  2times
+<div class="hljs"><pre><code>url1  2times
 url2  3times
 url3  4times
-</code></pre>
+</code></pre></div>
 <p>But it should be noticed that all urls in new file have the same sequence as those in source files;</p>
 <p>其实你要解决三个问题：</p>
 <ol>
@@ -116,7 +229,7 @@ url3  4times
 <li>要按顺序放入新文件？？？//todo</li>
 <li>文件太大怎么办（拆乘多个文件，进行映射，再统计，但这里又不知道怎么保证顺序？？！！难倒只有手动实现LinkedHashMap<del>红黑树</del>不一定是红黑树，但是LinkedHashMap是一定要实现的<a href="LinkedHashMap%E5%AE%9E%E7%8E%B0">这里跳到LinkedHashMap</a>）</li>
 </ol>
-<p>Go blog <img src="https://blog.golang.org/go-maps-in-action" alt="map in action"> says:</p>
+<p>Go blog <img src="https://blog.golang.org/go-maps-in-action" srcset="/img/loading.gif" alt="map in action"> says:</p>
 <blockquote>
 <blockquote>
 <blockquote>
@@ -124,27 +237,117 @@ url3  4times
 </blockquote>
 </blockquote>
 </blockquote>
-<h3>SortedMap</h3>
+<h3 id="sortedmap">SortedMap</h3>
 <p>Someone has already implemented it
-From Go blog  <img src="https://blog.golang.org/go-maps-in-action" alt="map in action"></p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">"sort"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> m <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> keys []<span class="keyword">int</span></span><br><span class="line"><span class="keyword">for</span> k := <span class="keyword">range</span> m &#123;<span class="comment">//extract all the damn key out</span></span><br><span class="line">    keys = <span class="built_in">append</span>(keys, k)</span><br><span class="line">&#125;</span><br><span class="line">sort.Ints(keys)<span class="comment">//sort them</span></span><br><span class="line"><span class="keyword">for</span> _, k := <span class="keyword">range</span> keys &#123;<span class="comment">//then you can get a sorted map</span></span><br><span class="line">    fmt.Println(<span class="string">"Key:"</span>, k, <span class="string">"Value:"</span>, m[k])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+From Go blog  <img src="https://blog.golang.org/go-maps-in-action" srcset="/img/loading.gif" alt="map in action"></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">import</span> <span class="hljs-string">"sort"</span>
+
+<span class="hljs-keyword">var</span> m <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]<span class="hljs-keyword">string</span>
+<span class="hljs-keyword">var</span> keys []<span class="hljs-keyword">int</span>
+<span class="hljs-keyword">for</span> k := <span class="hljs-keyword">range</span> m &#123;<span class="hljs-comment">//extract all the damn key out</span>
+    keys = <span class="hljs-built_in">append</span>(keys, k)
+&#125;
+sort.Ints(keys)<span class="hljs-comment">//sort them</span>
+<span class="hljs-keyword">for</span> _, k := <span class="hljs-keyword">range</span> keys &#123;<span class="hljs-comment">//then you can get a sorted map</span>
+    fmt.Println(<span class="hljs-string">"Key:"</span>, k, <span class="hljs-string">"Value:"</span>, m[k])
+&#125;</code></pre></div>
 <p>If your <strong>key</strong> is not an int or string or you wanna sort it by yourself:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//we assume a struct is like below:</span></span><br><span class="line"><span class="keyword">type</span> Obj <span class="keyword">struct</span> &#123;</span><br><span class="line">	Title    <span class="keyword">string</span></span><br><span class="line">	Sequence <span class="keyword">int</span></span><br><span class="line">	Size     <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="keyword">type</span> By <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">//<span class="title">ObjSorter</span> <span class="title">joins</span> <span class="title">a</span> <span class="title">By</span> <span class="title">function</span> <span class="title">and</span> <span class="title">a</span> <span class="title">slice</span> <span class="title">of</span> <span class="title">Objs</span> <span class="title">to</span> <span class="title">be</span> <span class="title">sorted</span>.</span></span><br><span class="line"><span class="function"><span class="title">type</span> <span class="title">ObjSorter</span> <span class="title">struct</span></span> &#123;<span class="comment">//to wrap the obj and by function into this struct</span></span><br><span class="line">	objs []Obj</span><br><span class="line">	by   <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="title">func</span> <span class="params">(by By)</span> <span class="title">Sort</span><span class="params">(objs []Obj)</span></span> &#123;</span><br><span class="line">	os := &amp;ObjSorter&#123;</span><br><span class="line">		objs: objs,</span><br><span class="line">		by:   by,</span><br><span class="line">	&#125;</span><br><span class="line">	sort.Sort(os)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Less</span><span class="params">(i, j <span class="keyword">int</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> s.by(&amp;s.objs[i], &amp;s.objs[j])</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Swap</span><span class="params">(i, j <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	s.objs[i], s.objs[j] = s.objs[j], s.objs[i]</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *ObjSorter)</span> <span class="title">Len</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">len</span>(s.objs)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//we assume a struct is like below:</span>
+<span class="hljs-keyword">type</span> Obj <span class="hljs-keyword">struct</span> &#123;
+	Title    <span class="hljs-keyword">string</span>
+	Sequence <span class="hljs-keyword">int</span>
+	Size     <span class="hljs-keyword">int</span>
+&#125;
+<span class="hljs-comment">//</span>
+<span class="hljs-keyword">type</span> By <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
+
+//<span class="hljs-title">ObjSorter</span> <span class="hljs-title">joins</span> <span class="hljs-title">a</span> <span class="hljs-title">By</span> <span class="hljs-title">function</span> <span class="hljs-title">and</span> <span class="hljs-title">a</span> <span class="hljs-title">slice</span> <span class="hljs-title">of</span> <span class="hljs-title">Objs</span> <span class="hljs-title">to</span> <span class="hljs-title">be</span> <span class="hljs-title">sorted</span>.
+<span class="hljs-title">type</span> <span class="hljs-title">ObjSorter</span> <span class="hljs-title">struct</span></span> &#123;<span class="hljs-comment">//to wrap the obj and by function into this struct</span>
+	objs []Obj
+	by   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
+&#125;
+
+<span class="hljs-title">func</span> <span class="hljs-params">(by By)</span> <span class="hljs-title">Sort</span><span class="hljs-params">(objs []Obj)</span></span> &#123;
+	os := &amp;ObjSorter&#123;
+		objs: objs,
+		by:   by,
+	&#125;
+	sort.Sort(os)
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *ObjSorter)</span> <span class="hljs-title">Less</span><span class="hljs-params">(i, j <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">bool</span></span> &#123;
+	<span class="hljs-keyword">return</span> s.by(&amp;s.objs[i], &amp;s.objs[j])
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *ObjSorter)</span> <span class="hljs-title">Swap</span><span class="hljs-params">(i, j <span class="hljs-keyword">int</span>)</span></span> &#123;
+	s.objs[i], s.objs[j] = s.objs[j], s.objs[i]
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(s *ObjSorter)</span> <span class="hljs-title">Len</span><span class="hljs-params">()</span> <span class="hljs-title">int</span></span> &#123;
+	<span class="hljs-keyword">return</span> <span class="hljs-built_in">len</span>(s.objs)
+&#125;</code></pre></div>
 <p>Then to use it:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SortedMap</span><span class="params">(m <span class="keyword">map</span>[Obj]<span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	sortByTitle := <span class="function"><span class="keyword">func</span><span class="params">(o1, o2 *Obj)</span> <span class="title">bool</span></span> &#123; <span class="comment">//sort by Ttitle field</span></span><br><span class="line">		<span class="keyword">return</span> o1.Title &lt; o2.Title</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// sortBySequence := func(o1, o2 *Obj) bool &#123; //sortBy Sequence field</span></span><br><span class="line">	<span class="comment">// 	return o1.Sequence &lt; o2.Sequence</span></span><br><span class="line">	<span class="comment">// &#125;</span></span><br><span class="line">	tempObjs := <span class="built_in">make</span>([]Obj, <span class="number">0</span>)</span><br><span class="line">	<span class="keyword">for</span> k := <span class="keyword">range</span> m &#123;</span><br><span class="line">		tempObjs = <span class="built_in">append</span>(tempObjs, k)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	By(sortByTitle).Sort(tempObjs)<span class="comment">//Sorted this</span></span><br><span class="line">	<span class="keyword">for</span> _, k := <span class="keyword">range</span> tempObjs &#123;<span class="comment">//operate this </span></span><br><span class="line">		fmt.Printf(<span class="string">"key:%v,value:%v \n"</span>, k, m[k])</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">SortedMap</span><span class="hljs-params">(m <span class="hljs-keyword">map</span>[Obj]<span class="hljs-keyword">int</span>)</span></span> &#123;
+	sortByTitle := <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span></span> &#123; <span class="hljs-comment">//sort by Ttitle field</span>
+		<span class="hljs-keyword">return</span> o1.Title &lt; o2.Title
+	&#125;
+	<span class="hljs-comment">// sortBySequence := func(o1, o2 *Obj) bool &#123; //sortBy Sequence field</span>
+	<span class="hljs-comment">// 	return o1.Sequence &lt; o2.Sequence</span>
+	<span class="hljs-comment">// &#125;</span>
+	tempObjs := <span class="hljs-built_in">make</span>([]Obj, <span class="hljs-number">0</span>)
+	<span class="hljs-keyword">for</span> k := <span class="hljs-keyword">range</span> m &#123;
+		tempObjs = <span class="hljs-built_in">append</span>(tempObjs, k)
+	&#125;
+
+	By(sortByTitle).Sort(tempObjs)<span class="hljs-comment">//Sorted this</span>
+	<span class="hljs-keyword">for</span> _, k := <span class="hljs-keyword">range</span> tempObjs &#123;<span class="hljs-comment">//operate this </span>
+		fmt.Printf(<span class="hljs-string">"key:%v,value:%v \n"</span>, k, m[k])
+	&#125;
+
+&#125;</code></pre></div>
 <p>To test:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    obj1 := &amp;Obj&#123;Title: <span class="string">"4"</span>&#125;</span><br><span class="line">	obj2 := &amp;Obj&#123;Title: <span class="string">"2"</span>&#125;</span><br><span class="line">	obj3 := &amp;Obj&#123;Title: <span class="string">"1"</span>&#125;</span><br><span class="line">	objs := <span class="built_in">make</span>([]*Obj, <span class="number">0</span>)</span><br><span class="line">	objs = <span class="built_in">append</span>(objs, obj1, obj2, obj3)</span><br><span class="line">	m := <span class="built_in">make</span>(<span class="keyword">map</span>[Obj]<span class="keyword">int</span>)</span><br><span class="line">	m[*obj1] = <span class="number">1</span></span><br><span class="line">	m[*obj3] = <span class="number">1</span></span><br><span class="line">	m[*obj2] = <span class="number">1</span></span><br><span class="line">	SortedMap(m)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+    obj1 := &amp;Obj&#123;Title: <span class="hljs-string">"4"</span>&#125;
+	obj2 := &amp;Obj&#123;Title: <span class="hljs-string">"2"</span>&#125;
+	obj3 := &amp;Obj&#123;Title: <span class="hljs-string">"1"</span>&#125;
+	objs := <span class="hljs-built_in">make</span>([]*Obj, <span class="hljs-number">0</span>)
+	objs = <span class="hljs-built_in">append</span>(objs, obj1, obj2, obj3)
+	m := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[Obj]<span class="hljs-keyword">int</span>)
+	m[*obj1] = <span class="hljs-number">1</span>
+	m[*obj3] = <span class="hljs-number">1</span>
+	m[*obj2] = <span class="hljs-number">1</span>
+	SortedMap(m)
+&#125;</code></pre></div>
 <p>Result:</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">key:</span>&#123;<span class="number">1</span> <span class="number">0</span> <span class="number">0</span>&#125;,<span class="string">value:</span><span class="number">1</span> </span><br><span class="line"><span class="string">key:</span>&#123;<span class="number">2</span> <span class="number">0</span> <span class="number">0</span>&#125;,<span class="string">value:</span><span class="number">1</span> </span><br><span class="line"><span class="string">key:</span>&#123;<span class="number">4</span> <span class="number">0</span> <span class="number">0</span>&#125;,<span class="string">value:</span><span class="number">1</span></span><br></pre></td></tr></table></figure>
-<p>Above example can be found in <img src="https://golang.org/pkg/sort/" alt="Golang slice doc examples">
+<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-string">key:</span>&#123;<span class="hljs-number">1</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span> 
+<span class="hljs-string">key:</span>&#123;<span class="hljs-number">2</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span> 
+<span class="hljs-string">key:</span>&#123;<span class="hljs-number">4</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span></code></pre></div>
+<p>Above example can be found in <img src="https://golang.org/pkg/sort/" srcset="/img/loading.gif" alt="Golang slice doc examples">
 傻了，写到这里才发现，sortedMap有个鸡用，不符合这道题的要求啊！！！</p>
-<h3>LinkedHashMap</h3>
+<h3 id="linkedhashmap">LinkedHashMap</h3>
 <p>To just ensure <strong>inserted order</strong>:
-you can refer to <img src alt="Java LinkedHashMap">//or arrayMap()</p>
+you can refer to " srcset="/img/loading.gif<img src alt="Java LinkedHashMap">//or arrayMap()</p>
 <p><strong>But</strong>
 here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 <p>We do a trade-off between time and space:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//just create a slice to save sequence</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CalcUrls</span><span class="params">()</span></span>&#123;</span><br><span class="line">    sequence:=<span class="built_in">make</span>([]<span class="keyword">string</span>,<span class="number">0</span>)</span><br><span class="line">    m:=<span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</span><br><span class="line">    <span class="comment">//.....</span></span><br><span class="line">    </span><br><span class="line">    url:=fp.ReadLine()</span><br><span class="line">    <span class="keyword">if</span> _,exists:=m[url];exists&#123;</span><br><span class="line">        m[url]++</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        sequence=<span class="built_in">append</span>(sequence,url)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//....</span></span><br><span class="line">    <span class="keyword">for</span> _,v:=<span class="keyword">range</span> sequence&#123;</span><br><span class="line">        res:=fmt.Sprintf(<span class="string">"url:%v,times:%v"</span>,v,m[v])</span><br><span class="line">        Writer.write(res)<span class="comment">//write into the new file</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//just create a slice to save sequence</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">CalcUrls</span><span class="hljs-params">()</span></span>&#123;
+    sequence:=<span class="hljs-built_in">make</span>([]<span class="hljs-keyword">string</span>,<span class="hljs-number">0</span>)
+    m:=<span class="hljs-built_in">make</span>(<span class="hljs-keyword">map</span>[<span class="hljs-keyword">string</span>]<span class="hljs-keyword">int</span>)
+    <span class="hljs-comment">//.....</span>
+    
+    url:=fp.ReadLine()
+    <span class="hljs-keyword">if</span> _,exists:=m[url];exists&#123;
+        m[url]++
+    &#125;<span class="hljs-keyword">else</span>&#123;
+        sequence=<span class="hljs-built_in">append</span>(sequence,url)
+    &#125;
+    <span class="hljs-comment">//....</span>
+    <span class="hljs-keyword">for</span> _,v:=<span class="hljs-keyword">range</span> sequence&#123;
+        res:=fmt.Sprintf(<span class="hljs-string">"url:%v,times:%v"</span>,v,m[v])
+        Writer.write(res)<span class="hljs-comment">//write into the new file</span>
+    &#125;
+    
+    <span class="hljs-comment">//....</span>
+&#125;</code></pre></div>
 <p><strong>---------------------------------新增---------------------------------------------</strong>
 主要是红黑树是为了能便于删除和添加，而我遇到的面试题只考虑添加，所以没必要，
 但是隔了一天，还是觉得不爽</p>
@@ -158,10 +361,182 @@ here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 <li>如果一个节点是红色的，它的子节点必须是黑色的</li>
 <li><strong>从一个节点到该节点的所有叶子节点的路径上包含相同数目的黑节点</strong> （这个一行代码可以搞定，但之后很可能会违反第4，所以要紧接着进行处理）</li>
 </ol>
-<h5>节点插入时候，检查：</h5>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//主要思路，先像AVL一样插入，之后再调整</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(brtree *BRTree)</span> <span class="title">insertNode</span><span class="params">(pnode *BRNode)</span></span> &#123;</span><br><span class="line">	tempRoot := brtree.root</span><br><span class="line">	<span class="keyword">var</span> temp *BRNode</span><br><span class="line">	<span class="keyword">for</span> tempRoot != <span class="literal">nil</span> &#123; <span class="comment">//已有根节点，就往下loop找到插入点</span></span><br><span class="line">		temp = tempRoot <span class="comment">//每次更新</span></span><br><span class="line">		<span class="keyword">if</span> pnode.val &gt; tempRoot.val &#123;</span><br><span class="line">			tempRoot = tempRoot.right</span><br><span class="line"></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			tempRoot = tempRoot.left</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	pnode.parent = temp <span class="comment">//找到最后，把pnode的parent指向找到的最后一个点</span></span><br><span class="line">	<span class="keyword">if</span> temp != <span class="literal">nil</span> &#123;    <span class="comment">//不是根节点</span></span><br><span class="line">		<span class="keyword">if</span> temp.val &lt; pnode.val &#123; <span class="comment">//判断放在左子树还是右子树</span></span><br><span class="line">			temp.right = pnode</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			temp.left = pnode</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123; <span class="comment">//根节点</span></span><br><span class="line">		brtree.root = pnode</span><br><span class="line">	&#125;</span><br><span class="line">	pnode.color = RED <span class="comment">//直接把这个颜色先设置为红色！！！主要为了满足：</span></span><br><span class="line">	<span class="comment">// 从一个节点到该节点的所有叶子节点的路径上包含相同数目的黑节点（可以试想一下，最下方插入一个红色节点，因为目前红色节点的叶子节点肯定是黑色的nil，所以必会满足这个特性）</span></span><br><span class="line">	brtree.insertCheck(pnode) <span class="comment">//再检查，因为这个时候可能跟上面的第4点违背了，比如在红色的节点下面插一个红色的节点</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//插入时进行检查</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(brtree *BRTree)</span> <span class="title">insertCheck</span><span class="params">(pnode *BRNode)</span></span> &#123;</span><br><span class="line">	<span class="comment">//1. 该节点没有父节点，即为root（与上面insertNode插入点的检查并不重复，因为接下来会进行递归，这个属于边界条件，所以这个检查root必不可少）</span></span><br><span class="line">	<span class="keyword">if</span> pnode.parent == <span class="literal">nil</span> &#123;</span><br><span class="line">		brtree.root = pnode</span><br><span class="line">		brtree.root.color = BLACK</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//2.父节点是黑色直接添加(不用管)，红色接着处理</span></span><br><span class="line">	<span class="keyword">if</span> pnode.parent.color == RED &#123;</span><br><span class="line">		<span class="comment">//2.1 父，叔叔节点不为空而且其颜色是红色 ,则将该父叔都改为黑色,将祖父改成红色</span></span><br><span class="line">		<span class="comment">/*</span></span><br><span class="line"><span class="comment">							  10,B</span></span><br><span class="line"><span class="comment">							 /     \</span></span><br><span class="line"><span class="comment">						    6,B	    15,B</span></span><br><span class="line"><span class="comment">						   /   \     /  \</span></span><br><span class="line"><span class="comment">						4,R   8,R  11,R  19,R</span></span><br><span class="line"><span class="comment">						/</span></span><br><span class="line"><span class="comment">					pnode,R</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">					==&gt;父叔节点都变成黑色，祖父变成红色</span></span><br><span class="line"><span class="comment">							  10,B</span></span><br><span class="line"><span class="comment">							 /     \</span></span><br><span class="line"><span class="comment">						    6,R	    15,B</span></span><br><span class="line"><span class="comment">						   /   \     /  \</span></span><br><span class="line"><span class="comment">						4,B   8,B  11,R  19,R</span></span><br><span class="line"><span class="comment">			             /</span></span><br><span class="line"><span class="comment">					  pnode,R</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">					==&gt;递归，从祖父（6）开始，因为此时父节点属于根节点，是黑色，所以完成</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">					           10,B</span></span><br><span class="line"><span class="comment">							 /     \</span></span><br><span class="line"><span class="comment">						    6,R	    15,B</span></span><br><span class="line"><span class="comment">						   /   \     /  \</span></span><br><span class="line"><span class="comment">						4,B   8,B  11,R  19,R</span></span><br><span class="line"><span class="comment">			             /</span></span><br><span class="line"><span class="comment">					  pnode,R</span></span><br><span class="line"><span class="comment">		*/</span></span><br><span class="line">		<span class="keyword">if</span> pnode.getUncle() != <span class="literal">nil</span> &amp;&amp; pnode.getUncle().color == RED &#123;</span><br><span class="line">			pnode.parent.color = BLACK</span><br><span class="line">			pnode.getUncle().color = BLACK</span><br><span class="line">			pnode.getGrandParent().color = RED</span><br><span class="line">			brtree.insertCheck(pnode.getGrandParent()) <span class="comment">//对该树上的节点递归上去处理</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">//2.2 父节点为红色，叔叔节点不存在或者是黑色</span></span><br><span class="line"></span><br><span class="line">			isLeft := pnode == pnode.parent.left</span><br><span class="line">			isParentLeft := pnode.parent == pnode.getGrandParent().left</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> isLeft &amp;&amp; isParentLeft &#123;</span><br><span class="line">				<span class="comment">//2.2.1 是左子树，其父节点也是左子树</span></span><br><span class="line">				<span class="comment">/*       ...</span></span><br><span class="line"><span class="comment">						  /</span></span><br><span class="line"><span class="comment">				        8,B</span></span><br><span class="line"><span class="comment">					    /  \</span></span><br><span class="line"><span class="comment">					   7,R   /nil</span></span><br><span class="line"><span class="comment">					  /</span></span><br><span class="line"><span class="comment">					pnode,R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				<span class="comment">//=》</span></span><br><span class="line">				<span class="comment">/*         /</span></span><br><span class="line"><span class="comment">					     7,B</span></span><br><span class="line"><span class="comment">				         /   \</span></span><br><span class="line"><span class="comment">				     pnode,R  8,R</span></span><br><span class="line"><span class="comment">				               \</span></span><br><span class="line"><span class="comment">				             /nil</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				pnode.parent.color = BLACK</span><br><span class="line">				pnode.getGrandParent().color = RED</span><br><span class="line">				brtree.rotateRight(pnode.getGrandParent())</span><br><span class="line"></span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> !isLeft &amp;&amp; !isParentLeft &#123;</span><br><span class="line">				<span class="comment">//2.2.2 不是左子树，父亲也不是左子树</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">						  7,B</span></span><br><span class="line"><span class="comment">					      /  \</span></span><br><span class="line"><span class="comment">					2,B/nil   8,R</span></span><br><span class="line"><span class="comment">					           \</span></span><br><span class="line"><span class="comment">					           10,pnode</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				pnode.parent.color = BLACK</span><br><span class="line">				pnode.getGrandParent().color = RED</span><br><span class="line">				brtree.rotateLeft(pnode.getGrandParent())</span><br><span class="line"></span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> isLeft &amp;&amp; !isParentLeft &#123;</span><br><span class="line">				<span class="comment">//2.2.3 是左子树，但父亲不是左子树</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">						8,B</span></span><br><span class="line"><span class="comment">					    /  \</span></span><br><span class="line"><span class="comment">					6,B/nil   10,R</span></span><br><span class="line"><span class="comment">					        /</span></span><br><span class="line"><span class="comment">					      pnode，R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">						pnode,R</span></span><br><span class="line"><span class="comment">					    /  \</span></span><br><span class="line"><span class="comment">					6,B/nil  8,B</span></span><br><span class="line"><span class="comment">					            \</span></span><br><span class="line"><span class="comment">					            10,R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				brtree.rotateRight(pnode.parent)</span><br><span class="line">				<span class="comment">//实际上变成了2.2.2</span></span><br><span class="line">				brtree.rotateLeft(pnode.parent) <span class="comment">//pnode现在在原先pnode的父节点位置</span></span><br><span class="line">				pnode.color = BLACK</span><br><span class="line">				pnode.left.color = RED</span><br><span class="line">				pnode.right.color = RED</span><br><span class="line"></span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> !isLeft &amp;&amp; isParentLeft &#123;</span><br><span class="line">				<span class="comment">//2.2.4不是左子树，但父亲是左子树</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">							 \</span></span><br><span class="line"><span class="comment">					        8,B</span></span><br><span class="line"><span class="comment">						    /  \</span></span><br><span class="line"><span class="comment">						   7,R   10,B/nil</span></span><br><span class="line"><span class="comment">						      \</span></span><br><span class="line"><span class="comment">						      pnode，R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				<span class="comment">//==&gt;</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">						 8，B</span></span><br><span class="line"><span class="comment">					    /    \</span></span><br><span class="line"><span class="comment">					  pnode,R  10,B/nil</span></span><br><span class="line"><span class="comment">					  /</span></span><br><span class="line"><span class="comment">					7,R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line">				<span class="comment">/*</span></span><br><span class="line"><span class="comment">						 pnode，R</span></span><br><span class="line"><span class="comment">					    /    \</span></span><br><span class="line"><span class="comment">					   8,B   10,B/nil</span></span><br><span class="line"><span class="comment">					  /</span></span><br><span class="line"><span class="comment">					7,R</span></span><br><span class="line"><span class="comment">				*/</span></span><br><span class="line"></span><br><span class="line">				brtree.rotateLeft(pnode.parent)</span><br><span class="line">				<span class="comment">//实际上变成了2.2.1</span></span><br><span class="line">				brtree.rotateRight(pnode.parent)</span><br><span class="line">				pnode.color = BLACK</span><br><span class="line">				pnode.left.color = RED</span><br><span class="line">				pnode.right.color = RED</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h5>节点的删除</h5>
+<h5 id="节点插入时候-检查：">节点插入时候，检查：</h5>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//主要思路，先像AVL一样插入，之后再调整</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(brtree *BRTree)</span> <span class="hljs-title">insertNode</span><span class="hljs-params">(pnode *BRNode)</span></span> &#123;
+	tempRoot := brtree.root
+	<span class="hljs-keyword">var</span> temp *BRNode
+	<span class="hljs-keyword">for</span> tempRoot != <span class="hljs-literal">nil</span> &#123; <span class="hljs-comment">//已有根节点，就往下loop找到插入点</span>
+		temp = tempRoot <span class="hljs-comment">//每次更新</span>
+		<span class="hljs-keyword">if</span> pnode.val &gt; tempRoot.val &#123;
+			tempRoot = tempRoot.right
+
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			tempRoot = tempRoot.left
+		&#125;
+	&#125;
+	pnode.parent = temp <span class="hljs-comment">//找到最后，把pnode的parent指向找到的最后一个点</span>
+	<span class="hljs-keyword">if</span> temp != <span class="hljs-literal">nil</span> &#123;    <span class="hljs-comment">//不是根节点</span>
+		<span class="hljs-keyword">if</span> temp.val &lt; pnode.val &#123; <span class="hljs-comment">//判断放在左子树还是右子树</span>
+			temp.right = pnode
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			temp.left = pnode
+		&#125;
+	&#125; <span class="hljs-keyword">else</span> &#123; <span class="hljs-comment">//根节点</span>
+		brtree.root = pnode
+	&#125;
+	pnode.color = RED <span class="hljs-comment">//直接把这个颜色先设置为红色！！！主要为了满足：</span>
+	<span class="hljs-comment">// 从一个节点到该节点的所有叶子节点的路径上包含相同数目的黑节点（可以试想一下，最下方插入一个红色节点，因为目前红色节点的叶子节点肯定是黑色的nil，所以必会满足这个特性）</span>
+	brtree.insertCheck(pnode) <span class="hljs-comment">//再检查，因为这个时候可能跟上面的第4点违背了，比如在红色的节点下面插一个红色的节点</span>
+
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//插入时进行检查</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(brtree *BRTree)</span> <span class="hljs-title">insertCheck</span><span class="hljs-params">(pnode *BRNode)</span></span> &#123;
+	<span class="hljs-comment">//1. 该节点没有父节点，即为root（与上面insertNode插入点的检查并不重复，因为接下来会进行递归，这个属于边界条件，所以这个检查root必不可少）</span>
+	<span class="hljs-keyword">if</span> pnode.parent == <span class="hljs-literal">nil</span> &#123;
+		brtree.root = pnode
+		brtree.root.color = BLACK
+		<span class="hljs-keyword">return</span>
+	&#125;
+	<span class="hljs-comment">//2.父节点是黑色直接添加(不用管)，红色接着处理</span>
+	<span class="hljs-keyword">if</span> pnode.parent.color == RED &#123;
+		<span class="hljs-comment">//2.1 父，叔叔节点不为空而且其颜色是红色 ,则将该父叔都改为黑色,将祖父改成红色</span>
+		<span class="hljs-comment">/*
+							  10,B
+							 /     \
+						    6,B	    15,B
+						   /   \     /  \
+						4,R   8,R  11,R  19,R
+						/
+					pnode,R
+
+					==&gt;父叔节点都变成黑色，祖父变成红色
+							  10,B
+							 /     \
+						    6,R	    15,B
+						   /   \     /  \
+						4,B   8,B  11,R  19,R
+			             /
+					  pnode,R
+
+					==&gt;递归，从祖父（6）开始，因为此时父节点属于根节点，是黑色，所以完成
+
+					           10,B
+							 /     \
+						    6,R	    15,B
+						   /   \     /  \
+						4,B   8,B  11,R  19,R
+			             /
+					  pnode,R
+		*/</span>
+		<span class="hljs-keyword">if</span> pnode.getUncle() != <span class="hljs-literal">nil</span> &amp;&amp; pnode.getUncle().color == RED &#123;
+			pnode.parent.color = BLACK
+			pnode.getUncle().color = BLACK
+			pnode.getGrandParent().color = RED
+			brtree.insertCheck(pnode.getGrandParent()) <span class="hljs-comment">//对该树上的节点递归上去处理</span>
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			<span class="hljs-comment">//2.2 父节点为红色，叔叔节点不存在或者是黑色</span>
+
+			isLeft := pnode == pnode.parent.left
+			isParentLeft := pnode.parent == pnode.getGrandParent().left
+
+			<span class="hljs-keyword">if</span> isLeft &amp;&amp; isParentLeft &#123;
+				<span class="hljs-comment">//2.2.1 是左子树，其父节点也是左子树</span>
+				<span class="hljs-comment">/*       ...
+						  /
+				        8,B
+					    /  \
+					   7,R   /nil
+					  /
+					pnode,R
+				*/</span>
+				<span class="hljs-comment">//=》</span>
+				<span class="hljs-comment">/*         /
+					     7,B
+				         /   \
+				     pnode,R  8,R
+				               \
+				             /nil
+				*/</span>
+				pnode.parent.color = BLACK
+				pnode.getGrandParent().color = RED
+				brtree.rotateRight(pnode.getGrandParent())
+
+			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> !isLeft &amp;&amp; !isParentLeft &#123;
+				<span class="hljs-comment">//2.2.2 不是左子树，父亲也不是左子树</span>
+				<span class="hljs-comment">/*
+						  7,B
+					      /  \
+					2,B/nil   8,R
+					           \
+					           10,pnode
+				*/</span>
+				pnode.parent.color = BLACK
+				pnode.getGrandParent().color = RED
+				brtree.rotateLeft(pnode.getGrandParent())
+
+			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> isLeft &amp;&amp; !isParentLeft &#123;
+				<span class="hljs-comment">//2.2.3 是左子树，但父亲不是左子树</span>
+				<span class="hljs-comment">/*
+						8,B
+					    /  \
+					6,B/nil   10,R
+					        /
+					      pnode，R
+				*/</span>
+				<span class="hljs-comment">/*
+						pnode,R
+					    /  \
+					6,B/nil  8,B
+					            \
+					            10,R
+				*/</span>
+				brtree.rotateRight(pnode.parent)
+				<span class="hljs-comment">//实际上变成了2.2.2</span>
+				brtree.rotateLeft(pnode.parent) <span class="hljs-comment">//pnode现在在原先pnode的父节点位置</span>
+				pnode.color = BLACK
+				pnode.left.color = RED
+				pnode.right.color = RED
+
+			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> !isLeft &amp;&amp; isParentLeft &#123;
+				<span class="hljs-comment">//2.2.4不是左子树，但父亲是左子树</span>
+				<span class="hljs-comment">/*
+							 \
+					        8,B
+						    /  \
+						   7,R   10,B/nil
+						      \
+						      pnode，R
+				*/</span>
+				<span class="hljs-comment">//==&gt;</span>
+				<span class="hljs-comment">/*
+						 8，B
+					    /    \
+					  pnode,R  10,B/nil
+					  /
+					7,R
+				*/</span>
+				<span class="hljs-comment">/*
+						 pnode，R
+					    /    \
+					   8,B   10,B/nil
+					  /
+					7,R
+				*/</span>
+
+				brtree.rotateLeft(pnode.parent)
+				<span class="hljs-comment">//实际上变成了2.2.1</span>
+				brtree.rotateRight(pnode.parent)
+				pnode.color = BLACK
+				pnode.left.color = RED
+				pnode.right.color = RED
+
+			&#125;
+		&#125;
+
+	&#125;
+&#125;</code></pre></div>
+<h5 id="节点的删除">节点的删除</h5>
 <p>删除节点的时候也分几种情况
 先把它当作普通二叉查找树处理：</p>
 <ol>
@@ -173,10 +548,11 @@ here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 </ol>
 <p>接着就是按照红黑树的颜色规则来改变和旋转了
 //todo我实在写不动了</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">
+</code></pre></div>
 <p>那么把红黑树放在map上呢：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//todo</span></span><br></pre></td></tr></table></figure>
-<h4>LinkedHashMap实现</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//todo</span></code></pre></div>
+<h4 id="linkedhashmap实现">LinkedHashMap实现</h4>
 <p>真正的实现，先讲一下：</p>
 <ol>
 <li>定义数据结构node，这个是链表上的每个节点，应该有prev,next,key，val这些</li>
@@ -186,154 +562,292 @@ here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 The above code may use O(2n) space, but time complexity reduce to O(n)
 <strong>!!!Everything seems done!!!</strong></p>
 <p>So what if we use a <strong>large file?</strong></p>
-<h3>Large File</h3>
+<h3 id="large-file">Large File</h3>
 <p>Solution: Split the large file into several files, it depends on your MEM:
 针对大文件，其实普通的思想就是&quot;分而治之&quot;，更多可以参考MapReduce</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">HashFile</span><span class="params">(url <span class="keyword">string</span>)</span> <span class="title">int</span></span>&#123;<span class="comment">//pass a url</span></span><br><span class="line">    seed:=<span class="number">131</span></span><br><span class="line">    hash:=<span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> _,v:=<span class="keyword">range</span> url&#123;</span><br><span class="line">        hash=hash*seed+v</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> hash &amp; <span class="number">0x7FFFFFFF</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">//........</span></span><br><span class="line">    <span class="comment">//url:=fp.ReadLine()</span></span><br><span class="line">    pos:=HashFile(url)</span><br><span class="line">    file:=pos%<span class="number">10</span><span class="comment">//we assume that it split into 10 files</span></span><br><span class="line">    bufio.newWriter(file+<span class="string">".txt"</span>)</span><br><span class="line">    Writer.Write(file+<span class="string">".txt"</span>)<span class="comment">//write it into specific file</span></span><br><span class="line">    <span class="comment">//........</span></span><br><span class="line">    urls:=<span class="built_in">make</span>([]<span class="keyword">string</span>,<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">10</span>;i++&#123;</span><br><span class="line">        urlPlusTimes:=LoopEachFile(files)<span class="comment">//calculate each files' urls</span></span><br><span class="line">        urls=<span class="built_in">append</span>(urls,urlPlusTimes...)<span class="comment">// Here comes to the question??? how to ensure sequence???</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3>最终解决办法</h3>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">HashFile</span><span class="hljs-params">(url <span class="hljs-keyword">string</span>)</span> <span class="hljs-title">int</span></span>&#123;<span class="hljs-comment">//pass a url</span>
+    seed:=<span class="hljs-number">131</span>
+    hash:=<span class="hljs-number">0</span>
+    <span class="hljs-keyword">for</span> _,v:=<span class="hljs-keyword">range</span> url&#123;
+        hash=hash*seed+v
+    &#125;
+    <span class="hljs-keyword">return</span> hash &amp; <span class="hljs-number">0x7FFFFFFF</span>
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-comment">//........</span>
+    <span class="hljs-comment">//url:=fp.ReadLine()</span>
+    pos:=HashFile(url)
+    file:=pos%<span class="hljs-number">10</span><span class="hljs-comment">//we assume that it split into 10 files</span>
+    bufio.newWriter(file+<span class="hljs-string">".txt"</span>)
+    Writer.Write(file+<span class="hljs-string">".txt"</span>)<span class="hljs-comment">//write it into specific file</span>
+    <span class="hljs-comment">//........</span>
+    urls:=<span class="hljs-built_in">make</span>([]<span class="hljs-keyword">string</span>,<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">for</span> i:=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">10</span>;i++&#123;
+        urlPlusTimes:=LoopEachFile(files)<span class="hljs-comment">//calculate each files' urls</span>
+        urls=<span class="hljs-built_in">append</span>(urls,urlPlusTimes...)<span class="hljs-comment">// Here comes to the question??? how to ensure sequence???</span>
+    &#125;
+&#125;</code></pre></div>
+<h3 id="最终解决办法">最终解决办法</h3>
 <p>几天了，想不出来啊</p>
 <ol>
 <li>主要是拆开多个文件的话，如果每一条记录都是unqiue的，map也要O（n）复杂度，内存会爆</li>
 </ol>
 <p>//todo</p>
-<h3>Addition</h3>
-<h4>unsafe</h4>
+<h3 id="addition">Addition</h3>
+<h4 id="unsafe">unsafe</h4>
 <p>map in golang is <strong>not thread-safe</strong>;
 So it involves with concurrency situation, you must add <strong>sync.Mutex</strong> or <strong>sync.RWMutex</strong>
-About that, can refer to <img src="/Concurrency" alt="my previous blog"></p>
+About that, can refer to <img src="/Concurrency" srcset="/img/loading.gif" alt="my previous blog"></p>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/19/Go/SortedMap/" data-id="ckdfen90u001jdc55i12pp9lo" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2019/06/21/Go/fmt/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Fmt 输出包</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2019/06/08/Go/GolangMux/">
+                        <span class="hidden-mobile">Golang Mux</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
 
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2019/06/21/Go/fmt/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Fmt 输出包
-        
+            
+          </article>
+        </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
     </a>
   
-  
-    <a href="/2019/06/08/Go/GolangMux/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Golang Mux</div>
-    </a>
-  
-</nav>
 
   
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签云</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">归档</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">最新文章</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2020/08/04/Go/Practice/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
-          </li>
-        
-          <li>
-            <a href="/2020/06/24/Go/type/">Golang type</a>
-          </li>
-        
-          <li>
-            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2020 Doujohner<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
     </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <script  src="/js/lazyload.js" ></script>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
 
 
-<script src="/js/script.js"></script>
 
-  </div>
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Something should be noted in golang's map&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>

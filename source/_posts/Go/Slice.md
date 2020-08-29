@@ -128,7 +128,7 @@ slice := make([]int, 10, 15)
     fmt.Println(&slice[0])//0x414040
 ```
 
-同样，*** 这里有另外几个坑 ***：
+同样，***这里有另外几个坑***：
 
 ```go
 //example in docs

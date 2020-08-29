@@ -184,7 +184,7 @@ cat /proc/sys/net/ipv4/tcp_fastopen
 
 
 
-### 4. Nagle算法和延迟确认
+### 4. 一些拥塞控制优化吞吐量的算法
 
 #### Nagle
 
@@ -203,8 +203,37 @@ Nagle就是解决这种问题，具体做法
 - TCP处于quick ack模式(tcp_in_quick_mode)
 - 有乱序的包
 
+#### Byte Queue Limits (BQL)
+
+#### TCP Small Queues (TSQ)
+
+
+
+#### Early Departure Time (EDT)
+
 
 ### 5. 其他
+
+#### TCP Backlogs
+
+针对SYN floods攻击，linux下使用了**两个队列(模型)**来缓解:
+- 一个是有最小metadata的SYN Backlog(未完成的连接队列);
+
+    每个这样的syn分节对应其中一项：已由某个客户发出到达服务器，而服务器正在等待完成相应的TCP三鹿握手的过程，这些套接字处于SYN_RCVD状态。
+
+- 一个是监听功能的Listen SYN Backlog(已完成的连接队列);
+
+    每个已经完成的三路握手的客户对应其中的一员，这些套接字处于ESTABLISHED状态。
+
+如图![tcpsynlog](/img/)
+
+TCP在未完成队列接收SYN的request，当三次握手完成(established)后，就会将这个request移到已完成的连接队列的尾部;
+
+除了两个队列模型外，TCP listen path也用无锁方式来改进???（似乎有点问题）4.7内核版本改进
+
+
+
+
 #### DNS协议
 
 首先这🐔是**应用层**协议！！！

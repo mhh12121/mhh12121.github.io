@@ -1,102 +1,218 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
 <head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <title>Something about Slice in Go | 兜的破烂</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
-<meta name="keywords" content="golang">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Something about Slice in Go">
-<meta property="og:url" content="https://mhh12121.github.io/2019/06/05/Go/Slice/index.html">
-<meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/2019/06/05/img/golangusergroups.png">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Something about Slice in Go">
-<meta name="twitter:description" content="Golang’s Slice is kinda diffrent===&amp;gt;">
-<meta name="twitter:image" content="https://mhh12121.github.io/2019/06/05/img/golangusergroups.png">
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Something about Slice in Go - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
   
-    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
   
 
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
 </head>
-</html>
+
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">兜的破烂</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">学习☆记录</a>
-        </h2>
-      
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2019-06-05 23:48" pubdate>
+      June 5, 2019 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.2k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      33
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
       </div>
     </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-Go/Slice" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/06/05/Go/Slice/" class="article-date">
-  <time datetime="2019-06-05T15:48:00.000Z" itemprop="datePublished">2019-06-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Something about Slice in Go
-    </h1>
-  
+  </header>
 
-      </header>
+  <main>
     
-    <div class="article-entry" itemprop="articleBody">
       
-        <p>Golang’s Slice is kinda diffrent===&gt;</p>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Something about Slice in Go</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <p>Golang’s Slice is kinda diffrent===&gt;</p>
 <a id="more"></a>
 <p>当前版本go 1.13
-<img src="../../img/golangusergroups.png" alt="group"></p>
+<img src="../../img/golangusergroups.png" srcset="/img/loading.gif" alt="group"></p>
 <p>Related article [Slice]<a href="https://blog.golang.org/slices" target="_blank" rel="noopener">https://blog.golang.org/slices</a></p>
 <p>讨论到一种数据结构，我们很自然就从以下：</p>
 <ul>
@@ -105,19 +221,41 @@
 <li>使用详情（包含各种数据增删改等情况）</li>
 <li>销毁(deconstructor)</li>
 </ul>
-<h2>1. 结构体</h2>
+<h2 id="1-结构体">1. 结构体</h2>
 <p>slice其实是一个结构体，并不是简单的数组或者链表</p>
- <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//actually its not visible to programmer</span></span><br><span class="line"><span class="comment">//我自己臆想出来的,但可以从src/runtime/slice.go找出,或者走这个链接：https://golang.org/src/runtime/slice.go</span></span><br><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span>&#123;</span><br><span class="line">    length <span class="keyword">int</span> <span class="comment">//length</span></span><br><span class="line">    pointer <span class="keyword">interface</span>&#123;&#125; <span class="comment">//point to first element, the type depends on the element</span></span><br><span class="line">    Capacity <span class="keyword">int</span><span class="comment">//max容量</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+ <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//actually its not visible to programmer</span>
+<span class="hljs-comment">//我自己臆想出来的,但可以从src/runtime/slice.go找出,或者走这个链接：https://golang.org/src/runtime/slice.go</span>
+<span class="hljs-keyword">type</span> slice <span class="hljs-keyword">struct</span>&#123;
+    length <span class="hljs-keyword">int</span> <span class="hljs-comment">//length</span>
+    pointer <span class="hljs-keyword">interface</span>&#123;&#125; <span class="hljs-comment">//point to first element, the type depends on the element</span>
+    Capacity <span class="hljs-keyword">int</span><span class="hljs-comment">//max容量</span>
+&#125;</code></pre></div>
 <p>实际上是这样的:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span>&#123;</span><br><span class="line">    array unsafe.Pointer</span><br><span class="line">    <span class="built_in">len</span> <span class="keyword">int</span></span><br><span class="line">    <span class="built_in">cap</span> <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> slice <span class="hljs-keyword">struct</span>&#123;
+    array unsafe.Pointer
+    <span class="hljs-built_in">len</span> <span class="hljs-keyword">int</span>
+    <span class="hljs-built_in">cap</span> <span class="hljs-keyword">int</span>
+&#125;</code></pre></div>
 <p>来到这里你可能会想到，好像一个对象耶，那么这玩意儿传入func里面是不是传指针进去呢？（即里面的修改会影响到origianl？）
 答案是不会</p>
 <p>Example:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SubtractOneFromLength</span><span class="params">(slice []<span class="keyword">byte</span>)</span> []<span class="title">byte</span></span> &#123;</span><br><span class="line">    slice = slice[<span class="number">0</span> : <span class="built_in">len</span>(slice)<span class="number">-1</span>]</span><br><span class="line">    <span class="keyword">return</span> slice</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Println(<span class="string">"Before: len(slice) ="</span>, <span class="built_in">len</span>(slice))</span><br><span class="line">    newSlice := SubtractOneFromLength(slice)<span class="comment">//you haven't passed the slice's header into it</span></span><br><span class="line">    fmt.Println(<span class="string">"After:  len(slice) ="</span>, <span class="built_in">len</span>(slice))</span><br><span class="line">    fmt.Println(<span class="string">"After:  len(newSlice) ="</span>, <span class="built_in">len</span>(newSlice))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">SubtractOneFromLength</span><span class="hljs-params">(slice []<span class="hljs-keyword">byte</span>)</span> []<span class="hljs-title">byte</span></span> &#123;
+    slice = slice[<span class="hljs-number">0</span> : <span class="hljs-built_in">len</span>(slice)<span class="hljs-number">-1</span>]
+    <span class="hljs-keyword">return</span> slice
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;
+    fmt.Println(<span class="hljs-string">"Before: len(slice) ="</span>, <span class="hljs-built_in">len</span>(slice))
+    newSlice := SubtractOneFromLength(slice)<span class="hljs-comment">//you haven't passed the slice's header into it</span>
+    fmt.Println(<span class="hljs-string">"After:  len(slice) ="</span>, <span class="hljs-built_in">len</span>(slice))
+    fmt.Println(<span class="hljs-string">"After:  len(newSlice) ="</span>, <span class="hljs-built_in">len</span>(newSlice))
+&#125;</code></pre></div>
 <p>You <strong>Must</strong> do sth like:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">newSlice := SubtractOneFromLength(&amp;slice)<span class="comment">//Like this will work!</span></span><br></pre></td></tr></table></figure>
-<h2>2. 初始化</h2>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//顶层</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makeslice64</span><span class="params">(et *_type, len64, cap64 <span class="keyword">int64</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span>&#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makeslice</span><span class="params">(et *_type, <span class="built_in">len</span>, <span class="built_in">cap</span> <span class="keyword">int</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">newSlice := SubtractOneFromLength(&amp;slice)<span class="hljs-comment">//Like this will work!</span></code></pre></div>
+<h2 id="2-初始化">2. 初始化</h2>
+<div class="hljs"><pre><code class="hljs golang"><span class="hljs-comment">//顶层</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">makeslice64</span><span class="hljs-params">(et *_type, len64, cap64 <span class="hljs-keyword">int64</span>)</span> <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span></span>&#123;&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">makeslice</span><span class="hljs-params">(et *_type, <span class="hljs-built_in">len</span>, <span class="hljs-built_in">cap</span> <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span></span>&#123;&#125;</code></pre></div>
 <p>以上函数会先进行一个<strong>溢出判断</strong> （todo，这里涉及到编译器平台问题），如果cap设定太大会panic:cap out of range</p>
 <p>然后便会开始分配空间，这里用的是runtime/malloc.go里面的mallocgc方法:</p>
 <ol>
@@ -125,26 +263,89 @@
 <li>大对象(&gt;32KB)则会从全局<strong>堆</strong>中拿到空间</li>
 </ol>
 <p>详情可以看下<a href="./gc.md">之前的那篇笔记gc</a></p>
-<h2>3. Enlarge Capcity</h2>
+<h2 id="3-enlarge-capcity">3. Enlarge Capcity</h2>
 <p>你可以理解slice是动态列表，到达某个值后很自然就会扩容，扩容的大小文档里面也写了，小于1024长度是直接 <strong>×2</strong>，或者是超过了1024的只会库容1.25倍（也不一定奥，可以接着看）：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growslice</span><span class="params">(et *_type, old slice, <span class="built_in">cap</span> <span class="keyword">int</span>)</span> <span class="title">slice</span></span> &#123;<span class="comment">// et 指的是？？？？， old是老的slice，cap是申请的容量</span></span><br><span class="line">    <span class="comment">//前面是一些判断racecodition以及调试，防止cap设置不合理的判断</span></span><br><span class="line">    ........</span><br><span class="line">    <span class="comment">//-------------这里开始计算扩容数量-----------------</span></span><br><span class="line">    newcap := old.<span class="built_in">cap</span></span><br><span class="line">    doublecap := newcap + newcap</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">cap</span> &gt; doublecap &#123;<span class="comment">//申请容量 &gt; 2 * 旧的容量</span></span><br><span class="line">        newcap = <span class="built_in">cap</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> old.<span class="built_in">len</span> &lt; <span class="number">1024</span> &#123;<span class="comment">//老容量 &lt; 1024，直接扩成旧的两倍</span></span><br><span class="line">            newcap = doublecap</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// Check 0 &lt; newcap to detect overflow</span></span><br><span class="line">            <span class="comment">// and prevent an infinite loop.</span></span><br><span class="line">            <span class="keyword">for</span> <span class="number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="built_in">cap</span> &#123;<span class="comment">//好像看见有文章說是1.25倍，但实际并不是，可以往下继续看capmen变量</span></span><br><span class="line">                newcap += newcap / <span class="number">4</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// Set newcap to the requested cap when</span></span><br><span class="line">            <span class="comment">// the newcap calculation overflowed.</span></span><br><span class="line">            <span class="keyword">if</span> newcap &lt;= <span class="number">0</span> &#123;<span class="comment">//溢出的话就使之等于申请的容量</span></span><br><span class="line">                newcap = <span class="built_in">cap</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">growslice</span><span class="hljs-params">(et *_type, old slice, <span class="hljs-built_in">cap</span> <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">slice</span></span> &#123;<span class="hljs-comment">// et 指的是？？？？， old是老的slice，cap是申请的容量</span>
+    <span class="hljs-comment">//前面是一些判断racecodition以及调试，防止cap设置不合理的判断</span>
+    ........
+    <span class="hljs-comment">//-------------这里开始计算扩容数量-----------------</span>
+    newcap := old.<span class="hljs-built_in">cap</span>
+    doublecap := newcap + newcap
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">cap</span> &gt; doublecap &#123;<span class="hljs-comment">//申请容量 &gt; 2 * 旧的容量</span>
+        newcap = <span class="hljs-built_in">cap</span>
+    &#125; <span class="hljs-keyword">else</span> &#123;
+        <span class="hljs-keyword">if</span> old.<span class="hljs-built_in">len</span> &lt; <span class="hljs-number">1024</span> &#123;<span class="hljs-comment">//老容量 &lt; 1024，直接扩成旧的两倍</span>
+            newcap = doublecap
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            <span class="hljs-comment">// Check 0 &lt; newcap to detect overflow</span>
+            <span class="hljs-comment">// and prevent an infinite loop.</span>
+            <span class="hljs-keyword">for</span> <span class="hljs-number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="hljs-built_in">cap</span> &#123;<span class="hljs-comment">//好像看见有文章說是1.25倍，但实际并不是，可以往下继续看capmen变量</span>
+                newcap += newcap / <span class="hljs-number">4</span>
+            &#125;
+            <span class="hljs-comment">// Set newcap to the requested cap when</span>
+            <span class="hljs-comment">// the newcap calculation overflowed.</span>
+            <span class="hljs-keyword">if</span> newcap &lt;= <span class="hljs-number">0</span> &#123;<span class="hljs-comment">//溢出的话就使之等于申请的容量</span>
+                newcap = <span class="hljs-built_in">cap</span>
+            &#125;
+        &#125;
+    &#125;</code></pre></div>
 <p>但是，那些只针对于没有定义 *** cap *** 字段的slice，万一规定了，像</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">10</span>, <span class="number">15</span>)</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">slice := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">10</span>, <span class="hljs-number">15</span>)</code></pre></div>
 <p>上限就是15了，如果强行append。。。。。。*** 也没关系! ***，只是这个时候会进行扩容，然后,原slice的地址（即第一个元素的地址）会进行改变</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line">slice[<span class="number">0</span>]=<span class="number">1</span></span><br><span class="line">slice=<span class="built_in">append</span>(slice,<span class="number">3</span>)</span><br><span class="line">fmt.Println(&amp;slice[<span class="number">0</span>])<span class="comment">//0x414020</span></span><br><span class="line"></span><br><span class="line">slice=<span class="built_in">append</span>(slice,<span class="number">4</span>)</span><br><span class="line">fmt.Println(&amp;slice[<span class="number">0</span>])<span class="comment">//0x414040</span></span><br></pre></td></tr></table></figure>
-<p>同样，*** 这里有另外几个坑 ***：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//example in docs</span></span><br><span class="line">    slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">10</span>, <span class="number">15</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"len: %d, cap: %d\n"</span>, <span class="built_in">len</span>(slice), <span class="built_in">cap</span>(slice))<span class="comment">//15</span></span><br><span class="line">    newSlice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="built_in">len</span>(slice), <span class="number">2</span>*<span class="built_in">cap</span>(slice))</span><br><span class="line">    <span class="keyword">for</span> i := <span class="keyword">range</span> slice &#123;</span><br><span class="line">        newSlice[i] = slice[i]</span><br><span class="line">    &#125;</span><br><span class="line">    slice = newSlice</span><br><span class="line">    fmt.Printf(<span class="string">"len: %d, cap: %d\n"</span>, <span class="built_in">len</span>(slice), <span class="built_in">cap</span>(slice))<span class="comment">//30</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">slice := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+slice[<span class="hljs-number">0</span>]=<span class="hljs-number">1</span>
+slice=<span class="hljs-built_in">append</span>(slice,<span class="hljs-number">3</span>)
+fmt.Println(&amp;slice[<span class="hljs-number">0</span>])<span class="hljs-comment">//0x414020</span>
+
+slice=<span class="hljs-built_in">append</span>(slice,<span class="hljs-number">4</span>)
+fmt.Println(&amp;slice[<span class="hljs-number">0</span>])<span class="hljs-comment">//0x414040</span></code></pre></div>
+<p>同样，<strong><em>这里有另外几个坑</em></strong>：</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//example in docs</span>
+    slice := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">10</span>, <span class="hljs-number">15</span>)
+    fmt.Printf(<span class="hljs-string">"len: %d, cap: %d\n"</span>, <span class="hljs-built_in">len</span>(slice), <span class="hljs-built_in">cap</span>(slice))<span class="hljs-comment">//15</span>
+    newSlice := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-built_in">len</span>(slice), <span class="hljs-number">2</span>*<span class="hljs-built_in">cap</span>(slice))
+    <span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> slice &#123;
+        newSlice[i] = slice[i]
+    &#125;
+    slice = newSlice
+    fmt.Printf(<span class="hljs-string">"len: %d, cap: %d\n"</span>, <span class="hljs-built_in">len</span>(slice), <span class="hljs-built_in">cap</span>(slice))<span class="hljs-comment">//30</span></code></pre></div>
 <ol>
 <li>究竟是哪个slice</li>
 </ol>
 <p>简单的 = 号其实属于一种浅复制</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">a:=<span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">3</span>,<span class="number">4</span>)</span><br><span class="line">a[<span class="number">0</span>]=<span class="number">1</span></span><br><span class="line">a[<span class="number">1</span>]=<span class="number">2</span></span><br><span class="line">a[<span class="number">2</span>]=<span class="number">3</span></span><br><span class="line"></span><br><span class="line">b:=<span class="built_in">append</span>(a,<span class="number">4</span>)</span><br><span class="line">c:=<span class="built_in">append</span>(a,<span class="number">100</span>)</span><br><span class="line">fmt.Println(&amp;a[<span class="number">0</span>], &amp;b[<span class="number">0</span>], &amp;c[<span class="number">0</span>]) <span class="comment">//0xc0000125c0 0xc0000125c0 0xc0000125c0</span></span><br><span class="line"><span class="comment">//  可以看到这里其实用的是同一个slice</span></span><br><span class="line">fmt.Println(a, b, c)<span class="comment">//[1 2 3] [1 2 3 100] [1 2 3 100]</span></span><br><span class="line"></span><br><span class="line">c[<span class="number">0</span>] = <span class="number">101</span></span><br><span class="line">fmt.Println(a, b, c)<span class="comment">//[101 2 3] [101 2 3 100] [101 2 3 100]</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">a:=<span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>)
+a[<span class="hljs-number">0</span>]=<span class="hljs-number">1</span>
+a[<span class="hljs-number">1</span>]=<span class="hljs-number">2</span>
+a[<span class="hljs-number">2</span>]=<span class="hljs-number">3</span>
+
+b:=<span class="hljs-built_in">append</span>(a,<span class="hljs-number">4</span>)
+c:=<span class="hljs-built_in">append</span>(a,<span class="hljs-number">100</span>)
+fmt.Println(&amp;a[<span class="hljs-number">0</span>], &amp;b[<span class="hljs-number">0</span>], &amp;c[<span class="hljs-number">0</span>]) <span class="hljs-comment">//0xc0000125c0 0xc0000125c0 0xc0000125c0</span>
+<span class="hljs-comment">//  可以看到这里其实用的是同一个slice</span>
+fmt.Println(a, b, c)<span class="hljs-comment">//[1 2 3] [1 2 3 100] [1 2 3 100]</span>
+
+c[<span class="hljs-number">0</span>] = <span class="hljs-number">101</span>
+fmt.Println(a, b, c)<span class="hljs-comment">//[101 2 3] [101 2 3 100] [101 2 3 100]</span></code></pre></div>
 <ol start="2">
 <li>值传递？引用传递？</li>
 </ol>
 <p>首先明确，slice是一种struct,struct本身就是值传递</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">y:=[]<span class="keyword">int</span>&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;</span><br><span class="line">add(y)<span class="comment">//你可能这样子推论：go里面都是值传递==&gt;所以这里面的改动不会影响到y。可惜，这是错的</span></span><br><span class="line">fmt.Println(y)<span class="comment">//&#123;1,1,1&#125;  ///wtf？？？？？</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">add</span><span class="params">(y []<span class="keyword">int</span>)</span></span>&#123;</span><br><span class="line">    <span class="comment">//这个就不会改变，因为这个v只是值的拷贝</span></span><br><span class="line">    <span class="comment">// for _,v:=range y&#123; </span></span><br><span class="line">    <span class="comment">//     v++</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">    <span class="comment">//但这个会被改变</span></span><br><span class="line">    <span class="keyword">for</span> i:=<span class="keyword">range</span> y&#123;</span><br><span class="line">        y[i]++</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h5>注意：</h5>
+<div class="hljs"><pre><code class="hljs go">y:=[]<span class="hljs-keyword">int</span>&#123;<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>&#125;
+add(y)<span class="hljs-comment">//你可能这样子推论：go里面都是值传递==&gt;所以这里面的改动不会影响到y。可惜，这是错的</span>
+fmt.Println(y)<span class="hljs-comment">//&#123;1,1,1&#125;  ///wtf？？？？？</span>
+
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">add</span><span class="hljs-params">(y []<span class="hljs-keyword">int</span>)</span></span>&#123;
+    <span class="hljs-comment">//这个就不会改变，因为这个v只是值的拷贝</span>
+    <span class="hljs-comment">// for _,v:=range y&#123; </span>
+    <span class="hljs-comment">//     v++</span>
+    <span class="hljs-comment">// &#125;</span>
+    <span class="hljs-comment">//但这个会被改变</span>
+    <span class="hljs-keyword">for</span> i:=<span class="hljs-keyword">range</span> y&#123;
+        y[i]++
+    &#125;
+&#125;</code></pre></div>
+<h5 id="注意：">注意：</h5>
 <p>其实上面已经提到，slice是一个struct，传入的时候如果仅仅是修改一下元素的内容，是不会对其头部地址进行改变，所以，传入修改其值是可以的;</p>
 <p>但是，做一些比如append之类的操作，这样会使整个slice发生变化，<strong>其头部指针指向一个新的slice</strong>，所以原来的slice就不会被改变</p>
 <p>针对以上问题的答案也有了：</p>
@@ -156,154 +357,386 @@
 <p>slice作为参数传递进去，其实可以改变其中的元素，在不重新分配内存的情况下会影响到自身。但如果需要（保险为先），必须从返回值或传指针进行修改;</p>
 </li>
 </ol>
-<h3><strong>但是，扩容其实没有那么简单，我注意到growslice下面还要一段源码！</strong></h3>
-<h3>扩容growslice</h3>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growslice</span><span class="params">(et *_type, old slice, <span class="built_in">cap</span> <span class="keyword">int</span>)</span> <span class="title">slice</span></span> &#123;<span class="comment">// et 是_type指针，详情可以看type文章， old是老的slice，cap是申请的容量</span></span><br><span class="line"><span class="comment">//新的slice的length会设为旧的slice的length</span></span><br><span class="line">    ........</span><br><span class="line">    <span class="comment">//-------------以上计算扩容数量结束--------------------</span></span><br><span class="line">    newcap := old.<span class="built_in">cap</span></span><br><span class="line">	doublecap := newcap + newcap</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">cap</span> &gt; doublecap &#123;</span><br><span class="line">		newcap = <span class="built_in">cap</span></span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> old.<span class="built_in">len</span> &lt; <span class="number">1024</span> &#123;</span><br><span class="line">            newcap = doublecap</span><br><span class="line">            <span class="comment">//长度小于1024，新cap直接= len*2</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// Check 0 &lt; newcap to detect overflow</span></span><br><span class="line">            <span class="comment">// and prevent an infinite loop.</span></span><br><span class="line">            <span class="comment">//这里有个检测overflow的小技巧；还有</span></span><br><span class="line">			<span class="keyword">for</span> <span class="number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="built_in">cap</span> &#123;</span><br><span class="line">				newcap += newcap / <span class="number">4</span></span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// Set newcap to the requested cap when</span></span><br><span class="line">			<span class="comment">// the newcap calculation overflowed.</span></span><br><span class="line">			<span class="keyword">if</span> newcap &lt;= <span class="number">0</span> &#123;</span><br><span class="line">				newcap = <span class="built_in">cap</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">//-------------!!!!以下开始计算内存位置，不但继续计算新的容量大小，还要决定扩容后是否要重新划分内存------------------</span></span><br><span class="line">    <span class="keyword">var</span> overflow <span class="keyword">bool</span></span><br><span class="line">    <span class="keyword">var</span> lenmem, newlenmem, capmem <span class="keyword">uintptr</span></span><br><span class="line">    <span class="comment">// Specialize for common values of et.size.</span></span><br><span class="line">    <span class="comment">// For 1 we don't need any division/multiplication.</span></span><br><span class="line">    <span class="comment">// For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.//这里就说到会优化</span></span><br><span class="line">    <span class="comment">// For powers of 2, use a variable shift.</span></span><br><span class="line">    <span class="keyword">switch</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> et.size == <span class="number">1</span>:</span><br><span class="line">        lenmem = <span class="keyword">uintptr</span>(old.<span class="built_in">len</span>)</span><br><span class="line">        newlenmem = <span class="keyword">uintptr</span>(<span class="built_in">cap</span>)</span><br><span class="line">        capmem = roundupsize(<span class="keyword">uintptr</span>(newcap))<span class="comment">//这个就是计算新的capmen，当newcap不符合规定内存的大小规格时，会进行roundup内存对齐!!!</span></span><br><span class="line">        overflow = <span class="keyword">uintptr</span>(newcap) &gt; maxAlloc</span><br><span class="line">        newcap = <span class="keyword">int</span>(capmem)</span><br><span class="line">    <span class="keyword">case</span> et.size == sys.PtrSize:<span class="comment">//是一个指针大小</span></span><br><span class="line">        lenmem = <span class="keyword">uintptr</span>(old.<span class="built_in">len</span>) * sys.PtrSize</span><br><span class="line">        newlenmem = <span class="keyword">uintptr</span>(<span class="built_in">cap</span>) * sys.PtrSize</span><br><span class="line">        capmem = roundupsize(<span class="keyword">uintptr</span>(newcap) * sys.PtrSize)</span><br><span class="line">        overflow = <span class="keyword">uintptr</span>(newcap) &gt; maxAlloc/sys.PtrSize</span><br><span class="line">        newcap = <span class="keyword">int</span>(capmem / sys.PtrSize)<span class="comment">//sys.PtrSize指的是一个指针的size，64位的机器就是8</span></span><br><span class="line">    <span class="keyword">case</span> isPowerOfTwo(et.size):<span class="comment">//2次幂会用variable shift</span></span><br><span class="line">        <span class="keyword">var</span> shift <span class="keyword">uintptr</span></span><br><span class="line">        <span class="keyword">if</span> sys.PtrSize == <span class="number">8</span> &#123;</span><br><span class="line">            <span class="comment">// Mask shift for better code generation.</span></span><br><span class="line">            shift = <span class="keyword">uintptr</span>(sys.Ctz64(<span class="keyword">uint64</span>(et.size))) &amp; <span class="number">63</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            shift = <span class="keyword">uintptr</span>(sys.Ctz32(<span class="keyword">uint32</span>(et.size))) &amp; <span class="number">31</span></span><br><span class="line">        &#125;</span><br><span class="line">        lenmem = <span class="keyword">uintptr</span>(old.<span class="built_in">len</span>) &lt;&lt; shift</span><br><span class="line">        newlenmem = <span class="keyword">uintptr</span>(<span class="built_in">cap</span>) &lt;&lt; shift</span><br><span class="line">        capmem = roundupsize(<span class="keyword">uintptr</span>(newcap) &lt;&lt; shift)</span><br><span class="line">        overflow = <span class="keyword">uintptr</span>(newcap) &gt; (maxAlloc &gt;&gt; shift)</span><br><span class="line">        newcap = <span class="keyword">int</span>(capmem &gt;&gt; shift)</span><br><span class="line">    <span class="keyword">default</span>:<span class="comment">//其他的情况就直接除以et.size</span></span><br><span class="line">        lenmem = <span class="keyword">uintptr</span>(old.<span class="built_in">len</span>) * et.size</span><br><span class="line">        newlenmem = <span class="keyword">uintptr</span>(<span class="built_in">cap</span>) * et.size</span><br><span class="line">        capmem = roundupsize(<span class="keyword">uintptr</span>(newcap) * et.size)</span><br><span class="line">        overflow = <span class="keyword">uintptr</span>(newcap) &gt; maxSliceCap(et.size)</span><br><span class="line">        newcap = <span class="keyword">int</span>(capmem / et.size)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The check of overflow (uintptr(newcap) &gt; maxSliceCap(et.size))</span></span><br><span class="line">    <span class="comment">// in addition to capmem &gt; _MaxMem is needed to prevent an overflow</span></span><br><span class="line">    <span class="comment">// which can be used to trigger a segfault on 32bit architectures</span></span><br><span class="line">    <span class="comment">// with this example program:</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// type T [1&lt;&lt;27 + 1]int64</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// var d T</span></span><br><span class="line">    <span class="comment">// var s []T</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="comment">// func main() &#123;</span></span><br><span class="line">    <span class="comment">//   s = append(s, d, d, d, d)</span></span><br><span class="line">    <span class="comment">//   print(len(s), "\n")</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">cap</span> &lt; old.<span class="built_in">cap</span> || overflow || capmem &gt; maxAlloc &#123;</span><br><span class="line">        <span class="built_in">panic</span>(errorString(<span class="string">"growslice: cap out of range"</span>))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> p unsafe.Pointer         <span class="comment">//这个应该是地址了</span></span><br><span class="line">    <span class="keyword">if</span> et.kind&amp;kindNoPointers != <span class="number">0</span> &#123;</span><br><span class="line">        p = mallocgc(capmem, <span class="literal">nil</span>, <span class="literal">false</span>)<span class="comment">//申请内存空间</span></span><br><span class="line">        memmove(p, old.array, lenmem)</span><br><span class="line">        <span class="comment">// The append() that calls growslice is going to overwrite from old.len to cap (which will be the new length).</span></span><br><span class="line">        <span class="comment">// Only clear the part that will not be overwritten.</span></span><br><span class="line">        memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// Note: can't use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.</span></span><br><span class="line">        p = mallocgc(capmem, et, <span class="literal">true</span>)</span><br><span class="line">        <span class="keyword">if</span> !writeBarrier.enabled &#123;</span><br><span class="line">            memmove(p, old.array, lenmem)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> i := <span class="keyword">uintptr</span>(<span class="number">0</span>); i &lt; lenmem; i += et.size &#123;</span><br><span class="line">                typedmemmove(et, add(p, i), add(old.array, i))</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> slice&#123;p, old.<span class="built_in">len</span>, newcap&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="但是-扩容其实没有那么简单-我注意到growslice下面还要一段源码"><strong>但是，扩容其实没有那么简单，我注意到growslice下面还要一段源码！</strong></h3>
+<h3 id="扩容growslice">扩容growslice</h3>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">growslice</span><span class="hljs-params">(et *_type, old slice, <span class="hljs-built_in">cap</span> <span class="hljs-keyword">int</span>)</span> <span class="hljs-title">slice</span></span> &#123;<span class="hljs-comment">// et 是_type指针，详情可以看type文章， old是老的slice，cap是申请的容量</span>
+<span class="hljs-comment">//新的slice的length会设为旧的slice的length</span>
+    ........
+    <span class="hljs-comment">//-------------以上计算扩容数量结束--------------------</span>
+    newcap := old.<span class="hljs-built_in">cap</span>
+	doublecap := newcap + newcap
+	<span class="hljs-keyword">if</span> <span class="hljs-built_in">cap</span> &gt; doublecap &#123;
+		newcap = <span class="hljs-built_in">cap</span>
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-keyword">if</span> old.<span class="hljs-built_in">len</span> &lt; <span class="hljs-number">1024</span> &#123;
+            newcap = doublecap
+            <span class="hljs-comment">//长度小于1024，新cap直接= len*2</span>
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			<span class="hljs-comment">// Check 0 &lt; newcap to detect overflow</span>
+            <span class="hljs-comment">// and prevent an infinite loop.</span>
+            <span class="hljs-comment">//这里有个检测overflow的小技巧；还有</span>
+			<span class="hljs-keyword">for</span> <span class="hljs-number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="hljs-built_in">cap</span> &#123;
+				newcap += newcap / <span class="hljs-number">4</span>
+			&#125;
+			<span class="hljs-comment">// Set newcap to the requested cap when</span>
+			<span class="hljs-comment">// the newcap calculation overflowed.</span>
+			<span class="hljs-keyword">if</span> newcap &lt;= <span class="hljs-number">0</span> &#123;
+				newcap = <span class="hljs-built_in">cap</span>
+			&#125;
+		&#125;
+	&#125;
+    <span class="hljs-comment">//-------------!!!!以下开始计算内存位置，不但继续计算新的容量大小，还要决定扩容后是否要重新划分内存------------------</span>
+    <span class="hljs-keyword">var</span> overflow <span class="hljs-keyword">bool</span>
+    <span class="hljs-keyword">var</span> lenmem, newlenmem, capmem <span class="hljs-keyword">uintptr</span>
+    <span class="hljs-comment">// Specialize for common values of et.size.</span>
+    <span class="hljs-comment">// For 1 we don't need any division/multiplication.</span>
+    <span class="hljs-comment">// For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.//这里就说到会优化</span>
+    <span class="hljs-comment">// For powers of 2, use a variable shift.</span>
+    <span class="hljs-keyword">switch</span> &#123;
+    <span class="hljs-keyword">case</span> et.size == <span class="hljs-number">1</span>:
+        lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>)
+        newlenmem = <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>)
+        capmem = roundupsize(<span class="hljs-keyword">uintptr</span>(newcap))<span class="hljs-comment">//这个就是计算新的capmen，当newcap不符合规定内存的大小规格时，会进行roundup内存对齐!!!</span>
+        overflow = <span class="hljs-keyword">uintptr</span>(newcap) &gt; maxAlloc
+        newcap = <span class="hljs-keyword">int</span>(capmem)
+    <span class="hljs-keyword">case</span> et.size == sys.PtrSize:<span class="hljs-comment">//是一个指针大小</span>
+        lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>) * sys.PtrSize
+        newlenmem = <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>) * sys.PtrSize
+        capmem = roundupsize(<span class="hljs-keyword">uintptr</span>(newcap) * sys.PtrSize)
+        overflow = <span class="hljs-keyword">uintptr</span>(newcap) &gt; maxAlloc/sys.PtrSize
+        newcap = <span class="hljs-keyword">int</span>(capmem / sys.PtrSize)<span class="hljs-comment">//sys.PtrSize指的是一个指针的size，64位的机器就是8</span>
+    <span class="hljs-keyword">case</span> isPowerOfTwo(et.size):<span class="hljs-comment">//2次幂会用variable shift</span>
+        <span class="hljs-keyword">var</span> shift <span class="hljs-keyword">uintptr</span>
+        <span class="hljs-keyword">if</span> sys.PtrSize == <span class="hljs-number">8</span> &#123;
+            <span class="hljs-comment">// Mask shift for better code generation.</span>
+            shift = <span class="hljs-keyword">uintptr</span>(sys.Ctz64(<span class="hljs-keyword">uint64</span>(et.size))) &amp; <span class="hljs-number">63</span>
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            shift = <span class="hljs-keyword">uintptr</span>(sys.Ctz32(<span class="hljs-keyword">uint32</span>(et.size))) &amp; <span class="hljs-number">31</span>
+        &#125;
+        lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>) &lt;&lt; shift
+        newlenmem = <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>) &lt;&lt; shift
+        capmem = roundupsize(<span class="hljs-keyword">uintptr</span>(newcap) &lt;&lt; shift)
+        overflow = <span class="hljs-keyword">uintptr</span>(newcap) &gt; (maxAlloc &gt;&gt; shift)
+        newcap = <span class="hljs-keyword">int</span>(capmem &gt;&gt; shift)
+    <span class="hljs-keyword">default</span>:<span class="hljs-comment">//其他的情况就直接除以et.size</span>
+        lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>) * et.size
+        newlenmem = <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>) * et.size
+        capmem = roundupsize(<span class="hljs-keyword">uintptr</span>(newcap) * et.size)
+        overflow = <span class="hljs-keyword">uintptr</span>(newcap) &gt; maxSliceCap(et.size)
+        newcap = <span class="hljs-keyword">int</span>(capmem / et.size)
+    &#125;
+
+    <span class="hljs-comment">// The check of overflow (uintptr(newcap) &gt; maxSliceCap(et.size))</span>
+    <span class="hljs-comment">// in addition to capmem &gt; _MaxMem is needed to prevent an overflow</span>
+    <span class="hljs-comment">// which can be used to trigger a segfault on 32bit architectures</span>
+    <span class="hljs-comment">// with this example program:</span>
+    <span class="hljs-comment">//</span>
+    <span class="hljs-comment">// type T [1&lt;&lt;27 + 1]int64</span>
+    <span class="hljs-comment">//</span>
+    <span class="hljs-comment">// var d T</span>
+    <span class="hljs-comment">// var s []T</span>
+    <span class="hljs-comment">//</span>
+    <span class="hljs-comment">// func main() &#123;</span>
+    <span class="hljs-comment">//   s = append(s, d, d, d, d)</span>
+    <span class="hljs-comment">//   print(len(s), "\n")</span>
+    <span class="hljs-comment">// &#125;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">cap</span> &lt; old.<span class="hljs-built_in">cap</span> || overflow || capmem &gt; maxAlloc &#123;
+        <span class="hljs-built_in">panic</span>(errorString(<span class="hljs-string">"growslice: cap out of range"</span>))
+    &#125;
+
+    
+    <span class="hljs-keyword">var</span> p unsafe.Pointer         <span class="hljs-comment">//这个应该是地址了</span>
+    <span class="hljs-keyword">if</span> et.kind&amp;kindNoPointers != <span class="hljs-number">0</span> &#123;
+        p = mallocgc(capmem, <span class="hljs-literal">nil</span>, <span class="hljs-literal">false</span>)<span class="hljs-comment">//申请内存空间</span>
+        memmove(p, old.array, lenmem)
+        <span class="hljs-comment">// The append() that calls growslice is going to overwrite from old.len to cap (which will be the new length).</span>
+        <span class="hljs-comment">// Only clear the part that will not be overwritten.</span>
+        memclrNoHeapPointers(add(p, newlenmem), capmem-newlenmem)
+    &#125; <span class="hljs-keyword">else</span> &#123;
+        <span class="hljs-comment">// Note: can't use rawmem (which avoids zeroing of memory), because then GC can scan uninitialized memory.</span>
+        p = mallocgc(capmem, et, <span class="hljs-literal">true</span>)
+        <span class="hljs-keyword">if</span> !writeBarrier.enabled &#123;
+            memmove(p, old.array, lenmem)
+        &#125; <span class="hljs-keyword">else</span> &#123;
+            <span class="hljs-keyword">for</span> i := <span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>); i &lt; lenmem; i += et.size &#123;
+                typedmemmove(et, add(p, i), add(old.array, i))
+            &#125;
+        &#125;
+    &#125;
+
+    <span class="hljs-keyword">return</span> slice&#123;p, old.<span class="hljs-built_in">len</span>, newcap&#125;
+&#125;</code></pre></div>
 <p>这里可以参照<a href="./memManage.md">之前写的日志memManger</a>里面有关go的内存管理中</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">roundupsize</span><span class="params">(size <span class="keyword">uintptr</span>)</span> <span class="title">uintptr</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">roundupsize</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span>&#123;&#125;</code></pre></div>
 <p>即会对传入类型进行内存对齐,这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！</p>
 <p>我们做一个实验:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">t := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1000</span>, <span class="number">1000</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br><span class="line">t = <span class="built_in">append</span>(t, <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">
+t := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">1000</span>, <span class="hljs-number">1000</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))
+t = <span class="hljs-built_in">append</span>(t, <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))</code></pre></div>
 <p>结果得出的是1000和2048，符合&lt;1024 则*2</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1024</span>, <span class="number">1024</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br><span class="line">t = <span class="built_in">append</span>(t, <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">t := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">1024</span>, <span class="hljs-number">1024</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))
+t = <span class="hljs-built_in">append</span>(t, <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))</code></pre></div>
 <p>结果是1024和1280 ，符合&gt;1024 则 ×1.25倍</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">1025</span>, <span class="number">1025</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br><span class="line">t = <span class="built_in">append</span>(t, <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">log.Printf(<span class="string">"%+v"</span>, <span class="built_in">cap</span>(t))</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">t := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">1025</span>, <span class="hljs-number">1025</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))
+t = <span class="hljs-built_in">append</span>(t, <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>)
+log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))</code></pre></div>
 <p>1025,1360 ,符合</p>
-<h2>4. 回收</h2>
+<h2 id="4-回收">4. 回收</h2>
 <p>//todo</p>
 
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/06/05/Go/Slice/" data-id="ckdfen90s001fdc55x21dlcdq" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2019/06/05/Go/Concurrency/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Concurrency Problem</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2019/06/05/java/Java-Class/">
+                        <span class="hidden-mobile">class loading</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
 
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2019/06/05/Go/Concurrency/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Concurrency Problem
-        
+            
+          </article>
+        </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
     </a>
   
-  
-    <a href="/2019/06/05/java/Java-Class/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">class loading</div>
-    </a>
-  
-</nav>
 
   
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签云</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">归档</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">最新文章</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2020/08/04/Go/Practice/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
-          </li>
-        
-          <li>
-            <a href="/2020/06/24/Go/type/">Golang type</a>
-          </li>
-        
-          <li>
-            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2020 Doujohner<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
     </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <script  src="/js/lazyload.js" ></script>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
 
 
-<script src="/js/script.js"></script>
 
-  </div>
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Something about Slice in Go&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>

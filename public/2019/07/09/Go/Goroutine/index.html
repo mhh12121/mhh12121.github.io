@@ -1,103 +1,217 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
 <head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
   
-  <title>Goroutine Notes | 兜的破烂</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
-<meta name="keywords" content="golang">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Goroutine Notes">
-<meta property="og:url" content="https://mhh12121.github.io/2019/07/09/Go/Goroutine/index.html">
-<meta property="og:site_name" content="兜的破烂">
-<meta property="og:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://mhh12121.github.io/img/gstatus.png">
-<meta property="og:image" content="https://mhh12121.github.io/img/sysmon.png">
-<meta property="og:image" content="https://mhh12121.github.io/img/mheap.png">
-<meta property="og:updated_time" content="2020-08-04T03:16:06.285Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Goroutine Notes">
-<meta name="twitter:description" content="Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑">
-<meta name="twitter:image" content="https://mhh12121.github.io/img/gstatus.png">
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Goroutine Notes - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
   
-    <link rel="alternate" href="/atom.xml" title="兜的破烂" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
   
 
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
 </head>
-</html>
+
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">兜的破烂</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">学习☆记录</a>
-        </h2>
-      
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="搜索"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://mhh12121.github.io"></form>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2019-07-09 01:00" pubdate>
+      July 9, 2019 am
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      5.3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      73
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
       </div>
     </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-Go/Goroutine" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/07/09/Go/Goroutine/" class="article-date">
-  <time datetime="2019-07-08T17:00:00.000Z" itemprop="datePublished">2019-07-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Goroutine Notes
-    </h1>
-  
+  </header>
 
-      </header>
+  <main>
     
-    <div class="article-entry" itemprop="articleBody">
       
-        <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑</p>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Goroutine Notes</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <p>Goroutine 的模型，调度等，它与普通thread有何区别？先留个坑</p>
 <a id="more"></a>
-<h2>为什么有这个东西？</h2>
+<h2 id="为什么有这个东西？">为什么有这个东西？</h2>
 <ol>
 <li>
 <p>传统OS自带的线程一个占栈1MB，明显大的过分，所以编程语言自身得另外实现一些小的线程, 而goroutines一般就4KB左右，当然这个数值是可以调整的；</p>
@@ -106,7 +220,7 @@
 <p>切换上下文的时候一般一个线程就消耗1μs,但是goroutine的切换则仅仅有0.2μs左右，大约快了80%;（里面避免了内核和用户态上的切换）</p>
 </li>
 </ol>
-<h3>引用</h3>
+<h3 id="引用">引用</h3>
 <p>《 Scalable Go Scheduler Design Doc》中有描述</p>
 <blockquote>
 <p>Goroutines are part of making concurrency easy to use. The idea, which has been around for a while, is to multiplex independently    executing functions—coroutines—onto a set of threads. When a coroutine blocks, such as by calling a blocking system call, the run-time automatically moves other coroutines on the same operating system thread to a different, runnable thread so they won’t be blocked. The programmer sees none of this, which is the point. The result, which we call goroutines, can be very cheap: unless they spend a lot of time in long-running system calls, they cost little more than the memory for the stack, which is just a few kilobytes.</p>
@@ -127,7 +241,7 @@
 </li>
 </ul>
 <p>要时刻明白对于线程来讲，其<strong>阻塞指的是切换了调度队列</strong>，不再进行当前的<strong>数据控制流</strong>，如果其他流满足条件，则会移出当前队列，调度会之前的数据流。同理goroutine也只是一个结构，记录了运行的函数，运行的位置等</p>
-<h2>调度模型</h2>
+<h2 id="调度模型">调度模型</h2>
 <p>一般来说多线程调度模型有 work-sharing 和 work-stealing模型</p>
 <p>go采用了后者，可以看看有关<a href="http://supertech.csail.mit.edu/papers/steal.pdf" target="_blank" rel="noopener">work-stealing的论文</a></p>
 <p>架构：
@@ -135,7 +249,7 @@ GPM</p>
 <ul>
 <li>G（goroutine）指的是go语言的goroutine（有些人叫它为协程，但其实跟coroutine有一点区别，因为coroutine单纯在用户态使用）</li>
 </ul>
-<h3>调度时机</h3>
+<h3 id="调度时机">调度时机</h3>
 <ol>
 <li>Channel,mutex之类同步操作发生阻塞</li>
 <li>time.sleep</li>
@@ -144,8 +258,8 @@ GPM</p>
 <li>gc</li>
 <li>运行过久或者系统调用过久</li>
 </ol>
-<h3>Scheduler调度过程</h3>
-<h4>大概流程</h4>
+<h3 id="scheduler调度过程">Scheduler调度过程</h3>
+<h4 id="大概流程">大概流程</h4>
 <p>调度前的检查:</p>
 <ol>
 <li>是否分配有gc mark，如果有则要做gc mark</li>
@@ -154,8 +268,8 @@ GPM</p>
 <li>看一下net中有无poll的出来</li>
 <li>从其他的p 偷一部分</li>
 </ol>
-<h4>相关状态转换</h4>
-<p><img src="/img/gstatus.png" alt="一个状态图"></p>
+<h4 id="相关状态转换">相关状态转换</h4>
+<p><img src="/img/gstatus.png" srcset="/img/loading.gif" alt="一个状态图"></p>
 <p>当有新的Goroutine被创建或者是现存的goroutine更新为runnable状态，它会被push到当前P的runnable goroutine list里面，
 当P完成了执行goroutine，它会</p>
 <ul>
@@ -164,11 +278,11 @@ GPM</p>
 <p>当M 创建了新的goroutine，它要保证有其他M执行这个goroutine
 同样的，如果M进入了syscall阶段，它也要保证有其他M可以执行这个goroutine</p>
 <p>禁止抢占:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">runtime_procPin</span><span class="params">()</span> <span class="title">int</span> //标记当前<span class="title">G</span>在<span class="title">M</span>上不会被抢占，并返回当前<span class="title">P</span>的<span class="title">ID</span></span></span><br></pre></td></tr></table></figure>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">runtime_procUnpin</span><span class="params">()</span> //解除抢占标志</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runtime_procPin</span><span class="hljs-params">()</span> <span class="hljs-title">int</span> //标记当前<span class="hljs-title">G</span>在<span class="hljs-title">M</span>上不会被抢占，并返回当前<span class="hljs-title">P</span>的<span class="hljs-title">ID</span></span></code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runtime_procUnpin</span><span class="hljs-params">()</span> //解除抢占标志</span></code></pre></div>
 <p>这里我们有两种方法：
 我们可以立即block或unblock多个M，或使其自旋；
-但这里会有性能损耗和花费不必要的cpu周期，方法是使用自旋而且burn CPU cycles
+但这里会有性能损耗和花费不必要的cpu周期，方法是使用自旋而且burn CPU cycles(???)
 然而，这不应该影响在GOMAXPROCS=1的程序（command line，appengine这些）</p>
 <p>自旋有两个等级：</p>
 <ol>
@@ -179,31 +293,302 @@ GPM</p>
 <li>这就保证了不会有当前运行着的Goroutines被其他 M 运行</li>
 <li>也避免了过多的 M 同时 阻塞和释放阻塞</li>
 </ol>
-<h3>Sysmon</h3>
+<h3 id="sysmon">Sysmon</h3>
 <p>sysmon是在<strong>runtime初始化之后，执行代码之前</strong>，由runtime启动且不与任何P绑定直接由一个M执行的协程，类似于linux的一些系统任务内核线程</p>
-<p>具体设置如<img src="/img/sysmon.png" alt="sysmon状态转换图"></p>
-<h3>各个结构体</h3>
+<p>具体设置如<img src="/img/sysmon.png" srcset="/img/loading.gif" alt="sysmon状态转换图"></p>
+<h3 id="各个结构体">各个结构体</h3>
 <ul>
 <li>g (goroutine)</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> g <span class="keyword">struct</span> &#123;</span><br><span class="line">	goid           <span class="keyword">int64</span></span><br><span class="line">	<span class="comment">// Stack parameters.</span></span><br><span class="line">	<span class="comment">// stack describes the actual stack memory: [stack.lo, stack.hi).</span></span><br><span class="line">	<span class="comment">// stackguard0 is the stack pointer compared in the Go stack growth prologue.</span></span><br><span class="line">	<span class="comment">//stackguard0用作栈的指针</span></span><br><span class="line">	<span class="comment">// It is stack.lo+StackGuard normally, but can be StackPreempt to trigger a preemption.</span></span><br><span class="line">	<span class="comment">// stackguard1 is the stack pointer compared in the C stack growth prologue.</span></span><br><span class="line">	<span class="comment">// It is stack.lo+StackGuard on g0 and gsignal stacks.</span></span><br><span class="line">	<span class="comment">// It is ~0 on other goroutine stacks, to trigger a call to morestackc (and crash).</span></span><br><span class="line">	stack       stack   <span class="comment">// offset known to runtime/cgo</span></span><br><span class="line">	<span class="comment">//栈空间[lo,hi)</span></span><br><span class="line">	<span class="comment">//type stack struct &#123;</span></span><br><span class="line">	<span class="comment">//	lo uintptr</span></span><br><span class="line">	<span class="comment">//	hi uintptr</span></span><br><span class="line">	<span class="comment">//&#125;</span></span><br><span class="line">	stackguard0 <span class="keyword">uintptr</span> <span class="comment">// offset known to liblink</span></span><br><span class="line">	stackguard1 <span class="keyword">uintptr</span> <span class="comment">// offset known to liblink</span></span><br><span class="line">    ...</span><br><span class="line">	m              *m      <span class="comment">// current m; offset known to arm liblink</span></span><br><span class="line">	<span class="comment">//调度器,上下文保存的信息所在地</span></span><br><span class="line">	sched          gobuf</span><br><span class="line">    ...</span><br><span class="line">	param          unsafe.Pointer <span class="comment">// passed parameter on wakeup</span></span><br><span class="line">	...</span><br><span class="line">	</span><br><span class="line">	schedlink      guintptr</span><br><span class="line">	waitsince      <span class="keyword">int64</span>      <span class="comment">// approx time when the g become blocked</span></span><br><span class="line">	waitreason     waitReason <span class="comment">// if status==Gwaiting</span></span><br><span class="line">	preempt        <span class="keyword">bool</span>       <span class="comment">// preemption signal, duplicates stackguard0 = stackpreempt</span></span><br><span class="line">	...</span><br><span class="line">	preemptscan    <span class="keyword">bool</span>       <span class="comment">// preempted g does scan for gc</span></span><br><span class="line">	gcscandone     <span class="keyword">bool</span>       <span class="comment">// g has scanned stack; protected by _Gscan bit in status</span></span><br><span class="line">	gcscanvalid    <span class="keyword">bool</span>       <span class="comment">// false at start of gc cycle, true if G has not run since last scan; <span class="doctag">TODO:</span> remove?</span></span><br><span class="line">	...</span><br><span class="line">	raceignore     <span class="keyword">int8</span>       <span class="comment">// ignore race detection events</span></span><br><span class="line">	sysblocktraced <span class="keyword">bool</span>       <span class="comment">// StartTrace has emitted EvGoInSyscall about this goroutine</span></span><br><span class="line">	sysexitticks   <span class="keyword">int64</span>      <span class="comment">// cputicks when syscall has returned (for tracing)</span></span><br><span class="line">	traceseq       <span class="keyword">uint64</span>     <span class="comment">// trace event sequencer</span></span><br><span class="line">	tracelastp     puintptr   <span class="comment">// last P emitted an event for this goroutine</span></span><br><span class="line">    lockedm        muintptr</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//本身的寄存器状态</span></span><br><span class="line">	sig            <span class="keyword">uint32</span></span><br><span class="line">	writebuf       []<span class="keyword">byte</span></span><br><span class="line">	sigcode0       <span class="keyword">uintptr</span></span><br><span class="line">	sigcode1       <span class="keyword">uintptr</span></span><br><span class="line">	sigpc          <span class="keyword">uintptr</span></span><br><span class="line">    gopc           <span class="keyword">uintptr</span>         <span class="comment">// pc of go statement that created this goroutine</span></span><br><span class="line">    ....</span><br><span class="line">	startpc        <span class="keyword">uintptr</span>         <span class="comment">// pc of goroutine function</span></span><br><span class="line">	racectx        <span class="keyword">uintptr</span></span><br><span class="line">	waiting        *sudog         <span class="comment">// sudog structures this g is waiting on (that have a valid elem ptr); in lock order</span></span><br><span class="line"></span><br><span class="line">	.....</span><br><span class="line">	<span class="comment">// Per-G GC state</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// gcAssistBytes is this G's GC assist credit in terms of</span></span><br><span class="line">	<span class="comment">// bytes allocated. If this is positive, then the G has credit</span></span><br><span class="line">	<span class="comment">// to allocate gcAssistBytes bytes without assisting. If this</span></span><br><span class="line">	<span class="comment">// is negative, then the G must correct this by performing</span></span><br><span class="line">	<span class="comment">// scan work. We track this in bytes to make it fast to update</span></span><br><span class="line">	<span class="comment">// and check for debt in the malloc hot path. The assist ratio</span></span><br><span class="line">	<span class="comment">// determines how this corresponds to scan work debt.</span></span><br><span class="line">	gcAssistBytes <span class="keyword">int64</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> g <span class="hljs-keyword">struct</span> &#123;
+	goid           <span class="hljs-keyword">int64</span>
+	<span class="hljs-comment">// Stack parameters.</span>
+	<span class="hljs-comment">// stack describes the actual stack memory: [stack.lo, stack.hi).</span>
+	<span class="hljs-comment">// stackguard0 is the stack pointer compared in the Go stack growth prologue.</span>
+	<span class="hljs-comment">//stackguard0用作栈的指针</span>
+	<span class="hljs-comment">// It is stack.lo+StackGuard normally, but can be StackPreempt to trigger a preemption.</span>
+	<span class="hljs-comment">// stackguard1 is the stack pointer compared in the C stack growth prologue.</span>
+	<span class="hljs-comment">// It is stack.lo+StackGuard on g0 and gsignal stacks.</span>
+	<span class="hljs-comment">// It is ~0 on other goroutine stacks, to trigger a call to morestackc (and crash).</span>
+	stack       stack   <span class="hljs-comment">// offset known to runtime/cgo</span>
+	<span class="hljs-comment">//栈空间[lo,hi)</span>
+	<span class="hljs-comment">//type stack struct &#123;</span>
+	<span class="hljs-comment">//	lo uintptr</span>
+	<span class="hljs-comment">//	hi uintptr</span>
+	<span class="hljs-comment">//&#125;</span>
+	stackguard0 <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// offset known to liblink</span>
+	stackguard1 <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// offset known to liblink</span>
+    ...
+	m              *m      <span class="hljs-comment">// current m; offset known to arm liblink</span>
+	<span class="hljs-comment">//调度器,上下文保存的信息所在地</span>
+	sched          gobuf
+    ...
+	param          unsafe.Pointer <span class="hljs-comment">// passed parameter on wakeup</span>
+	...
+	
+	schedlink      guintptr
+	waitsince      <span class="hljs-keyword">int64</span>      <span class="hljs-comment">// approx time when the g become blocked</span>
+	waitreason     waitReason <span class="hljs-comment">// if status==Gwaiting</span>
+	preempt        <span class="hljs-keyword">bool</span>       <span class="hljs-comment">// preemption signal, duplicates stackguard0 = stackpreempt</span>
+	...
+	preemptscan    <span class="hljs-keyword">bool</span>       <span class="hljs-comment">// preempted g does scan for gc</span>
+	gcscandone     <span class="hljs-keyword">bool</span>       <span class="hljs-comment">// g has scanned stack; protected by _Gscan bit in status</span>
+	gcscanvalid    <span class="hljs-keyword">bool</span>       <span class="hljs-comment">// false at start of gc cycle, true if G has not run since last scan; <span class="hljs-doctag">TODO:</span> remove?</span>
+	...
+	raceignore     <span class="hljs-keyword">int8</span>       <span class="hljs-comment">// ignore race detection events</span>
+	sysblocktraced <span class="hljs-keyword">bool</span>       <span class="hljs-comment">// StartTrace has emitted EvGoInSyscall about this goroutine</span>
+	sysexitticks   <span class="hljs-keyword">int64</span>      <span class="hljs-comment">// cputicks when syscall has returned (for tracing)</span>
+	traceseq       <span class="hljs-keyword">uint64</span>     <span class="hljs-comment">// trace event sequencer</span>
+	tracelastp     puintptr   <span class="hljs-comment">// last P emitted an event for this goroutine</span>
+    lockedm        muintptr
+    
+    <span class="hljs-comment">//本身的寄存器状态</span>
+	sig            <span class="hljs-keyword">uint32</span>
+	writebuf       []<span class="hljs-keyword">byte</span>
+	sigcode0       <span class="hljs-keyword">uintptr</span>
+	sigcode1       <span class="hljs-keyword">uintptr</span>
+	sigpc          <span class="hljs-keyword">uintptr</span>
+    gopc           <span class="hljs-keyword">uintptr</span>         <span class="hljs-comment">// pc of go statement that created this goroutine</span>
+    ....
+	startpc        <span class="hljs-keyword">uintptr</span>         <span class="hljs-comment">// pc of goroutine function</span>
+	racectx        <span class="hljs-keyword">uintptr</span>
+	waiting        *sudog         <span class="hljs-comment">// sudog structures this g is waiting on (that have a valid elem ptr); in lock order</span>
+
+	.....
+	<span class="hljs-comment">// Per-G GC state</span>
+
+	<span class="hljs-comment">// gcAssistBytes is this G's GC assist credit in terms of</span>
+	<span class="hljs-comment">// bytes allocated. If this is positive, then the G has credit</span>
+	<span class="hljs-comment">// to allocate gcAssistBytes bytes without assisting. If this</span>
+	<span class="hljs-comment">// is negative, then the G must correct this by performing</span>
+	<span class="hljs-comment">// scan work. We track this in bytes to make it fast to update</span>
+	<span class="hljs-comment">// and check for debt in the malloc hot path. The assist ratio</span>
+	<span class="hljs-comment">// determines how this corresponds to scan work debt.</span>
+	gcAssistBytes <span class="hljs-keyword">int64</span>
+&#125;</code></pre></div>
 <ul>
 <li>M（machine）指的就是OS原生线程，是真正调度资源的单位，M是idle或者syscall中，需要P的调度</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> m <span class="keyword">struct</span> &#123;</span><br><span class="line">	id            <span class="keyword">int64</span></span><br><span class="line">    <span class="comment">//g0是一个调用栈</span></span><br><span class="line">	g0      *g     <span class="comment">// goroutine with scheduling stack</span></span><br><span class="line">	morebuf gobuf  <span class="comment">// gobuf arg to morestack</span></span><br><span class="line">	procid        <span class="keyword">uint64</span>       <span class="comment">// for debuggers, but offset not hard-coded</span></span><br><span class="line">	<span class="comment">//底层的线程id</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//这个信号处理的goroutines</span></span><br><span class="line">	gsignal       *g           <span class="comment">// signal-handling g</span></span><br><span class="line">	goSigStack    gsignalStack <span class="comment">// Go-allocated signal handling stack</span></span><br><span class="line">    sigmask       sigset       <span class="comment">// storage for saved signal mask</span></span><br><span class="line">	<span class="comment">//TLS启动时候要使用</span></span><br><span class="line">	<span class="comment">//传给FS寄存器的局部变量</span></span><br><span class="line">	tls           [<span class="number">6</span>]<span class="keyword">uintptr</span>   <span class="comment">// thread-local storage (for x86 extern register)</span></span><br><span class="line">	<span class="comment">//m启动时的函数，会传给clone</span></span><br><span class="line">	mstartfn      <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;&#125;  <span class="comment">//当前运行的goroutine,&#123;&#125;在语法中是错误的，这里为了使markdown解析而加上</span></span><br><span class="line">	<span class="comment">//当前运行代码的g</span></span><br><span class="line">    curg          *g       <span class="comment">// current running goroutine</span></span><br><span class="line">    </span><br><span class="line">	caughtsig     guintptr <span class="comment">// goroutine running during fatal signal</span></span><br><span class="line">    p             puintptr <span class="comment">// attached p for executing go code (nil if not executing go code)</span></span><br><span class="line">    </span><br><span class="line">	nextp         puintptr</span><br><span class="line">    oldp          puintptr <span class="comment">// the p that was attached before executing a syscall</span></span><br><span class="line"></span><br><span class="line">	mallocing     <span class="keyword">int32</span></span><br><span class="line">    throwing      <span class="keyword">int32</span></span><br><span class="line">    <span class="comment">//如果不等于"",没有发生抢占</span></span><br><span class="line">    preemptoff    <span class="keyword">string</span> <span class="comment">// if != "", keep curg running on this m</span></span><br><span class="line">    </span><br><span class="line">	locks         <span class="keyword">int32</span></span><br><span class="line">	....</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//m正在自旋，寻找可以attach的工作对象(P), m找不到可运行的g</span></span><br><span class="line">	spinning      <span class="keyword">bool</span> <span class="comment">// m is out of work and is actively looking for work</span></span><br><span class="line">	blocked       <span class="keyword">bool</span> <span class="comment">// m is blocked on a note</span></span><br><span class="line">    .....</span><br><span class="line">    <span class="comment">//如果=0，则可以清空g0以及清除该m，是原子性的操作</span></span><br><span class="line">	freeWait      <span class="keyword">uint32</span> <span class="comment">// if == 0, safe to free g0 and delete m (atomic)</span></span><br><span class="line">	fastrand      [<span class="number">2</span>]<span class="keyword">uint32</span></span><br><span class="line">	needextram    <span class="keyword">bool</span></span><br><span class="line">    traceback     <span class="keyword">uint8</span></span><br><span class="line">	...<span class="comment">//里面一些cgo的代码</span></span><br><span class="line">	park          note</span><br><span class="line">    alllink       *m <span class="comment">// on allm</span></span><br><span class="line">    <span class="comment">//调度链，是一个m的指针</span></span><br><span class="line">    schedlink     muintptr</span><br><span class="line">	<span class="comment">//每一个P(Per-thread)的用于存储小对象的cache,没有锁，因为都在一个P内，运行代码时绑定的p中的mcache</span></span><br><span class="line">    mcache        *mcache</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//goroutine的指针,uintptr可以避过写屏障, 主要用于Gobuf goroutine状态或者是那些不经过P的调度列表</span></span><br><span class="line">	<span class="comment">//是否与某个g一直绑定</span></span><br><span class="line">    lockedg       guintptr</span><br><span class="line">    <span class="comment">//创建当前thread的栈</span></span><br><span class="line">	createstack   [<span class="number">32</span>]<span class="keyword">uintptr</span> <span class="comment">// stack that created this thread.</span></span><br><span class="line">    </span><br><span class="line">    ...<span class="comment">//track用</span></span><br><span class="line">    <span class="comment">//下一个等待锁的M</span></span><br><span class="line">	nextwaitm     muintptr    <span class="comment">// next m waiting for lock</span></span><br><span class="line">    <span class="comment">//一些锁的操作</span></span><br><span class="line">    waitunlockf   <span class="function"><span class="keyword">func</span><span class="params">(*g, unsafe.Pointer)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function">	<span class="title">waitlock</span>      <span class="title">unsafe</span>.<span class="title">Pointer</span></span></span><br><span class="line"><span class="function">	<span class="title">waittraceev</span>   <span class="title">byte</span></span></span><br><span class="line"><span class="function">	<span class="title">waittraceskip</span> <span class="title">int</span></span></span><br><span class="line"><span class="function">	<span class="title">startingtrace</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function">	<span class="title">syscalltick</span>   <span class="title">uint32</span></span></span><br><span class="line"><span class="function">	<span class="title">thread</span>        <span class="title">uintptr</span> // <span class="title">thread</span> <span class="title">handle</span></span></span><br><span class="line"><span class="function">	<span class="title">freelink</span>      *<span class="title">m</span>      // <span class="title">on</span> <span class="title">sched</span>.<span class="title">freem</span></span></span><br><span class="line"><span class="function">    ...</span></span><br><span class="line"><span class="function">    //<span class="title">debug</span></span></span><br><span class="line"><span class="function">	<span class="title">dlogPerM</span></span></span><br><span class="line"><span class="function">    //表明操作系统相关</span></span><br><span class="line"><span class="function">	<span class="title">mOS</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> m <span class="hljs-keyword">struct</span> &#123;
+	id            <span class="hljs-keyword">int64</span>
+    <span class="hljs-comment">//g0是一个调用栈</span>
+	g0      *g     <span class="hljs-comment">// goroutine with scheduling stack</span>
+	morebuf gobuf  <span class="hljs-comment">// gobuf arg to morestack</span>
+	procid        <span class="hljs-keyword">uint64</span>       <span class="hljs-comment">// for debuggers, but offset not hard-coded</span>
+	<span class="hljs-comment">//底层的线程id</span>
+    ...
+    <span class="hljs-comment">//这个信号处理的goroutines</span>
+	gsignal       *g           <span class="hljs-comment">// signal-handling g</span>
+	goSigStack    gsignalStack <span class="hljs-comment">// Go-allocated signal handling stack</span>
+    sigmask       sigset       <span class="hljs-comment">// storage for saved signal mask</span>
+	<span class="hljs-comment">//TLS启动时候要使用</span>
+	<span class="hljs-comment">//传给FS寄存器的局部变量</span>
+	tls           [<span class="hljs-number">6</span>]<span class="hljs-keyword">uintptr</span>   <span class="hljs-comment">// thread-local storage (for x86 extern register)</span>
+	<span class="hljs-comment">//m启动时的函数，会传给clone</span>
+	mstartfn      <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>&#123;&#125;  <span class="hljs-comment">//当前运行的goroutine,&#123;&#125;在语法中是错误的，这里为了使markdown解析而加上</span>
+	<span class="hljs-comment">//当前运行代码的g</span>
+    curg          *g       <span class="hljs-comment">// current running goroutine</span>
+    
+	caughtsig     guintptr <span class="hljs-comment">// goroutine running during fatal signal</span>
+    p             puintptr <span class="hljs-comment">// attached p for executing go code (nil if not executing go code)</span>
+    
+	nextp         puintptr
+    oldp          puintptr <span class="hljs-comment">// the p that was attached before executing a syscall</span>
+
+	mallocing     <span class="hljs-keyword">int32</span>
+    throwing      <span class="hljs-keyword">int32</span>
+    <span class="hljs-comment">//如果不等于"",没有发生抢占</span>
+    preemptoff    <span class="hljs-keyword">string</span> <span class="hljs-comment">// if != "", keep curg running on this m</span>
+    
+	locks         <span class="hljs-keyword">int32</span>
+	....
+    
+    <span class="hljs-comment">//m正在自旋，寻找可以attach的工作对象(P), m找不到可运行的g</span>
+	spinning      <span class="hljs-keyword">bool</span> <span class="hljs-comment">// m is out of work and is actively looking for work</span>
+	blocked       <span class="hljs-keyword">bool</span> <span class="hljs-comment">// m is blocked on a note</span>
+    .....
+    <span class="hljs-comment">//如果=0，则可以清空g0以及清除该m，是原子性的操作</span>
+	freeWait      <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// if == 0, safe to free g0 and delete m (atomic)</span>
+	fastrand      [<span class="hljs-number">2</span>]<span class="hljs-keyword">uint32</span>
+	needextram    <span class="hljs-keyword">bool</span>
+    traceback     <span class="hljs-keyword">uint8</span>
+	...<span class="hljs-comment">//里面一些cgo的代码</span>
+	park          note
+    alllink       *m <span class="hljs-comment">// on allm</span>
+    <span class="hljs-comment">//调度链，是一个m的指针</span>
+    schedlink     muintptr
+	<span class="hljs-comment">//每一个P(Per-thread)的用于存储小对象的cache,没有锁，因为都在一个P内，运行代码时绑定的p中的mcache</span>
+    mcache        *mcache
+    
+	<span class="hljs-comment">//goroutine的指针,uintptr可以避过写屏障, 主要用于Gobuf goroutine状态或者是那些不经过P的调度列表</span>
+	<span class="hljs-comment">//是否与某个g一直绑定</span>
+    lockedg       guintptr
+    <span class="hljs-comment">//创建当前thread的栈</span>
+	createstack   [<span class="hljs-number">32</span>]<span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// stack that created this thread.</span>
+    
+    ...<span class="hljs-comment">//track用</span>
+    <span class="hljs-comment">//下一个等待锁的M</span>
+	nextwaitm     muintptr    <span class="hljs-comment">// next m waiting for lock</span>
+    <span class="hljs-comment">//一些锁的操作</span>
+    waitunlockf   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(*g, unsafe.Pointer)</span> <span class="hljs-title">bool</span>
+	<span class="hljs-title">waitlock</span>      <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span>
+	<span class="hljs-title">waittraceev</span>   <span class="hljs-title">byte</span>
+	<span class="hljs-title">waittraceskip</span> <span class="hljs-title">int</span>
+	<span class="hljs-title">startingtrace</span> <span class="hljs-title">bool</span>
+	<span class="hljs-title">syscalltick</span>   <span class="hljs-title">uint32</span>
+	<span class="hljs-title">thread</span>        <span class="hljs-title">uintptr</span> // <span class="hljs-title">thread</span> <span class="hljs-title">handle</span>
+	<span class="hljs-title">freelink</span>      *<span class="hljs-title">m</span>      // <span class="hljs-title">on</span> <span class="hljs-title">sched</span>.<span class="hljs-title">freem</span>
+    ...
+    //<span class="hljs-title">debug</span>
+	<span class="hljs-title">dlogPerM</span>
+    //表明操作系统相关
+	<span class="hljs-title">mOS</span>
+&#125;</span></code></pre></div>
 <ul>
 <li>P（Process）指的是go语言中的调度器，M就是用P才能调度G
 可以看到P是内嵌于 M 和 G 之间的，</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> p <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">//每一个p都有自己的id</span></span><br><span class="line">    id          <span class="keyword">int32</span></span><br><span class="line">    <span class="comment">//状态，有_Pidle ,_Prunning,_Psyscall, _Pgcstop, _Pdead</span></span><br><span class="line">    status      <span class="keyword">uint32</span> <span class="comment">// one of pidle/prunning/...</span></span><br><span class="line">    </span><br><span class="line">    link        puintptr</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//每次调度都会自增</span></span><br><span class="line">	schedtick   <span class="keyword">uint32</span>     <span class="comment">// incremented on every scheduler call</span></span><br><span class="line">    syscalltick <span class="keyword">uint32</span>     <span class="comment">// incremented on every system call</span></span><br><span class="line">    <span class="comment">//go程序启动时候的sysmon用</span></span><br><span class="line">    sysmontick  sysmontick <span class="comment">// last tick observed by sysmon</span></span><br><span class="line">    <span class="comment">//指的是后面指针连接的一个m,同时该m也有一个指针连向自己 ???</span></span><br><span class="line">    m           muintptr   <span class="comment">// back-link to associated m (nil if idle)</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">	mcache      *mcache</span><br><span class="line">	raceprocctx <span class="keyword">uintptr</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//defer的池,defer函数，结构在此</span></span><br><span class="line">	deferpool    [<span class="number">5</span>][]*_defer <span class="comment">// pool of available defer structs of different sizes (see panic.go)</span></span><br><span class="line">	deferpoolbuf [<span class="number">5</span>][<span class="number">32</span>]*_defer</span><br><span class="line"></span><br><span class="line">    <span class="comment">//goroutine的id生成，能平均分到每一个idgen中</span></span><br><span class="line">	<span class="comment">// Cache of goroutine ids, amortizes accesses to runtime·sched.goidgen.</span></span><br><span class="line">	goidcache    <span class="keyword">uint64</span></span><br><span class="line">	goidcacheend <span class="keyword">uint64</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//这个就是连接的可运行的goroutines队列,可以不加锁访问（都在一个P里面，没必要加锁）</span></span><br><span class="line">	<span class="comment">// Queue of runnable goroutines. Accessed without lock.</span></span><br><span class="line">	runqhead <span class="keyword">uint32</span></span><br><span class="line">	runqtail <span class="keyword">uint32</span></span><br><span class="line">	runq     [<span class="number">256</span>]guintptr</span><br><span class="line">	<span class="comment">// runnext, if non-nil, is a runnable G that was ready'd by</span></span><br><span class="line">	<span class="comment">// the current G and should be run next instead of what's in</span></span><br><span class="line">	<span class="comment">// runq if there's time remaining in the running G's time</span></span><br><span class="line">	<span class="comment">// slice. It will inherit the time left in the current time</span></span><br><span class="line">	<span class="comment">// slice. If a set of goroutines is locked in a</span></span><br><span class="line">	<span class="comment">// communicate-and-wait pattern, this schedules that set as a</span></span><br><span class="line">	<span class="comment">// unit and eliminates the (potentially large) scheduling</span></span><br><span class="line">	<span class="comment">// latency that otherwise arises from adding the ready'd</span></span><br><span class="line">	<span class="comment">// goroutines to the end of the run queue.</span></span><br><span class="line">	<span class="comment">//如果runnext非空，则是一个runnable状态的g，如果在当前时间片中还有剩余，则runnext指向的就是下一个应该运行的g而不使用runq里面的g，其会继承剩下的时间；</span></span><br><span class="line">	runnext guintptr</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Available G's (status == Gdead)</span></span><br><span class="line">	gFree <span class="keyword">struct</span> &#123;</span><br><span class="line">		gList</span><br><span class="line">		n <span class="keyword">int32</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//sudog相关</span></span><br><span class="line">	sudogcache []*sudog</span><br><span class="line">	sudogbuf   [<span class="number">128</span>]*sudog</span><br><span class="line"></span><br><span class="line">	...<span class="comment">//trace的一些东西</span></span><br><span class="line"></span><br><span class="line">	palloc persistentAlloc <span class="comment">// per-P to avoid mutex</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//用作优化内存对齐</span></span><br><span class="line">	_ <span class="keyword">uint32</span> <span class="comment">// Alignment for atomic fields below</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Per-P GC state</span></span><br><span class="line">	gcAssistTime         <span class="keyword">int64</span>    <span class="comment">// Nanoseconds in assistAlloc</span></span><br><span class="line">	gcFractionalMarkTime <span class="keyword">int64</span>    <span class="comment">// Nanoseconds in fractional mark worker (atomic)</span></span><br><span class="line">	gcBgMarkWorker       guintptr <span class="comment">// (atomic)</span></span><br><span class="line">	gcMarkWorkerMode     gcMarkWorkerMode</span><br><span class="line"></span><br><span class="line">	<span class="comment">// gcMarkWorkerStartTime is the nanotime() at which this mark</span></span><br><span class="line">	<span class="comment">// worker started.</span></span><br><span class="line">	gcMarkWorkerStartTime <span class="keyword">int64</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// gcw is this P's GC work buffer cache. The work buffer is</span></span><br><span class="line">	<span class="comment">// filled by write barriers, drained by mutator assists, and</span></span><br><span class="line">	<span class="comment">// disposed on certain GC state transitions.</span></span><br><span class="line">	gcw gcWork</span><br><span class="line"></span><br><span class="line">	<span class="comment">// wbBuf is this P's GC write barrier buffer.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// <span class="doctag">TODO:</span> Consider caching this in the running G.</span></span><br><span class="line">	wbBuf wbBuf</span><br><span class="line"></span><br><span class="line">	runSafePointFn <span class="keyword">uint32</span> <span class="comment">// if 1, run sched.safePointFn at next safe point</span></span><br><span class="line"></span><br><span class="line">	pad cpu.CacheLinePad</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> p <span class="hljs-keyword">struct</span> &#123;
+    <span class="hljs-comment">//每一个p都有自己的id</span>
+    id          <span class="hljs-keyword">int32</span>
+    <span class="hljs-comment">//状态，有_Pidle ,_Prunning,_Psyscall, _Pgcstop, _Pdead</span>
+    status      <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// one of pidle/prunning/...</span>
+    
+    link        puintptr
+    
+    <span class="hljs-comment">//每次调度都会自增</span>
+	schedtick   <span class="hljs-keyword">uint32</span>     <span class="hljs-comment">// incremented on every scheduler call</span>
+    syscalltick <span class="hljs-keyword">uint32</span>     <span class="hljs-comment">// incremented on every system call</span>
+    <span class="hljs-comment">//go程序启动时候的sysmon用</span>
+    sysmontick  sysmontick <span class="hljs-comment">// last tick observed by sysmon</span>
+    <span class="hljs-comment">//指的是后面指针连接的一个m,同时该m也有一个指针连向自己 ???</span>
+    m           muintptr   <span class="hljs-comment">// back-link to associated m (nil if idle)</span>
+    <span class="hljs-comment">//</span>
+	mcache      *mcache
+	raceprocctx <span class="hljs-keyword">uintptr</span>
+
+    <span class="hljs-comment">//defer的池,defer函数，结构在此</span>
+	deferpool    [<span class="hljs-number">5</span>][]*_defer <span class="hljs-comment">// pool of available defer structs of different sizes (see panic.go)</span>
+	deferpoolbuf [<span class="hljs-number">5</span>][<span class="hljs-number">32</span>]*_defer
+
+    <span class="hljs-comment">//goroutine的id生成，能平均分到每一个idgen中</span>
+	<span class="hljs-comment">// Cache of goroutine ids, amortizes accesses to runtime·sched.goidgen.</span>
+	goidcache    <span class="hljs-keyword">uint64</span>
+	goidcacheend <span class="hljs-keyword">uint64</span>
+
+
+    <span class="hljs-comment">//这个就是连接的可运行的goroutines队列,可以不加锁访问（都在一个P里面，没必要加锁）</span>
+	<span class="hljs-comment">// Queue of runnable goroutines. Accessed without lock.</span>
+	runqhead <span class="hljs-keyword">uint32</span>
+	runqtail <span class="hljs-keyword">uint32</span>
+	runq     [<span class="hljs-number">256</span>]guintptr
+	<span class="hljs-comment">// runnext, if non-nil, is a runnable G that was ready'd by</span>
+	<span class="hljs-comment">// the current G and should be run next instead of what's in</span>
+	<span class="hljs-comment">// runq if there's time remaining in the running G's time</span>
+	<span class="hljs-comment">// slice. It will inherit the time left in the current time</span>
+	<span class="hljs-comment">// slice. If a set of goroutines is locked in a</span>
+	<span class="hljs-comment">// communicate-and-wait pattern, this schedules that set as a</span>
+	<span class="hljs-comment">// unit and eliminates the (potentially large) scheduling</span>
+	<span class="hljs-comment">// latency that otherwise arises from adding the ready'd</span>
+	<span class="hljs-comment">// goroutines to the end of the run queue.</span>
+	<span class="hljs-comment">//如果runnext非空，则是一个runnable状态的g，如果在当前时间片中还有剩余，则runnext指向的就是下一个应该运行的g而不使用runq里面的g，其会继承剩下的时间；</span>
+	runnext guintptr
+
+	<span class="hljs-comment">// Available G's (status == Gdead)</span>
+	gFree <span class="hljs-keyword">struct</span> &#123;
+		gList
+		n <span class="hljs-keyword">int32</span>
+	&#125;
+
+    <span class="hljs-comment">//sudog相关</span>
+	sudogcache []*sudog
+	sudogbuf   [<span class="hljs-number">128</span>]*sudog
+
+	...<span class="hljs-comment">//trace的一些东西</span>
+
+	palloc persistentAlloc <span class="hljs-comment">// per-P to avoid mutex</span>
+
+    <span class="hljs-comment">//用作优化内存对齐</span>
+	_ <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// Alignment for atomic fields below</span>
+
+	<span class="hljs-comment">// Per-P GC state</span>
+	gcAssistTime         <span class="hljs-keyword">int64</span>    <span class="hljs-comment">// Nanoseconds in assistAlloc</span>
+	gcFractionalMarkTime <span class="hljs-keyword">int64</span>    <span class="hljs-comment">// Nanoseconds in fractional mark worker (atomic)</span>
+	gcBgMarkWorker       guintptr <span class="hljs-comment">// (atomic)</span>
+	gcMarkWorkerMode     gcMarkWorkerMode
+
+	<span class="hljs-comment">// gcMarkWorkerStartTime is the nanotime() at which this mark</span>
+	<span class="hljs-comment">// worker started.</span>
+	gcMarkWorkerStartTime <span class="hljs-keyword">int64</span>
+
+	<span class="hljs-comment">// gcw is this P's GC work buffer cache. The work buffer is</span>
+	<span class="hljs-comment">// filled by write barriers, drained by mutator assists, and</span>
+	<span class="hljs-comment">// disposed on certain GC state transitions.</span>
+	gcw gcWork
+
+	<span class="hljs-comment">// wbBuf is this P's GC write barrier buffer.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> Consider caching this in the running G.</span>
+	wbBuf wbBuf
+
+	runSafePointFn <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// if 1, run sched.safePointFn at next safe point</span>
+
+	pad cpu.CacheLinePad
+&#125;</code></pre></div>
 <ul>
 <li>SchedDt 调度结构</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> schedt <span class="keyword">struct</span>&#123;</span><br><span class="line">	lock mutex<span class="comment">//锁用于调用globalq的时候使用</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// When increasing nmidle, nmidlelocked, nmsys, or nmfreed, be</span></span><br><span class="line">	<span class="comment">// sure to call checkdead().</span></span><br><span class="line">	<span class="comment">//空闲的m</span></span><br><span class="line">	midle        muintptr <span class="comment">// idle m's waiting for work</span></span><br><span class="line">	nmidle       <span class="keyword">int32</span>    <span class="comment">// number of idle m's waiting for work</span></span><br><span class="line">	nmidlelocked <span class="keyword">int32</span>    <span class="comment">// number of locked m's waiting for work</span></span><br><span class="line">	mnext        <span class="keyword">int64</span>    <span class="comment">// number of m's that have been created and next M ID</span></span><br><span class="line">	maxmcount    <span class="keyword">int32</span>    <span class="comment">// maximum number of m's allowed (or die)</span></span><br><span class="line">	nmsys        <span class="keyword">int32</span>    <span class="comment">// number of system m's not counted for deadlock</span></span><br><span class="line">	nmfreed      <span class="keyword">int64</span>    <span class="comment">// cumulative number of freed m's</span></span><br><span class="line"></span><br><span class="line">	ngsys <span class="keyword">uint32</span> <span class="comment">// number of system goroutines; updated atomically</span></span><br><span class="line">	<span class="comment">//空闲的p</span></span><br><span class="line">	pidle      puintptr <span class="comment">// idle p's</span></span><br><span class="line">	npidle     <span class="keyword">uint32</span></span><br><span class="line">	<span class="comment">//在spinning状态的m的数量</span></span><br><span class="line">	nmspinning <span class="keyword">uint32</span> <span class="comment">// See "Worker thread parking/unparking" comment in proc.go.</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Global runnable queue.</span></span><br><span class="line">	<span class="comment">//可运行 的globalq</span></span><br><span class="line">	runq     gQueue</span><br><span class="line">	runqsize <span class="keyword">int32</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// disable controls selective disabling of the scheduler.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Use schedEnableUser to control this.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// disable is protected by sched.lock.</span></span><br><span class="line">	disable <span class="keyword">struct</span> &#123;</span><br><span class="line">		<span class="comment">// user disables scheduling of user goroutines.</span></span><br><span class="line">		user     <span class="keyword">bool</span></span><br><span class="line">		runnable gQueue <span class="comment">// pending runnable Gs</span></span><br><span class="line">		n        <span class="keyword">int32</span>  <span class="comment">// length of runnable</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Global cache of dead G's.</span></span><br><span class="line">	<span class="comment">//全局空余剩下的g</span></span><br><span class="line">	gFree <span class="keyword">struct</span> &#123;</span><br><span class="line">		lock    mutex</span><br><span class="line">		stack   gList <span class="comment">// Gs with stacks</span></span><br><span class="line">		noStack gList <span class="comment">// Gs without stacks</span></span><br><span class="line">		n       <span class="keyword">int32</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> schedt <span class="hljs-keyword">struct</span>&#123;
+	lock mutex<span class="hljs-comment">//锁用于调用globalq的时候使用</span>
+
+	<span class="hljs-comment">// When increasing nmidle, nmidlelocked, nmsys, or nmfreed, be</span>
+	<span class="hljs-comment">// sure to call checkdead().</span>
+	<span class="hljs-comment">//空闲的m</span>
+	midle        muintptr <span class="hljs-comment">// idle m's waiting for work</span>
+	nmidle       <span class="hljs-keyword">int32</span>    <span class="hljs-comment">// number of idle m's waiting for work</span>
+	nmidlelocked <span class="hljs-keyword">int32</span>    <span class="hljs-comment">// number of locked m's waiting for work</span>
+	mnext        <span class="hljs-keyword">int64</span>    <span class="hljs-comment">// number of m's that have been created and next M ID</span>
+	maxmcount    <span class="hljs-keyword">int32</span>    <span class="hljs-comment">// maximum number of m's allowed (or die)</span>
+	nmsys        <span class="hljs-keyword">int32</span>    <span class="hljs-comment">// number of system m's not counted for deadlock</span>
+	nmfreed      <span class="hljs-keyword">int64</span>    <span class="hljs-comment">// cumulative number of freed m's</span>
+
+	ngsys <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// number of system goroutines; updated atomically</span>
+	<span class="hljs-comment">//空闲的p</span>
+	pidle      puintptr <span class="hljs-comment">// idle p's</span>
+	npidle     <span class="hljs-keyword">uint32</span>
+	<span class="hljs-comment">//在spinning状态的m的数量</span>
+	nmspinning <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// See "Worker thread parking/unparking" comment in proc.go.</span>
+
+	<span class="hljs-comment">// Global runnable queue.</span>
+	<span class="hljs-comment">//可运行 的globalq</span>
+	runq     gQueue
+	runqsize <span class="hljs-keyword">int32</span>
+
+	<span class="hljs-comment">// disable controls selective disabling of the scheduler.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Use schedEnableUser to control this.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// disable is protected by sched.lock.</span>
+	disable <span class="hljs-keyword">struct</span> &#123;
+		<span class="hljs-comment">// user disables scheduling of user goroutines.</span>
+		user     <span class="hljs-keyword">bool</span>
+		runnable gQueue <span class="hljs-comment">// pending runnable Gs</span>
+		n        <span class="hljs-keyword">int32</span>  <span class="hljs-comment">// length of runnable</span>
+	&#125;
+
+	<span class="hljs-comment">// Global cache of dead G's.</span>
+	<span class="hljs-comment">//全局空余剩下的g</span>
+	gFree <span class="hljs-keyword">struct</span> &#123;
+		lock    mutex
+		stack   gList <span class="hljs-comment">// Gs with stacks</span>
+		noStack gList <span class="hljs-comment">// Gs without stacks</span>
+		n       <span class="hljs-keyword">int32</span>
+	&#125;
+&#125;</code></pre></div>
 <p>相关结构可以在runtime/runtime2.go 中找到</p>
 <p>P在GOMAXPROCS中，所有的P被组织成一个数组，当GOMAXPROCS改变时会触发 stop the world来重新调整P 数组的长度
 一些变量会从sched中分离出到P中</p>
-<h3>死锁检测和终止</h3>
+<h3 id="死锁检测和终止">死锁检测和终止</h3>
 <p>当所有P是idle的时候进行检测（全局idle P的原子计数）</p>
 <p>旋转态-&gt;不旋态的转换中，
 可能和创建一个新的goroutine和创建一部分或其他需要unpark的工作线程 的时候发生竞态条件
@@ -211,13 +596,13 @@ GPM</p>
 goroutine 准备步骤是：提交一个goroutine去local queue，store-style memory 屏障，检查sched.nmspinning</p>
 <p>不旋态-&gt;旋转态是： 减少nmspinning，store-style memory 屏障，检查新的work的所有per-P work queue
 而且以上都不适用于global run queue</p>
-<h3>协作式抢占</h3>
+<h3 id="协作式抢占">协作式抢占</h3>
 <p>retake() 调用preemptone()将被抢占的G的stackguard0 设为stackPreempt，
 被设置标志的G下一次进行函数调用的时候，检查栈空间失败。然后会触发morestack() (汇编代码,asm_xxx.s)
 然后进行一连串的函数调用
 大概流程</p>
 <p>morestack()–&gt; newstack()–&gt; gopreempt_m() --&gt; goschedImpl() --&gt; schedule()</p>
-<h2>补充：</h2>
+<h2 id="补充：">补充：</h2>
 <p>网上的经验：</p>
 <p>这个goroutine类似于线程池管理(c++线程池原理相似)，</p>
 <ol>
@@ -244,8 +629,8 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>The //go:nosplit directive specifies that the next function declared in the file must not include a stack overflow check. This is most commonly used by low-level runtime sources invoked at times when it is unsafe for the calling goroutine to be preempted.</p>
 </blockquote>
 </blockquote>
-<p>大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用</p>
-<h2>SystemStack</h2>
+<p>大意即为这个生成函数不能含有检查栈溢出的代码，即会跳过栈溢出检查（why???个人认为是设计问题，就不允许有检查栈移除代码），有时goroutine要被抢占陷入不安全情况时，被底层runtime调用</p>
+<h2 id="systemstack">SystemStack</h2>
 <p>SystemStack(fn func())
 系统栈 被不同地方调用会有不同的表现方式：</p>
 <ul>
@@ -265,10 +650,35 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>表现： 会先切去线程的栈，调用fn，然后切回来该goroutine的栈</p>
 </li>
 </ul>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// systemstack runs fn on a system stack.</span></span><br><span class="line"><span class="comment">// If systemstack is called from the per-OS-thread (g0) stack, or</span></span><br><span class="line"><span class="comment">// if systemstack is called from the signal handling (gsignal) stack,</span></span><br><span class="line"><span class="comment">// systemstack calls fn directly and returns.</span></span><br><span class="line"><span class="comment">// Otherwise, systemstack is being called from the limited stack</span></span><br><span class="line"><span class="comment">// of an ordinary goroutine. In this case, systemstack switches</span></span><br><span class="line"><span class="comment">// to the per-OS-thread stack, calls fn, and switches back.</span></span><br><span class="line"><span class="comment">// It is common to use a func literal as the argument, in order</span></span><br><span class="line"><span class="comment">// to share inputs and outputs with the code around the call</span></span><br><span class="line"><span class="comment">// to system stack:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	... set up y ...</span></span><br><span class="line"><span class="comment">//	systemstack(func() &#123;</span></span><br><span class="line"><span class="comment">//		x = bigcall(y)</span></span><br><span class="line"><span class="comment">//	&#125;)</span></span><br><span class="line"><span class="comment">//	... use x ...</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//go:noescape</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">systemstack</span><span class="params">(fn <span class="keyword">func</span>()</span>)</span></span><br></pre></td></tr></table></figure>
-<h3>一个大概的go程序启动流程</h3>
+<div class="hljs"><pre><code class="hljs golang"><span class="hljs-comment">// systemstack runs fn on a system stack.</span>
+<span class="hljs-comment">// If systemstack is called from the per-OS-thread (g0) stack, or</span>
+<span class="hljs-comment">// if systemstack is called from the signal handling (gsignal) stack,</span>
+<span class="hljs-comment">// systemstack calls fn directly and returns.</span>
+<span class="hljs-comment">// Otherwise, systemstack is being called from the limited stack</span>
+<span class="hljs-comment">// of an ordinary goroutine. In this case, systemstack switches</span>
+<span class="hljs-comment">// to the per-OS-thread stack, calls fn, and switches back.</span>
+<span class="hljs-comment">// It is common to use a func literal as the argument, in order</span>
+<span class="hljs-comment">// to share inputs and outputs with the code around the call</span>
+<span class="hljs-comment">// to system stack:</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//	... set up y ...</span>
+<span class="hljs-comment">//	systemstack(func() &#123;</span>
+<span class="hljs-comment">//		x = bigcall(y)</span>
+<span class="hljs-comment">//	&#125;)</span>
+<span class="hljs-comment">//	... use x ...</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//go:noescape</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">systemstack</span><span class="hljs-params">(fn <span class="hljs-keyword">func</span>()</span>)</span></code></pre></div>
+<h3 id="一个大概的go程序启动流程">一个大概的go程序启动流程</h3>
 <p>golang注释中有大概写明:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The bootstrap sequence is:</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//	call osinit</span></span><br><span class="line"><span class="comment">//	call schedinit</span></span><br><span class="line"><span class="comment">//	make &amp; queue new G</span></span><br><span class="line"><span class="comment">//	call runtime·mstart</span></span><br><span class="line"><span class="comment">// The new G calls runtime·main.</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// The bootstrap sequence is:</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//	call osinit</span>
+<span class="hljs-comment">//	call schedinit</span>
+<span class="hljs-comment">//	make &amp; queue new G</span>
+<span class="hljs-comment">//	call runtime·mstart</span>
+<span class="hljs-comment">// The new G calls runtime·main.</span></code></pre></div>
+<p><img src="/img/" srcset="/img/loading.gif" alt="大概的流程图"></p>
 <p>go程序的入口点是runtime.rt0_go, 流程是:</p>
 <ol>
 <li>分配栈空间, 需要2个本地变量+2个函数参数, 然后向8对齐</li>
@@ -285,6 +695,15 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>设置g0到TLS中, 表示当前的g是g0</p>
 <p>设置m0.g0 = g0</p>
 <p>设置g0.m = m0</p>
+<h4 id="特殊的m0和g0">特殊的m0和g0</h4>
+<ul>
+<li>
+<p>M0 是启动程序后的编号为 0 的主线程，这个 M 对应的实例会在全局变量 runtime.m0 中，不需要在 heap 上分配，M0 负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。</p>
+</li>
+<li>
+<p>G0 是每次启动一个 M 都会第一个创建的 gourtine，G0 仅用于负责调度的 G，G0 不指向任何可执行的函数，每个 M 都会有一个自己的 G0。在调度或系统调用时会使用 G0 的栈空间，全局变量的 G0 是 M0 的 G0。</p>
+</li>
+</ul>
 <ol start="3">
 <li>调用runtime.check做一些检查</li>
 </ol>
@@ -303,12 +722,36 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>然后进接这tracebackinit()和moduledateverify()，分别为一些变量提前初始化和包的验证</p>
 </li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">tracebackinit</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// Go variable initialization happens late during runtime startup.</span></span><br><span class="line">	<span class="comment">// Instead of initializing the variables above in the declarations,</span></span><br><span class="line">	<span class="comment">// schedinit calls this function so that the variables are</span></span><br><span class="line">	<span class="comment">// initialized and available earlier in the startup sequence.</span></span><br><span class="line">	skipPC = funcPC(skipPleaseUseCallersFrames)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">tracebackinit</span><span class="hljs-params">()</span></span> &#123;
+	<span class="hljs-comment">// Go variable initialization happens late during runtime startup.</span>
+	<span class="hljs-comment">// Instead of initializing the variables above in the declarations,</span>
+	<span class="hljs-comment">// schedinit calls this function so that the variables are</span>
+	<span class="hljs-comment">// initialized and available earlier in the startup sequence.</span>
+	skipPC = funcPC(skipPleaseUseCallersFrames)
+&#125;</code></pre></div>
 <ul>
 <li>会初始化栈空间分配器(stackinit)</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">stackinit</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//// Per-P, per order stack segment cache size.</span></span><br><span class="line">	<span class="comment">//_StackCacheSize = 32 * 1024</span></span><br><span class="line">	<span class="comment">// stack的分段大小一定要是pagesize的倍数（容易理解，方便对齐）</span></span><br><span class="line">	<span class="comment">//_PageShift = 13</span></span><br><span class="line">	<span class="comment">//_PageSize = 1 &lt;&lt; _PageShift = 8192</span></span><br><span class="line">	<span class="comment">//_PageMask = _PageSize - 1</span></span><br><span class="line">	<span class="keyword">if</span> _StackCacheSize&amp;_PageMask != <span class="number">0</span> &#123;</span><br><span class="line">		throw(<span class="string">"cache size must be a multiple of page size"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//stackpool就是一个span的双向链表</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> stackpool &#123;</span><br><span class="line">		stackpool[i].init()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// stackLarge的free是一个list ， 大小为 log_2(s.npages)</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> stackLarge.free &#123;</span><br><span class="line">		stackLarge.free[i].init()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这里插入一副<s>盗</s>借来的<img src="/img/mheap.png" alt="图">
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">stackinit</span><span class="hljs-params">()</span></span> &#123;
+	<span class="hljs-comment">//// Per-P, per order stack segment cache size.</span>
+	<span class="hljs-comment">//_StackCacheSize = 32 * 1024</span>
+	<span class="hljs-comment">// stack的分段大小一定要是pagesize的倍数（容易理解，方便对齐）</span>
+	<span class="hljs-comment">//_PageShift = 13</span>
+	<span class="hljs-comment">//_PageSize = 1 &lt;&lt; _PageShift = 8192</span>
+	<span class="hljs-comment">//_PageMask = _PageSize - 1</span>
+	<span class="hljs-keyword">if</span> _StackCacheSize&amp;_PageMask != <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"cache size must be a multiple of page size"</span>)
+	&#125;
+	<span class="hljs-comment">//stackpool就是一个span的双向链表</span>
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> stackpool &#123;
+		stackpool[i].init()
+	&#125;
+	<span class="hljs-comment">// stackLarge的free是一个list ， 大小为 log_2(s.npages)</span>
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> stackLarge.free &#123;
+		stackLarge.free[i].init()
+	&#125;
+&#125;</code></pre></div>
+<p>这里插入一副<s>盗</s>借来的<img src="/img/mheap.png" srcset="/img/loading.gif" alt="图">
 更加明确发现一些奇怪的特点</p>
 <ul>
 <li>
@@ -338,16 +781,32 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <p>按cpu核心数量或GOMAXPROCS的值生成P(cpuinit)</p>
 </li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cpuinit()       <span class="comment">// must run before alginit</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">cpuinit()       <span class="hljs-comment">// must run before alginit</span></code></pre></div>
 <ul>
 <li>alginit</li>
 </ul>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">alginit()       <span class="comment">// maps must not be used before this call</span></span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go">alginit()       <span class="hljs-comment">// maps must not be used before this call</span></code></pre></div>
 <ul>
 <li>生成P的处理在procresize中</li>
 </ul>
 <p>更改了P的数目，期间stop the world并锁住sched，返回本地的所有p</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedinit</span><span class="params">()</span></span>&#123;</span><br><span class="line">	...</span><br><span class="line">	sched.lastpoll = <span class="keyword">uint64</span>(nanotime())</span><br><span class="line">	procs := ncpu</span><br><span class="line">	<span class="keyword">if</span> n, ok := atoi32(gogetenv(<span class="string">"GOMAXPROCS"</span>)); ok &amp;&amp; n &gt; <span class="number">0</span> &#123;</span><br><span class="line">		procs = n</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> procresize(procs) != <span class="literal">nil</span> &#123;</span><br><span class="line">		throw(<span class="string">"unknown runnable goroutine during bootstrap"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Change number of processors. The world is stopped, sched is locked.</span></span><br><span class="line"><span class="comment">// gcworkbufs are not being modified by either the GC or</span></span><br><span class="line"><span class="comment">// the write barrier code.</span></span><br><span class="line"><span class="comment">// Returns list of Ps with local work, they need to be scheduled by the caller.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">procresize</span><span class="params">(nprocs <span class="keyword">int32</span>)</span> *<span class="title">p</span></span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">schedinit</span><span class="hljs-params">()</span></span>&#123;
+	...
+	sched.lastpoll = <span class="hljs-keyword">uint64</span>(nanotime())
+	procs := ncpu
+	<span class="hljs-keyword">if</span> n, ok := atoi32(gogetenv(<span class="hljs-string">"GOMAXPROCS"</span>)); ok &amp;&amp; n &gt; <span class="hljs-number">0</span> &#123;
+		procs = n
+	&#125;
+	<span class="hljs-keyword">if</span> procresize(procs) != <span class="hljs-literal">nil</span> &#123;
+		throw(<span class="hljs-string">"unknown runnable goroutine during bootstrap"</span>)
+	&#125;
+	...
+&#125;
+<span class="hljs-comment">// Change number of processors. The world is stopped, sched is locked.</span>
+<span class="hljs-comment">// gcworkbufs are not being modified by either the GC or</span>
+<span class="hljs-comment">// the write barrier code.</span>
+<span class="hljs-comment">// Returns list of Ps with local work, they need to be scheduled by the caller.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">procresize</span><span class="hljs-params">(nprocs <span class="hljs-keyword">int32</span>)</span> *<span class="hljs-title">p</span></span> &#123; ... &#125;</code></pre></div>
 <ol start="5">
 <li>
 <p>调用runtime.newproc创建一个新的goroutine, 指向的是runtime.main
@@ -361,7 +820,7 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
 </ul>
 </li>
 </ol>
-<h3>runtime.main之后</h3>
+<h3 id="runtime-main之后">runtime.main之后</h3>
 <p>第一个被调度的G会运行runtime.main, 流程是:</p>
 <p>标记主函数已调用, 设置mainStarted = true</p>
 <p>启动一个新的M执行sysmon函数, 这个函数会监控全局的状态并对运行时间过长的G进行抢占</p>
@@ -374,143 +833,277 @@ runtime.newproc这个函数在创建普通的goroutine时也会使用;</p>
 <p>调用main.main函数</p>
 <p>如果当前发生了panic, 则等待panic处理</p>
 <p>调用exit(0)退出程序</p>
-<h2>Defer函数</h2>
+<h2 id="defer函数">Defer函数</h2>
 <p>平常用的</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">do</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">defer</span> done()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">do</span><span class="hljs-params">()</span></span>&#123;
+	<span class="hljs-keyword">defer</span> done()
+&#125;</code></pre></div>
 <p>其结构在 runtime2.go 结构体g中</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> g <span class="keyword">struct</span>&#123;</span><br><span class="line">	goid <span class="keyword">int64</span></span><br><span class="line">	...</span><br><span class="line">	<span class="comment">//其结构有些在stack中有些在heap中，但是逻辑上都属于stack，所以写屏障是没有必要的;</span></span><br><span class="line">	_defer *<span class="keyword">defer</span>&#123;</span><br><span class="line">		siz     <span class="keyword">int32</span> <span class="comment">// includes both arguments and results</span></span><br><span class="line">		started <span class="keyword">bool</span></span><br><span class="line">		heap    <span class="keyword">bool</span></span><br><span class="line">		sp      <span class="keyword">uintptr</span> <span class="comment">// sp at time of defer</span></span><br><span class="line">		pc      <span class="keyword">uintptr</span></span><br><span class="line">		fn      *funcval <span class="comment">//调用的函数</span></span><br><span class="line">		_panic  *_panic <span class="comment">// panic that is running defer</span></span><br><span class="line">		link    *_defer</span><br><span class="line">	&#125; </span><br><span class="line">	...</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://mhh12121.github.io/2019/07/09/Go/Goroutine/" data-id="ckdfen90p0017dc55ufpx958x" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/golang/">golang</a></li></ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> g <span class="hljs-keyword">struct</span>&#123;
+	goid <span class="hljs-keyword">int64</span>
+	...
+	<span class="hljs-comment">//其结构有些在stack中有些在heap中，但是逻辑上都属于stack，所以写屏障是没有必要的;</span>
+	_defer *<span class="hljs-keyword">defer</span>&#123;
+		siz     <span class="hljs-keyword">int32</span> <span class="hljs-comment">// includes both arguments and results</span>
+		started <span class="hljs-keyword">bool</span>
+		heap    <span class="hljs-keyword">bool</span>
+		sp      <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// sp at time of defer</span>
+		pc      <span class="hljs-keyword">uintptr</span>
+		fn      *funcval <span class="hljs-comment">//调用的函数</span>
+		_panic  *_panic <span class="hljs-comment">// panic that is running defer</span>
+		link    *_defer
+	&#125; 
+	...
 
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2019/08/18/Comcon/StringCompare/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Notes about Strings
-        
+&#125;</code></pre></div>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2019/08/18/Comcon/StringCompare/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Notes about Strings</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2019/07/03/MySQL/MySQLIndexing/">
+                        <span class="hidden-mobile">Notes about MySQL indexing</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
       </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
     </a>
   
-  
-    <a href="/2019/07/03/MySQL/MySQLIndexing/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Notes about MySQL indexing</div>
-    </a>
-  
-</nav>
 
   
-</article>
-
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签</h3>
-    <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Design-Pattern/">Design Pattern</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Distributed/">Distributed</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/">Javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LOCK/">LOCK</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Love/">Love</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/">MySQL</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OS/">OS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Regular-Expression/">Regular Expression</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/String/">String</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/golang/">golang</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/networking/">networking</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/se/">se</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/security/">security</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">标签云</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Design-Pattern/" style="font-size: 12.5px;">Design Pattern</a> <a href="/tags/Distributed/" style="font-size: 15px;">Distributed</a> <a href="/tags/Java/" style="font-size: 17.5px;">Java</a> <a href="/tags/Javascript/" style="font-size: 12.5px;">Javascript</a> <a href="/tags/LOCK/" style="font-size: 10px;">LOCK</a> <a href="/tags/Love/" style="font-size: 10px;">Love</a> <a href="/tags/Markdown/" style="font-size: 10px;">Markdown</a> <a href="/tags/MySQL/" style="font-size: 12.5px;">MySQL</a> <a href="/tags/OS/" style="font-size: 10px;">OS</a> <a href="/tags/Regular-Expression/" style="font-size: 10px;">Regular Expression</a> <a href="/tags/String/" style="font-size: 10px;">String</a> <a href="/tags/css/" style="font-size: 12.5px;">css</a> <a href="/tags/golang/" style="font-size: 20px;">golang</a> <a href="/tags/javascript/" style="font-size: 12.5px;">javascript</a> <a href="/tags/networking/" style="font-size: 15px;">networking</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/se/" style="font-size: 10px;">se</a> <a href="/tags/security/" style="font-size: 10px;">security</a>
-    </div>
-  </div>
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">归档</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">四月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">最新文章</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2020/08/04/Go/Practice/">(no title)</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/23/Go/somebugs/">Golang Some bugs notes</a>
-          </li>
-        
-          <li>
-            <a href="/2020/07/10/Comcon/zookeeper/">Notes about Zookeeper</a>
-          </li>
-        
-          <li>
-            <a href="/2020/06/24/Go/type/">Golang type</a>
-          </li>
-        
-          <li>
-            <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2020 Doujohner<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
     </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
   </div>
 </footer>
-    </div>
-    <nav id="mobile-nav">
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
   
-    <a href="/" class="mobile-nav-link">Home</a>
+    <script  src="/js/lazyload.js" ></script>
   
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
 
 
-<script src="/js/script.js"></script>
 
-  </div>
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Goroutine Notes&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>
