@@ -217,13 +217,13 @@
 	<span class="hljs-comment">// function for hashing objects of this type</span>
     <span class="hljs-comment">// (ptr to object, seed) -&gt; hash</span>
     <span class="hljs-comment">//用作识别</span>
-	hash <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span>
-	// <span class="hljs-title">function</span> <span class="hljs-title">for</span> <span class="hljs-title">comparing</span> <span class="hljs-title">objects</span> <span class="hljs-title">of</span> <span class="hljs-title">this</span> <span class="hljs-title">type</span>
-    // <span class="hljs-params">(ptr to object A, ptr to object B)</span> -&gt; ==?
-    //用作表明该类型是不是可比较的<span class="hljs-params">(<span class="hljs-keyword">string</span>就是不可比较的,
-    //context.WithValue传入的key就是要求要是可比较的)</span>
-	<span class="hljs-title">equal</span> <span class="hljs-title">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="hljs-title">bool</span>
-&#125;</span></code></pre></div>
+	hash <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span>
+	<span class="hljs-comment">// function for comparing objects of this type</span>
+    <span class="hljs-comment">// (ptr to object A, ptr to object B) -&gt; ==?</span>
+    <span class="hljs-comment">//用作表明该类型是不是可比较的(string就是不可比较的,</span>
+    <span class="hljs-comment">//context.WithValue传入的key就是要求要是可比较的)</span>
+	equal <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="hljs-title">bool</span></span>
+&#125;</code></pre></div>
 
             </div>
             <hr>

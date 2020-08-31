@@ -452,15 +452,15 @@ http请求服务如果过慢，则可以用timeout进行释放资源
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A CancelFunc tells an operation to abandon its work.</span>
 <span class="hljs-comment">// A CancelFunc does not wait for the work to stop.</span>
 <span class="hljs-comment">// After the first call, subsequent calls to a CancelFunc do nothing.</span>
-<span class="hljs-keyword">type</span> CancelFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span>
+<span class="hljs-keyword">type</span> CancelFunc <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>
 
-// <span class="hljs-title">WithCancel</span> <span class="hljs-title">returns</span> <span class="hljs-title">a</span> <span class="hljs-title">copy</span> <span class="hljs-title">of</span> <span class="hljs-title">parent</span> <span class="hljs-title">with</span> <span class="hljs-title">a</span> <span class="hljs-title">new</span> <span class="hljs-title">Done</span> <span class="hljs-title">channel</span>. <span class="hljs-title">The</span> <span class="hljs-title">returned</span>
-// <span class="hljs-title">context</span>'<span class="hljs-title">s</span> <span class="hljs-title">Done</span> <span class="hljs-title">channel</span> <span class="hljs-title">is</span> <span class="hljs-title">closed</span> <span class="hljs-title">when</span> <span class="hljs-title">the</span> <span class="hljs-title">returned</span> <span class="hljs-title">cancel</span> <span class="hljs-title">function</span> <span class="hljs-title">is</span> <span class="hljs-title">called</span>
-// <span class="hljs-title">or</span> <span class="hljs-title">when</span> <span class="hljs-title">the</span> <span class="hljs-title">parent</span> <span class="hljs-title">context</span>'<span class="hljs-title">s</span> <span class="hljs-title">Done</span> <span class="hljs-title">channel</span> <span class="hljs-title">is</span> <span class="hljs-title">closed</span>, <span class="hljs-title">whichever</span> <span class="hljs-title">happens</span> <span class="hljs-title">first</span>.
-//
-// <span class="hljs-title">Canceling</span> <span class="hljs-title">this</span> <span class="hljs-title">context</span> <span class="hljs-title">releases</span> <span class="hljs-title">resources</span> <span class="hljs-title">associated</span> <span class="hljs-title">with</span> <span class="hljs-title">it</span>, <span class="hljs-title">so</span> <span class="hljs-title">code</span> <span class="hljs-title">should</span>
-// <span class="hljs-title">call</span> <span class="hljs-title">cancel</span> <span class="hljs-title">as</span> <span class="hljs-title">soon</span> <span class="hljs-title">as</span> <span class="hljs-title">the</span> <span class="hljs-title">operations</span> <span class="hljs-title">running</span> <span class="hljs-title">in</span> <span class="hljs-title">this</span> <span class="hljs-title">Context</span> <span class="hljs-title">complete</span>.
-<span class="hljs-title">func</span> <span class="hljs-title">WithCancel</span><span class="hljs-params">(parent Context)</span> <span class="hljs-params">(ctx Context, cancel CancelFunc)</span></span> &#123;
+<span class="hljs-comment">// WithCancel returns a copy of parent with a new Done channel. The returned</span>
+<span class="hljs-comment">// context's Done channel is closed when the returned cancel function is called</span>
+<span class="hljs-comment">// or when the parent context's Done channel is closed, whichever happens first.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Canceling this context releases resources associated with it, so code should</span>
+<span class="hljs-comment">// call cancel as soon as the operations running in this Context complete.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">WithCancel</span><span class="hljs-params">(parent Context)</span> <span class="hljs-params">(ctx Context, cancel CancelFunc)</span></span> &#123;
 	c := newCancelCtx(parent)<span class="hljs-comment">//这个就是复制parent</span>
 	propagateCancel(parent, &amp;c)
 	<span class="hljs-keyword">return</span> &amp;c, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123; c.cancel(<span class="hljs-literal">true</span>, Canceled) &#125;

@@ -430,20 +430,20 @@ GPM</p>
     <span class="hljs-comment">//下一个等待锁的M</span>
 	nextwaitm     muintptr    <span class="hljs-comment">// next m waiting for lock</span>
     <span class="hljs-comment">//一些锁的操作</span>
-    waitunlockf   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(*g, unsafe.Pointer)</span> <span class="hljs-title">bool</span>
-	<span class="hljs-title">waitlock</span>      <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span>
-	<span class="hljs-title">waittraceev</span>   <span class="hljs-title">byte</span>
-	<span class="hljs-title">waittraceskip</span> <span class="hljs-title">int</span>
-	<span class="hljs-title">startingtrace</span> <span class="hljs-title">bool</span>
-	<span class="hljs-title">syscalltick</span>   <span class="hljs-title">uint32</span>
-	<span class="hljs-title">thread</span>        <span class="hljs-title">uintptr</span> // <span class="hljs-title">thread</span> <span class="hljs-title">handle</span>
-	<span class="hljs-title">freelink</span>      *<span class="hljs-title">m</span>      // <span class="hljs-title">on</span> <span class="hljs-title">sched</span>.<span class="hljs-title">freem</span>
+    waitunlockf   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(*g, unsafe.Pointer)</span> <span class="hljs-title">bool</span></span>
+	waitlock      unsafe.Pointer
+	waittraceev   <span class="hljs-keyword">byte</span>
+	waittraceskip <span class="hljs-keyword">int</span>
+	startingtrace <span class="hljs-keyword">bool</span>
+	syscalltick   <span class="hljs-keyword">uint32</span>
+	thread        <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// thread handle</span>
+	freelink      *m      <span class="hljs-comment">// on sched.freem</span>
     ...
-    //<span class="hljs-title">debug</span>
-	<span class="hljs-title">dlogPerM</span>
-    //表明操作系统相关
-	<span class="hljs-title">mOS</span>
-&#125;</span></code></pre></div>
+    <span class="hljs-comment">//debug</span>
+	dlogPerM
+    <span class="hljs-comment">//表明操作系统相关</span>
+	mOS
+&#125;</code></pre></div>
 <ul>
 <li>P（Process）指的是go语言中的调度器，M就是用P才能调度G
 可以看到P是内嵌于 M 和 G 之间的，</li>

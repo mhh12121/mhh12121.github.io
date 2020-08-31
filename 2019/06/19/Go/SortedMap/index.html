@@ -259,15 +259,15 @@ sort.Ints(keys)<span class="hljs-comment">//sort them</span>
 	Size     <span class="hljs-keyword">int</span>
 &#125;
 <span class="hljs-comment">//</span>
-<span class="hljs-keyword">type</span> By <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
+<span class="hljs-keyword">type</span> By <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span></span>
 
-//<span class="hljs-title">ObjSorter</span> <span class="hljs-title">joins</span> <span class="hljs-title">a</span> <span class="hljs-title">By</span> <span class="hljs-title">function</span> <span class="hljs-title">and</span> <span class="hljs-title">a</span> <span class="hljs-title">slice</span> <span class="hljs-title">of</span> <span class="hljs-title">Objs</span> <span class="hljs-title">to</span> <span class="hljs-title">be</span> <span class="hljs-title">sorted</span>.
-<span class="hljs-title">type</span> <span class="hljs-title">ObjSorter</span> <span class="hljs-title">struct</span></span> &#123;<span class="hljs-comment">//to wrap the obj and by function into this struct</span>
+<span class="hljs-comment">//ObjSorter joins a By function and a slice of Objs to be sorted.</span>
+<span class="hljs-keyword">type</span> ObjSorter <span class="hljs-keyword">struct</span> &#123;<span class="hljs-comment">//to wrap the obj and by function into this struct</span>
 	objs []Obj
-	by   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
+	by   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span></span>
 &#125;
 
-<span class="hljs-title">func</span> <span class="hljs-params">(by By)</span> <span class="hljs-title">Sort</span><span class="hljs-params">(objs []Obj)</span></span> &#123;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(by By)</span> <span class="hljs-title">Sort</span><span class="hljs-params">(objs []Obj)</span></span> &#123;
 	os := &amp;ObjSorter&#123;
 		objs: objs,
 		by:   by,

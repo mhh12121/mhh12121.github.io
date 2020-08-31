@@ -317,7 +317,7 @@ Able to solve cons in Static proxy:</p>
         User u = <span class="hljs-keyword">new</span> User();<span class="hljs-comment">//注意要有一个实例才可以</span>
         InvocationHandler i=<span class="hljs-keyword">new</span> GamePlayIH(u);
         
-        IUser dynamicUser=(IUser) Proxy.newProxyInstance(User.class.getClassLoader(),User.class.getInterfaces(),i);
+        IUser dynamicUser=(IUser) Proxy.newProxyInstance(User<span class="hljs-class">.<span class="hljs-keyword">class</span>.<span class="hljs-title">getClassLoader</span>(),<span class="hljs-title">User</span>.<span class="hljs-title">class</span>.<span class="hljs-title">getInterfaces</span>(),<span class="hljs-title">i</span>)</span>;
         dynamicUser.login();
     &#125;
 &#125;</code></pre></div>
@@ -499,7 +499,7 @@ you can use <strong>Cglib proxy</strong></p>
 <div class="hljs"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Test</span></span>&#123;
     <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
         Enhancer enhancer=<span class="hljs-keyword">new</span> Enhancer();
-        enhancer.setSuperClass(User.class);<span class="hljs-comment">//根本不用类的实例传入（与JDK有点不一样）</span>
+        enhancer.setSuperClass(User<span class="hljs-class">.<span class="hljs-keyword">class</span>)</span>;<span class="hljs-comment">//根本不用类的实例传入（与JDK有点不一样）</span>
         enhancer.setCallback(<span class="hljs-keyword">new</span> UserMethodINterceptor);
 
         User u=(User) enhancer.create();
