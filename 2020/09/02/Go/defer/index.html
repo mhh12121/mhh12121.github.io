@@ -1,0 +1,913 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Defer - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
+  
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-09-02 00:00" pubdate>
+      September 2, 2020 am
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      52
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Defer</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <p>defer的一些东西</p>
+<a id="more"></a>
+<h2 id="看看个坑">看看个坑</h2>
+<p>我们先来看一个例子:</p>
+<div class="hljs"><pre><code class="hljs go">func() &#123;
+  var run func() = nil
+  defer run()
+  fmt.Println("runs")
+&#125;</code></pre></div>
+<p>结果是:</p>
+<div class="hljs"><pre><code class="hljs undefined">panic: runtime error: invalid memory<span class="hljs-built_in"> address </span><span class="hljs-keyword">or</span> <span class="hljs-literal">nil</span> pointer dereference</code></pre></div>
+<h2 id="详情">详情</h2>
+<p>在<code>g</code>和<code>p</code>上都有相关结构,其中<code>p</code>上的为一个<code>defer pool</code>//todo</p>
+<h3 id="一些相关结构">一些相关结构</h3>
+<p><code>_defer</code>的结构：</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A _defer holds an entry on the list of deferred calls.</span>
+<span class="hljs-comment">// If you add a field here, add code to clear it in freedefer and deferProcStack</span>
+<span class="hljs-comment">// This struct must match the code in cmd/compile/internal/gc/reflect.go:deferstruct</span>
+<span class="hljs-comment">// and cmd/compile/internal/gc/ssa.go:(*state).call.</span>
+<span class="hljs-comment">// Some defers will be allocated on the stack and some on the heap.</span>
+<span class="hljs-comment">// All defers are logically part of the stack, so write barriers to</span>
+<span class="hljs-comment">// initialize them are not required. All defers must be manually scanned,</span>
+<span class="hljs-comment">// and for heap defers, marked.</span>
+
+<span class="hljs-keyword">type</span> _defer <span class="hljs-keyword">struct</span> &#123;
+    <span class="hljs-comment">//参数和return的大小</span>
+	siz     <span class="hljs-keyword">int32</span> <span class="hljs-comment">// includes both arguments and results</span>
+	started <span class="hljs-keyword">bool</span><span class="hljs-comment">//标记开始</span>
+	heap    <span class="hljs-keyword">bool</span>
+	<span class="hljs-comment">// openDefer indicates that this _defer is for a frame with open-coded</span>
+	<span class="hljs-comment">// defers. We have only one defer record for the entire frame (which may</span>
+	<span class="hljs-comment">// currently have 0, 1, or more defers active).</span>
+	<span class="hljs-comment">//这里的openCoded是在编译时的一些优化，在编译时会直接将defer的方法插入到运行中函数尾部,避免deferproc和deferprocStack操作</span>
+
+    openDefer <span class="hljs-keyword">bool</span>
+    <span class="hljs-comment">//栈的指针</span>
+	sp        <span class="hljs-keyword">uintptr</span>  <span class="hljs-comment">// sp at time of defer</span>
+    <span class="hljs-comment">//调用方的程序计数器</span>
+    pc        <span class="hljs-keyword">uintptr</span>  <span class="hljs-comment">// pc at time of defer</span>
+    <span class="hljs-comment">//defer传入的函数</span>
+    fn        *funcval <span class="hljs-comment">// can be nil for open-coded defers</span>
+    <span class="hljs-comment">//触发延迟调用的结构体，可能为空</span>
+    _panic    *_panic  <span class="hljs-comment">// panic that is running defer，每次添加到链表头部</span>
+	link      *_defer <span class="hljs-comment">//每次添加到链表头部</span>
+
+	<span class="hljs-comment">// If openDefer is true, the fields below record values about the stack</span>
+	<span class="hljs-comment">// frame and associated function that has the open-coded defer(s). sp</span>
+	<span class="hljs-comment">// above will be the sp for the frame, and pc will be address of the</span>
+	<span class="hljs-comment">// deferreturn call in the function.</span>
+	fd   unsafe.Pointer <span class="hljs-comment">// funcdata for the function associated with the frame</span>
+	varp <span class="hljs-keyword">uintptr</span>        <span class="hljs-comment">// value of varp for the stack frame</span>
+	<span class="hljs-comment">// framepc is the current pc associated with the stack frame. Together,</span>
+	<span class="hljs-comment">// with sp above (which is the sp associated with the stack frame),</span>
+	<span class="hljs-comment">// framepc/sp can be used as pc/sp pair to continue a stack trace via</span>
+	<span class="hljs-comment">// gentraceback().</span>
+	framepc <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//只允许在stack上</span>
+<span class="hljs-comment">//go:notinheap</span>
+<span class="hljs-keyword">type</span> _panic <span class="hljs-keyword">struct</span> &#123;
+	argp      unsafe.Pointer <span class="hljs-comment">// pointer to arguments of deferred call run during panic; cannot move - known to liblink</span>
+	arg       <span class="hljs-keyword">interface</span>&#123;&#125;    <span class="hljs-comment">// argument to panic</span>
+	link      *_panic        <span class="hljs-comment">// link to earlier panic</span>
+	<span class="hljs-comment">//标记return的位置</span>
+	pc        <span class="hljs-keyword">uintptr</span>        <span class="hljs-comment">// where to return to in runtime if this panic is bypassed</span>
+	sp        unsafe.Pointer <span class="hljs-comment">// where to return to in runtime if this panic is bypassed</span>
+	recovered <span class="hljs-keyword">bool</span>           <span class="hljs-comment">// whether this panic is over，标记是否已经调用recover</span>
+	aborted   <span class="hljs-keyword">bool</span>           <span class="hljs-comment">// the panic was aborted</span>
+	goexit    <span class="hljs-keyword">bool</span>
+&#125;</code></pre></div>
+<p><code>defer</code>在整个程序时实现主要分成编译期和运行时有不同的动作：</p>
+<h3 id="编译期-有三种不同的编译方式-1-14新增一种">编译期(有三种不同的编译方式,1.14新增一种)</h3>
+<ol>
+<li><code>defer</code> 关键字<strong>转换成</strong>了<code>deferproc</code>,堆上分配 ;</li>
+<li>还会在所有调用defer的函数末尾插入<code>deferreturn</code>，栈上分配, ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用<code>cmd/compile/internal/gc.state.call</code>将结构体分配到栈并调用<code>runtime.deferprocStack</code>);</li>
+<li><code>open-coded</code>(1.14新增),只会在以下情况:
+<ul>
+<li>函数的 <code>defer</code> 数量少于或者等于 8 个；</li>
+<li>函数的 <code>defer</code> 关键字不能在循环中执行(包括goto)；</li>
+<li>函数的 <code>return</code> 语句与 <code>defer</code> 语句的乘积小于或者等于 15 个；
+编译时会根据以上条件判断是否开启;</li>
+</ul>
+</li>
+</ol>
+<h4 id="转换defer关键字">转换defer关键字</h4>
+<p><code>cmd/compile/internal/gc.state.stmt</code>会处理<code>defer</code>关键字</p>
+<p><code>cmd/compile/internal/gc.state.call</code> 该函数负责所有函数和方法调用生成中间代码:</p>
+<ol>
+<li>获取需要执行的函数名、闭包指针、代码指针和函数调用的接收方；</li>
+<li>获取栈地址并将函数或者方法的参数写入栈中；</li>
+<li>使用 <code>cmd/compile/internal/gc.state.newValue1A</code> 以及相关函数生成函数调用的中间代码；</li>
+<li>如果当前调用的函数是 defer，那么就会单独生成相关的结束代码块；</li>
+<li>获取函数的返回值地址并结束当前调用；</li>
+</ol>
+<p>针对<code>open-coded</code>，主要就是在某些情况下使用,如下，默认超过 <code>maxOpenDefers = 8</code>就不能使用Open-coded</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">walkstmt</span><span class="hljs-params">(n *Node)</span> *<span class="hljs-title">Node</span></span> &#123;
+	...
+	<span class="hljs-keyword">case</span> ODEFER:
+			Curfn.Func.SetHasDefer(<span class="hljs-literal">true</span>)
+			Curfn.Func.numDefers++
+			<span class="hljs-keyword">if</span> Curfn.Func.numDefers &gt; maxOpenDefers &#123;
+				<span class="hljs-comment">// Don't allow open-coded defers if there are more than</span>
+				<span class="hljs-comment">// 8 defers in the function, since we use a single</span>
+				<span class="hljs-comment">// byte to record active defers.</span>
+				Curfn.Func.SetOpenCodedDeferDisallowed(<span class="hljs-literal">true</span>)
+			&#125;
+			<span class="hljs-keyword">if</span> n.Esc != EscNever &#123;
+				<span class="hljs-comment">// If n.Esc is not EscNever, then this defer occurs in a loop,</span>
+				<span class="hljs-comment">// so open-coded defers cannot be used in this function.</span>
+				Curfn.Func.SetOpenCodedDeferDisallowed(<span class="hljs-literal">true</span>)
+			&#125;
+			<span class="hljs-keyword">fallthrough</span>
+	...
+&#125;</code></pre></div>
+<h4 id="栈上分配">栈上分配</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// deferprocStack queues a new deferred function with a defer record on the stack.</span>
+<span class="hljs-comment">// The defer record must have its siz and fn fields initialized.</span>
+<span class="hljs-comment">// All other fields can contain junk.</span>
+<span class="hljs-comment">// The defer record must be immediately followed in memory by</span>
+<span class="hljs-comment">// the arguments of the defer.</span>
+<span class="hljs-comment">// Nosplit because the arguments on the stack won't be scanned</span>
+<span class="hljs-comment">// until the defer record is spliced into the gp._defer list.</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">deferprocStack</span><span class="hljs-params">(d *_defer)</span></span> &#123;
+	gp := getg()
+	<span class="hljs-keyword">if</span> gp.m.curg != gp &#123;
+		<span class="hljs-comment">// go code on the system stack can't defer</span>
+		throw(<span class="hljs-string">"defer on system stack"</span>)
+	&#125;
+	<span class="hljs-comment">// siz and fn are already set.</span>
+	<span class="hljs-comment">// The other fields are junk on entry to deferprocStack and</span>
+	<span class="hljs-comment">// are initialized here.</span>
+	d.started = <span class="hljs-literal">false</span>
+	d.heap = <span class="hljs-literal">false</span>
+	d.openDefer = <span class="hljs-literal">false</span>
+	d.sp = getcallersp()
+	d.pc = getcallerpc()
+	d.framepc = <span class="hljs-number">0</span>
+	d.varp = <span class="hljs-number">0</span>
+	<span class="hljs-comment">// The lines below implement:</span>
+	<span class="hljs-comment">//   d.panic = nil</span>
+	<span class="hljs-comment">//   d.fd = nil</span>
+	<span class="hljs-comment">//   d.link = gp._defer</span>
+	<span class="hljs-comment">//   gp._defer = d</span>
+	<span class="hljs-comment">// But without write barriers. The first three are writes to</span>
+	<span class="hljs-comment">// the stack so they don't need a write barrier, and furthermore</span>
+	<span class="hljs-comment">// are to uninitialized memory, so they must not use a write barrier.</span>
+	<span class="hljs-comment">// The fourth write does not require a write barrier because we</span>
+	<span class="hljs-comment">// explicitly mark all the defer structures, so we don't need to</span>
+	<span class="hljs-comment">// keep track of pointers to them with a write barrier.</span>
+	*(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;d._panic)) = <span class="hljs-number">0</span>
+	*(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;d.fd)) = <span class="hljs-number">0</span>
+	*(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;d.link)) = <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(gp._defer))
+	*(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;gp._defer)) = <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(d))
+
+	return0()
+	<span class="hljs-comment">// No code can go here - the C return register has</span>
+	<span class="hljs-comment">// been set and must not be clobbered.</span>
+&#125;</code></pre></div>
+<h3 id="运行时">运行时</h3>
+<ol>
+<li><code>deferproc</code>会将一个新的_defer结构体追加到当前goroutine的链表头(分配一个<code>_defer</code>对象并加入延迟参数)</li>
+<li><code>deferreturn</code>会从goroutine的链表(已经在函数调用栈中)取出<code>_defer</code>并执行</li>
+</ol>
+<h4 id="创建延迟调用-堆上">创建延迟调用(堆上)</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Create a new deferred function fn with siz bytes of arguments.</span>
+<span class="hljs-comment">// The compiler turns a defer statement into a call to this.</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">deferproc</span><span class="hljs-params">(siz <span class="hljs-keyword">int32</span>, fn *funcval)</span></span> &#123; <span class="hljs-comment">// arguments of fn follow fn</span>
+	gp := getg()
+	<span class="hljs-keyword">if</span> gp.m.curg != gp &#123;
+		<span class="hljs-comment">// go code on the system stack can't defer</span>
+		throw(<span class="hljs-string">"defer on system stack"</span>)
+    &#125;
+
+    <span class="hljs-comment">//-------------------1. 创建一个_defer延迟调用</span>
+    <span class="hljs-comment">// the arguments of fn are in a perilous state. The stack map</span>
+	<span class="hljs-comment">// for deferproc does not describe them. So we can't let garbage</span>
+	<span class="hljs-comment">// collection or stack copying trigger until we've copied them out</span>
+	<span class="hljs-comment">// to somewhere safe. The memmove below does that.</span>
+	<span class="hljs-comment">// Until the copy completes, we can only call nosplit routines.</span>
+	sp := getcallersp()
+	argp := <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(&amp;fn)) + unsafe.Sizeof(fn)
+	callerpc := getcallerpc()
+
+    <span class="hljs-comment">//新的_defer结构，重点！</span>
+	d := newdefer(siz)
+	<span class="hljs-keyword">if</span> d._panic != <span class="hljs-literal">nil</span> &#123;
+		throw(<span class="hljs-string">"deferproc: d.panic != nil after newdefer"</span>)
+	&#125;
+    d.link = gp._defer
+    <span class="hljs-comment">//赋值fn,pc,sp等</span>
+	gp._defer = d
+    d.fn = fn
+	d.pc = callerpc
+	d.sp = sp
+	<span class="hljs-keyword">switch</span> siz &#123;
+	<span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:
+		<span class="hljs-comment">// Do nothing.</span>
+	<span class="hljs-keyword">case</span> sys.PtrSize:
+		*(*<span class="hljs-keyword">uintptr</span>)(deferArgs(d)) = *(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(argp))
+	<span class="hljs-keyword">default</span>:
+		memmove(deferArgs(d), unsafe.Pointer(argp), <span class="hljs-keyword">uintptr</span>(siz))
+    &#125;
+
+    <span class="hljs-comment">//避免无限递归调用deferreturn，其是唯一一个不会触发由延迟调用的函数</span>
+    <span class="hljs-comment">// deferproc returns 0 normally.</span>
+	<span class="hljs-comment">// a deferred func that stops a panic</span>
+	<span class="hljs-comment">// makes the deferproc return 1.</span>
+	<span class="hljs-comment">// the code the compiler generates always</span>
+	<span class="hljs-comment">// checks the return value and jumps to the</span>
+    <span class="hljs-comment">// end of the function if deferproc returns != 0.</span>
+    <span class="hljs-comment">//其会在deferproc的最后去发信号给不会跳转到deferreturn的goroutine</span>
+    <span class="hljs-comment">// return0 is a stub used to return 0 from deferproc.</span>
+    <span class="hljs-comment">// It is called at the very end of deferproc to signal</span>
+    <span class="hljs-comment">// the calling Go function that it should not jump</span>
+    <span class="hljs-comment">// to deferreturn.</span>
+    <span class="hljs-comment">// in asm_*.s</span>
+	return0()
+&#125;</code></pre></div>
+<p>其中<code>newdefer()</code>的作用就是要获取一个<code>_defer</code>结构,大概分为几种方式:</p>
+<ul>
+<li>
+<p>从 全局调度器 的延迟调用缓存池<code>sched.deferpool</code>中取出结构体并将该结构体追加到当前goroutine的缓存池</p>
+</li>
+<li>
+<p>从goroutine绑定的<code>p</code>的延迟调用缓存池<code>pp.deferpool</code>中取出</p>
+</li>
+<li>
+<p><code>mallocgc()</code>创建一个新的结构体</p>
+</li>
+</ul>
+<p>无论哪种，最后都会被放入到<code>link</code>链表的最前面</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Allocate a Defer, usually using per-P pool.</span>
+<span class="hljs-comment">// Each defer must be released with freedefer.  The defer is not</span>
+<span class="hljs-comment">// added to any defer chain yet.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// This must not grow the stack because there may be a frame without</span>
+<span class="hljs-comment">// stack map information when this is called.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newdefer</span><span class="hljs-params">(siz <span class="hljs-keyword">int32</span>)</span> *_<span class="hljs-title">defer</span></span> &#123;
+	<span class="hljs-keyword">var</span> d *_defer
+	sc := deferclass(<span class="hljs-keyword">uintptr</span>(siz))
+	gp := getg()
+	<span class="hljs-keyword">if</span> sc &lt; <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">len</span>(p&#123;&#125;.deferpool)) &#123;
+        pp := gp.m.p.ptr()
+        <span class="hljs-comment">//--------------1. 从sched.deferpool里面拿--------------</span>
+		<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(pp.deferpool[sc]) == <span class="hljs-number">0</span> &amp;&amp; sched.deferpool[sc] != <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-comment">// Take the slow path on the system stack so</span>
+			<span class="hljs-comment">// we don't grow newdefer's stack.</span>
+			systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+				lock(&amp;sched.deferlock)
+				<span class="hljs-keyword">for</span> <span class="hljs-built_in">len</span>(pp.deferpool[sc]) &lt; <span class="hljs-built_in">cap</span>(pp.deferpool[sc])/<span class="hljs-number">2</span> &amp;&amp; sched.deferpool[sc] != <span class="hljs-literal">nil</span> &#123;
+                    <span class="hljs-comment">//拿出_defer</span>
+					d := sched.deferpool[sc]
+					sched.deferpool[sc] = d.link
+                    d.link = <span class="hljs-literal">nil</span>
+                    <span class="hljs-comment">//append到当前goroutine的缓存池中</span>
+					pp.deferpool[sc] = <span class="hljs-built_in">append</span>(pp.deferpool[sc], d)
+				&#125;
+				unlock(&amp;sched.deferlock)
+			&#125;)
+        &#125;
+        <span class="hljs-comment">//-----------------2. 从gourtine的pp.deferpool中拿</span>
+		<span class="hljs-keyword">if</span> n := <span class="hljs-built_in">len</span>(pp.deferpool[sc]); n &gt; <span class="hljs-number">0</span> &#123;
+			d = pp.deferpool[sc][n<span class="hljs-number">-1</span>]
+			pp.deferpool[sc][n<span class="hljs-number">-1</span>] = <span class="hljs-literal">nil</span>
+			pp.deferpool[sc] = pp.deferpool[sc][:n<span class="hljs-number">-1</span>]
+		&#125;
+    &#125;
+    
+
+	<span class="hljs-keyword">if</span> d == <span class="hljs-literal">nil</span> &#123;
+        <span class="hljs-comment">//-----------------3. mallogc一个新的结构体--------</span>
+		<span class="hljs-comment">// Allocate new defer+args.</span>
+		systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+			total := roundupsize(totaldefersize(<span class="hljs-keyword">uintptr</span>(siz)))
+			d = (*_defer)(mallocgc(total, deferType, <span class="hljs-literal">true</span>))
+		&#125;)
+		<span class="hljs-keyword">if</span> debugCachedWork &#123;
+			<span class="hljs-comment">// Duplicate the tail below so if there's a</span>
+			<span class="hljs-comment">// crash in checkPut we can tell if d was just</span>
+			<span class="hljs-comment">// allocated or came from the pool.</span>
+            d.siz = siz
+            <span class="hljs-comment">//追加到link上面</span>
+			d.link = gp._defer
+			gp._defer = d
+			<span class="hljs-keyword">return</span> d
+		&#125;
+	&#125;
+	d.siz = siz
+	d.heap = <span class="hljs-literal">true</span>
+	<span class="hljs-keyword">return</span> d
+&#125;</code></pre></div>
+<p>上面<code>defer</code>关键字插入是从后到前，但是其执行是从前到后，即为什么运行好像一个栈一样</p>
+<h4 id="执行延迟调用-堆上">执行延迟调用(堆上)</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Run a deferred function if there is one.</span>
+<span class="hljs-comment">// The compiler inserts a call to this at the end of any</span>
+<span class="hljs-comment">// function which calls defer.</span>
+<span class="hljs-comment">// If there is a deferred function, this will call runtime·jmpdefer,</span>
+<span class="hljs-comment">// which will jump to the deferred function such that it appears</span>
+<span class="hljs-comment">// to have been called by the caller of deferreturn at the point</span>
+<span class="hljs-comment">// just before deferreturn was called. The effect is that deferreturn</span>
+<span class="hljs-comment">// is called again and again until there are no more deferred functions.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Declared as nosplit, because the function should not be preempted once we start</span>
+<span class="hljs-comment">// modifying the caller's frame in order to reuse the frame to call the deferred</span>
+<span class="hljs-comment">// function.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// The single argument isn't actually used - it just has its address</span>
+<span class="hljs-comment">// taken so it can be matched against pending defers.</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">deferreturn</span><span class="hljs-params">(arg0 <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+    gp := getg()
+    <span class="hljs-comment">//取出_defer</span>
+	d := gp._defer
+	<span class="hljs-keyword">if</span> d == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+	sp := getcallersp()
+	<span class="hljs-keyword">if</span> d.sp != sp &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+	<span class="hljs-keyword">if</span> d.openDefer &#123;
+		<span class="hljs-comment">//1.14 opencoded</span>
+		done := runOpenDeferFrame(gp, d)
+		<span class="hljs-keyword">if</span> !done &#123;
+			throw(<span class="hljs-string">"unfinished open-coded defers in deferreturn"</span>)
+		&#125;
+		gp._defer = d.link
+		freedefer(d)
+		<span class="hljs-keyword">return</span>
+	&#125;
+
+	<span class="hljs-comment">// Moving arguments around.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Everything called after this point must be recursively</span>
+	<span class="hljs-comment">// nosplit because the garbage collector won't know the form</span>
+	<span class="hljs-comment">// of the arguments until the jmpdefer can flip the PC over to</span>
+	<span class="hljs-comment">// fn.</span>
+	<span class="hljs-keyword">switch</span> d.siz &#123;
+	<span class="hljs-keyword">case</span> <span class="hljs-number">0</span>:
+		<span class="hljs-comment">// Do nothing.</span>
+	<span class="hljs-keyword">case</span> sys.PtrSize:
+		*(*<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;arg0)) = *(*<span class="hljs-keyword">uintptr</span>)(deferArgs(d))
+	<span class="hljs-keyword">default</span>:
+		memmove(unsafe.Pointer(&amp;arg0), deferArgs(d), <span class="hljs-keyword">uintptr</span>(d.siz))
+	&#125;
+	fn := d.fn
+	d.fn = <span class="hljs-literal">nil</span>
+	gp._defer = d.link
+	freedefer(d)
+	<span class="hljs-comment">// If the defer function pointer is nil, force the seg fault to happen</span>
+	<span class="hljs-comment">// here rather than in jmpdefer. gentraceback() throws an error if it is</span>
+	<span class="hljs-comment">// called with a callback on an LR architecture and jmpdefer is on the</span>
+	<span class="hljs-comment">// stack, because the stack trace can be incorrect in that case - see</span>
+	<span class="hljs-comment">// issue #8153).</span>
+    _ = fn.fn
+    <span class="hljs-comment">//传入_defer的fn和其参数</span>
+	jmpdefer(fn, <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(&amp;arg0)))
+&#125;</code></pre></div>
+<p><code>jmpdefer</code>是汇编实现的runtime函数，目的就是跳转<code>defer</code>所在代码，并在执行结束之后跳转回<code>deferreturn</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// func jmpdefer(fv *funcval, argp uintptr)</span>
+<span class="hljs-comment">// argp is a caller SP.</span>
+<span class="hljs-comment">// called from deferreturn.</span>
+<span class="hljs-comment">// 1. pop the caller</span>
+<span class="hljs-comment">// 2. sub 5 bytes from the callers return</span>
+<span class="hljs-comment">// 3. jmp to the argument</span>
+TEXT runtime·jmpdefer(SB), NOSPLIT, $<span class="hljs-number">0</span><span class="hljs-number">-16</span>
+	MOVQ	fv+<span class="hljs-number">0</span>(FP), DX	<span class="hljs-comment">// fn</span>
+	MOVQ	argp+<span class="hljs-number">8</span>(FP), BX	<span class="hljs-comment">// caller sp</span>
+	LEAQ	<span class="hljs-number">-8</span>(BX), SP	<span class="hljs-comment">// caller sp after CALL</span>
+	MOVQ	<span class="hljs-number">-8</span>(SP), BP	<span class="hljs-comment">// restore BP as if deferreturn returned (harmless if framepointers not in use)</span>
+	SUBQ	$<span class="hljs-number">5</span>, (SP)	<span class="hljs-comment">// return to CALL again</span>
+	MOVQ	<span class="hljs-number">0</span>(DX), BX
+	JMP	BX	<span class="hljs-comment">// but first run the deferred function</span></code></pre></div>
+<p>//todo ???
+<code>deferreturn</code> 函数会多次判断当前 Goroutine 的 _defer 链表中是否有未执行的剩余结构，在所有的延迟函数调用都执行完成之后，该函数才会返回;</p>
+<ul>
+<li>调用<code>deferproc</code>创建新的延迟调用时就会立刻copy函数的参数，所以参数在defer声明时就已经开始执行计算</li>
+</ul>
+<h4 id="open-coded">open-coded</h4>
+<p>对于<code>运行中</code>才确定的defer，
+可以看到其中1.14新增的<code>open-coded</code>，采用位操作(<code>defer bits</code>)来确认分支</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// runOpenDeferFrame runs the active open-coded defers in the frame specified by</span>
+<span class="hljs-comment">// d. It normally processes all active defers in the frame, but stops immediately</span>
+<span class="hljs-comment">// if a defer does a successful recover. It returns true if there are no</span>
+<span class="hljs-comment">// remaining defers to run in the frame.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runOpenDeferFrame</span><span class="hljs-params">(gp *g, d *_defer)</span> <span class="hljs-title">bool</span></span> &#123;
+	done := <span class="hljs-literal">true</span>
+	fd := d.fd
+
+	<span class="hljs-comment">// Skip the maxargsize</span>
+	_, fd = readvarintUnsafe(fd)
+	deferBitsOffset, fd := readvarintUnsafe(fd)
+	<span class="hljs-comment">//defer的数量</span>
+	nDefers, fd := readvarintUnsafe(fd)
+	<span class="hljs-comment">//获得deferBits，因为open-coded最多支持8个，所以默认bits数量就是8,等于一个字节</span>
+	<span class="hljs-comment">//而且这些bits是运行时设置的</span>
+	deferBits := *(*<span class="hljs-keyword">uint8</span>)(unsafe.Pointer(d.varp - <span class="hljs-keyword">uintptr</span>(deferBitsOffset)))
+
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">int</span>(nDefers) - <span class="hljs-number">1</span>; i &gt;= <span class="hljs-number">0</span>; i-- &#123;
+		<span class="hljs-comment">// read the funcdata info for this defer</span>
+		<span class="hljs-keyword">var</span> argWidth, closureOffset, nArgs <span class="hljs-keyword">uint32</span>
+		argWidth, fd = readvarintUnsafe(fd)
+		closureOffset, fd = readvarintUnsafe(fd)
+		nArgs, fd = readvarintUnsafe(fd)
+		<span class="hljs-comment">//移位来判定</span>
+		<span class="hljs-keyword">if</span> deferBits&amp;(<span class="hljs-number">1</span>&lt;&lt;i) == <span class="hljs-number">0</span> &#123;
+			<span class="hljs-keyword">for</span> j := <span class="hljs-keyword">uint32</span>(<span class="hljs-number">0</span>); j &lt; nArgs; j++ &#123;
+				_, fd = readvarintUnsafe(fd)
+				_, fd = readvarintUnsafe(fd)
+				_, fd = readvarintUnsafe(fd)
+			&#125;
+			<span class="hljs-keyword">continue</span>
+		&#125;
+		closure := *(**funcval)(unsafe.Pointer(d.varp - <span class="hljs-keyword">uintptr</span>(closureOffset)))
+		d.fn = closure
+		deferArgs := deferArgs(d)
+		<span class="hljs-comment">// If there is an interface receiver or method receiver, it is</span>
+		<span class="hljs-comment">// described/included as the first arg.</span>
+		<span class="hljs-keyword">for</span> j := <span class="hljs-keyword">uint32</span>(<span class="hljs-number">0</span>); j &lt; nArgs; j++ &#123;
+			<span class="hljs-keyword">var</span> argOffset, argLen, argCallOffset <span class="hljs-keyword">uint32</span>
+			argOffset, fd = readvarintUnsafe(fd)
+			argLen, fd = readvarintUnsafe(fd)
+			argCallOffset, fd = readvarintUnsafe(fd)
+			memmove(unsafe.Pointer(<span class="hljs-keyword">uintptr</span>(deferArgs)+<span class="hljs-keyword">uintptr</span>(argCallOffset)),
+				unsafe.Pointer(d.varp-<span class="hljs-keyword">uintptr</span>(argOffset)),
+				<span class="hljs-keyword">uintptr</span>(argLen))
+		&#125;
+		<span class="hljs-comment">//移位到下一位</span>
+		deferBits = deferBits &amp;^ (<span class="hljs-number">1</span> &lt;&lt; i)
+		*(*<span class="hljs-keyword">uint8</span>)(unsafe.Pointer(d.varp - <span class="hljs-keyword">uintptr</span>(deferBitsOffset))) = deferBits
+		p := d._panic
+		reflectcallSave(p, unsafe.Pointer(closure), deferArgs, argWidth)
+		<span class="hljs-keyword">if</span> p != <span class="hljs-literal">nil</span> &amp;&amp; p.aborted &#123;
+			<span class="hljs-keyword">break</span>
+		&#125;
+		d.fn = <span class="hljs-literal">nil</span>
+		<span class="hljs-comment">// These args are just a copy, so can be cleared immediately</span>
+		memclrNoHeapPointers(deferArgs, <span class="hljs-keyword">uintptr</span>(argWidth))
+		<span class="hljs-keyword">if</span> d._panic != <span class="hljs-literal">nil</span> &amp;&amp; d._panic.recovered &#123;
+			done = deferBits == <span class="hljs-number">0</span>
+			<span class="hljs-keyword">break</span>
+		&#125;
+	&#125;
+
+	<span class="hljs-keyword">return</span> done
+&#125;</code></pre></div>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/09/30/Comcon/interviewBackend/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Interview</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/08/30/Comcon/kafka/">
+                        <span class="hidden-mobile">Kafka notes</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Defer&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

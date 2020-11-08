@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -217,13 +217,13 @@
 	<span class="hljs-comment">// function for hashing objects of this type</span>
     <span class="hljs-comment">// (ptr to object, seed) -&gt; hash</span>
     <span class="hljs-comment">//用作识别</span>
-	hash <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span>
-	<span class="hljs-comment">// function for comparing objects of this type</span>
-    <span class="hljs-comment">// (ptr to object A, ptr to object B) -&gt; ==?</span>
-    <span class="hljs-comment">//用作表明该类型是不是可比较的(string就是不可比较的,</span>
-    <span class="hljs-comment">//context.WithValue传入的key就是要求要是可比较的)</span>
-	equal <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="hljs-title">bool</span></span>
-&#125;</code></pre></div>
+	hash <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span>
+	// <span class="hljs-title">function</span> <span class="hljs-title">for</span> <span class="hljs-title">comparing</span> <span class="hljs-title">objects</span> <span class="hljs-title">of</span> <span class="hljs-title">this</span> <span class="hljs-title">type</span>
+    // <span class="hljs-params">(ptr to object A, ptr to object B)</span> -&gt; ==?
+    //用作表明该类型是不是可比较的<span class="hljs-params">(<span class="hljs-keyword">string</span>就是不可比较的,
+    //context.WithValue传入的key就是要求要是可比较的)</span>
+	<span class="hljs-title">equal</span> <span class="hljs-title">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="hljs-title">bool</span>
+&#125;</span></code></pre></div>
 
             </div>
             <hr>
@@ -247,9 +247,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2020/07/10/Comcon/zookeeper/">
+                      <a href="/2020/07/03/MySQL/log/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Notes about Zookeeper</span>
+                        <span class="hidden-mobile">Notes about MySQL Log</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     

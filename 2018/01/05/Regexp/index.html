@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -227,9 +227,9 @@
 <span class="hljs-keyword">var</span> patt = <span class="hljs-regexp">/pattern/</span>flags;</code></pre></div>
 <p><strong>pattern:就是写正则的地方</strong>
 <strong>flags取值(可以是下面的任意组合):</strong></p>
-<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-string">g:</span>global match <span class="hljs-comment">//查找所有匹配而不是在找到第一个匹配后停止</span>
-<span class="hljs-string">i:</span>ignore <span class="hljs-keyword">case</span> <span class="hljs-comment">//忽略大小写</span>
-<span class="hljs-string">m:</span>multiline;treat begining and end characters(^ and $)<span class="hljs-keyword">as</span> working over multiple lines 
+<div class="hljs"><pre><code class="hljs undefined">g:<span class="hljs-keyword">global</span> <span class="hljs-keyword">match</span> <span class="hljs-comment">//查找所有匹配而不是在找到第一个匹配后停止</span>
+i:ignore case <span class="hljs-comment">//忽略大小写</span>
+m:multiline;treat begining <span class="hljs-keyword">and</span> <span class="hljs-keyword">end</span> characters(^ <span class="hljs-keyword">and</span> $)<span class="hljs-keyword">as</span> working over multiple lines 
 <span class="hljs-comment">//多行匹配,用这个属性后$会匹配'\n'或'\r'.要匹配$本身，用\$</span></code></pre></div>
 <h3 id="特殊字符">特殊字符</h3>
 <table>

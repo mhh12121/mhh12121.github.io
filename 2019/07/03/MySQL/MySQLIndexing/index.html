@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.8k 字
+      2.1k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      22
+      24
        分钟
     </span>
   
@@ -301,7 +301,8 @@
 <li>数据有自增主键的时候，把innodb_autoinc_lock_mode从1改为2（14.6.1.4)</li>
 </ol>
 <h4 id="myisam">MyISAM</h4>
-<p>//todo</p>
+<p>LSM(log structured)模型，主要是顺序读写，写性能&gt;读性能;
+//todo</p>
 <h2 id="log">Log</h2>
 <p>Undo日志记录某数据被修改前的值，可以用来在事务失败时进行回滚；Redo日志记录某数据块被修改后的值，可以用来恢复未写入data file的已成功事务更新的数据。</p>
 <h2 id="查询">查询</h2>
@@ -319,6 +320,21 @@
 <p>快速排序算法：如果没有索引大量排序的情况下</p>
 <p>堆排序算法：如果没有索引排序量不大的情况下</p>
 <p>快排和堆排不稳定，</p>
+<h3 id="count-count-1-count-column">count(*),count(1),count(column)</h3>
+<p>明确在MYISAM和Innodb的速率是不一样的:</p>
+<ul>
+<li>MYISAM下count(*)可以直接得出数值，复杂度O(1),因为保存了一个变量</li>
+<li>INNODB因为支持了事务，有repeatable的隔离级别（用了MVCC），所以不同事务有不同的数据版本，不能采用保存一个变量这种做法</li>
+</ul>
+<p>然后count(*)和count(1)在INNODB中底层的性能其实是一致的：</p>
+<p><code>count(*)</code>会计算所有值
+<code>count(1)</code>会计算non-nil的值</p>
+<p>INNODB会有一个小优化，会使用最小的二级索引</p>
+<p><code>count(column)</code>在拿到值时先判断是否为空，然后再累加;
+如果遇到的是二级索引，则要再回表一次根据主键得到数据，多了一次IO；</p>
+<h3 id="比较">比较</h3>
+<p>(a,b)&gt;(x,y) 等价于：</p>
+<div class="hljs"><pre><code class="hljs undefined">(<span class="hljs-name">a</span> &gt; x) OR ((<span class="hljs-name">a</span> = x) AND (<span class="hljs-name">b</span> &gt; y))</code></pre></div>
 <h3 id="index">Index</h3>
 <h4 id="coveringindex-覆盖索引">coveringIndex(覆盖索引)</h4>
 <ol>
@@ -342,7 +358,7 @@ index idx_n_id(name,id)
 <span class="hljs-comment">## 再单独创建一个索引在name上</span>
 index idx_n(name)
 <span class="hljs-comment"># 会将之前的索引覆盖掉</span></code></pre></div>
-<h3 id="唯一索引和普通索引">唯一索引和普通索引</h3>
+<h4 id="唯一索引和普通索引">唯一索引和普通索引</h4>
 <ol>
 <li>
 <p>唯一索引<strong>搜索</strong>满足的第一条记录会立马返回，通知检索（因为唯一性的保证）。
@@ -359,16 +375,14 @@ index idx_n(name)
 </ol>
 <p>这样看来普通索引会相对性能好一些。</p>
 <p>但是注意：如果业务场景是写入后立马有查询，其实还是会立马需要把数据页加载到内存，这样的情况下其实并不能带来优化IO的操作。</p>
-<h3 id="最左匹配原则">最左匹配原则</h3>
-<p>``sql
-index id_key1_key2_key3()</p>
-<div class="hljs"><pre><code>针对上面的index，根据该原则，业务上各个列的使用频率和重要性应该是key1&gt;key2&gt;key3
-
-- 而且只有key1在条件内才会用到该索引
-- id_key1_key2_key3 等于创建了 id_key1, id_key1_key2, id_key1_key2_key3三个索引
-- 在该索引内使用范围查找会使其失效（in 属于精确查找）
-
-</code></pre></div>
+<h4 id="最左匹配原则">最左匹配原则</h4>
+<div class="hljs"><pre><code class="hljs sql">index id_key1_key2_key3()</code></pre></div>
+<p>针对上面的index，根据该原则，业务上各个列的 <strong>使用频率和重要性</strong> 应该是key1&gt;key2&gt;key3</p>
+<ul>
+<li>而且只有key1在条件内才会用到该索引</li>
+<li><code>id_key1_key2_key3</code> 等于创建了 <code>id_key1</code>, <code>id_key1_key2</code>, <code>id_key1_key2_key3</code>三个索引</li>
+<li>在该索引内使用范围查找会使其失效（in 属于精确查找）</li>
+</ul>
 
             </div>
             <hr>
@@ -392,9 +406,9 @@ index id_key1_key2_key3()</p>
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2019/07/09/Go/Goroutine/">
+                      <a href="/2019/07/09/Go/Goscheduler/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Goroutine Notes</span>
+                        <span class="hidden-mobile">Go Scheduler</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     

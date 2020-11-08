@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -229,7 +229,7 @@ url3  4times
 <li>要按顺序放入新文件？？？//todo</li>
 <li>文件太大怎么办（拆乘多个文件，进行映射，再统计，但这里又不知道怎么保证顺序？？！！难倒只有手动实现LinkedHashMap<del>红黑树</del>不一定是红黑树，但是LinkedHashMap是一定要实现的<a href="LinkedHashMap%E5%AE%9E%E7%8E%B0">这里跳到LinkedHashMap</a>）</li>
 </ol>
-<p>Go blog <img src="https://blog.golang.org/go-maps-in-action" srcset="/img/loading.gif" alt="map in action"> says:</p>
+<p>Go blog <a href="https://blog.golang.org/go-maps-in-action" target="_blank" rel="noopener">map in action</a> says:</p>
 <blockquote>
 <blockquote>
 <blockquote>
@@ -239,7 +239,7 @@ url3  4times
 </blockquote>
 <h3 id="sortedmap">SortedMap</h3>
 <p>Someone has already implemented it
-From Go blog  <img src="https://blog.golang.org/go-maps-in-action" srcset="/img/loading.gif" alt="map in action"></p>
+From Go blog  <a href="https://blog.golang.org/go-maps-in-action" target="_blank" rel="noopener">map in action</a></p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">import</span> <span class="hljs-string">"sort"</span>
 
 <span class="hljs-keyword">var</span> m <span class="hljs-keyword">map</span>[<span class="hljs-keyword">int</span>]<span class="hljs-keyword">string</span>
@@ -259,15 +259,15 @@ sort.Ints(keys)<span class="hljs-comment">//sort them</span>
 	Size     <span class="hljs-keyword">int</span>
 &#125;
 <span class="hljs-comment">//</span>
-<span class="hljs-keyword">type</span> By <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span></span>
+<span class="hljs-keyword">type</span> By <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
 
-<span class="hljs-comment">//ObjSorter joins a By function and a slice of Objs to be sorted.</span>
-<span class="hljs-keyword">type</span> ObjSorter <span class="hljs-keyword">struct</span> &#123;<span class="hljs-comment">//to wrap the obj and by function into this struct</span>
+//<span class="hljs-title">ObjSorter</span> <span class="hljs-title">joins</span> <span class="hljs-title">a</span> <span class="hljs-title">By</span> <span class="hljs-title">function</span> <span class="hljs-title">and</span> <span class="hljs-title">a</span> <span class="hljs-title">slice</span> <span class="hljs-title">of</span> <span class="hljs-title">Objs</span> <span class="hljs-title">to</span> <span class="hljs-title">be</span> <span class="hljs-title">sorted</span>.
+<span class="hljs-title">type</span> <span class="hljs-title">ObjSorter</span> <span class="hljs-title">struct</span></span> &#123;<span class="hljs-comment">//to wrap the obj and by function into this struct</span>
 	objs []Obj
-	by   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span></span>
+	by   <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(o1, o2 *Obj)</span> <span class="hljs-title">bool</span>
 &#125;
 
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(by By)</span> <span class="hljs-title">Sort</span><span class="hljs-params">(objs []Obj)</span></span> &#123;
+<span class="hljs-title">func</span> <span class="hljs-params">(by By)</span> <span class="hljs-title">Sort</span><span class="hljs-params">(objs []Obj)</span></span> &#123;
 	os := &amp;ObjSorter&#123;
 		objs: objs,
 		by:   by,
@@ -320,11 +320,11 @@ sort.Ints(keys)<span class="hljs-comment">//sort them</span>
 <div class="hljs"><pre><code class="hljs undefined"><span class="hljs-string">key:</span>&#123;<span class="hljs-number">1</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span> 
 <span class="hljs-string">key:</span>&#123;<span class="hljs-number">2</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span> 
 <span class="hljs-string">key:</span>&#123;<span class="hljs-number">4</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>&#125;,<span class="hljs-string">value:</span><span class="hljs-number">1</span></code></pre></div>
-<p>Above example can be found in <img src="https://golang.org/pkg/sort/" srcset="/img/loading.gif" alt="Golang slice doc examples">
+<p>Above example can be found in <a href="https://golang.org/pkg/sort/" target="_blank" rel="noopener">Golang slice doc examples</a>
 傻了，写到这里才发现，sortedMap有个鸡用，不符合这道题的要求啊！！！</p>
 <h3 id="linkedhashmap">LinkedHashMap</h3>
 <p>To just ensure <strong>inserted order</strong>:
-you can refer to " srcset="/img/loading.gif<img src alt="Java LinkedHashMap">//or arrayMap()</p>
+you can refer to <a href>Java LinkedHashMap</a>//or arrayMap()</p>
 <p><strong>But</strong>
 here we won’t achieve the LinkedHashMap, it’s kind of troublesome…</p>
 <p>We do a trade-off between time and space:</p>
@@ -598,7 +598,7 @@ The above code may use O(2n) space, but time complexity reduce to O(n)
 <h4 id="unsafe">unsafe</h4>
 <p>map in golang is <strong>not thread-safe</strong>;
 So it involves with concurrency situation, you must add <strong>sync.Mutex</strong> or <strong>sync.RWMutex</strong>
-About that, can refer to <img src="/Concurrency" srcset="/img/loading.gif" alt="my previous blog"></p>
+About that, can refer to <a href="/Concurrency">my previous blog</a></p>
 
             </div>
             <hr>

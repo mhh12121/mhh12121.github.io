@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -155,8 +155,8 @@
               
   <div class="mt-3 post-meta">
     <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-    <time datetime="2020-08-04 11:16" pubdate>
-      August 4, 2020 am
+    <time datetime="2020-11-08 15:46" pubdate>
+      November 8, 2020 pm
     </time>
   </div>
 
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      0 字
+      239 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      1
+      3
        分钟
     </span>
   
@@ -209,7 +209,45 @@
             <h1 style="display: none"></h1>
             
             <div class="markdown-body" id="post-body">
-              
+              <p>一些常用的debug，性能测试工具记录</p>
+<a id="more"></a>
+<h2 id="deubg">deubg</h2>
+<h3 id="build">build</h3>
+<p>一般我们想生成汇编代码，无非就是:</p>
+<div class="hljs"><pre><code class="hljs shell">go build -gcflags -S main.go</code></pre></div>
+<p>或:</p>
+<div class="hljs"><pre><code class="hljs shell">go tools compile -S main.go</code></pre></div>
+<p>但是通过以下命令，可以生成更加详细的汇编优化过程:</p>
+<div class="hljs"><pre><code class="hljs shell">GOSSAFUNC=main go build main.go</code></pre></div>
+<h3 id="gdb">gdb</h3>
+<p>列举用到的文件,其中entry_files的地址就是函数开始运行的地址</p>
+<div class="hljs"><pre><code class="hljs shell">info files</code></pre></div>
+<p>可以直接<code>b address</code>，然后运行<code>c</code></p>
+<h3 id="dlv">dlv</h3>
+<p>比较契合golang，</p>
+<p><code>dlv debug</code>： 在当前目录寻找main函数，并开始调试</p>
+<p>具体进入dlv后输入help查看命令:</p>
+<p>常用:
+<code>print(p)</code>:打印local
+<code>b xxx.go:123</code> break某一行
+<code>c</code> :continue
+<code>n</code>:下一行
+<code>step</code>:下一步
+<code>restart</code>:重启</p>
+<h2 id="performance">Performance</h2>
+<h3 id="go-pprof">Go pprof</h3>
+<p>有两个包</p>
+<p><code>runtime/pprof</code>
+<code>net/pprof</code>用于网络型，可以实时监控</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof  xxx.pprof</code></pre></div>
+<p>也可以展示http网页</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof -http localhost:<span class="hljs-number">9190</span> xxx.pprof</code></pre></div>
+<h3 id="go-test">Go test</h3>
+<p>pprof还可以与go test结合</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> test -bench . -cpuprofile=cpu.prof
+
+<span class="hljs-keyword">go</span> test -bench . -memprofile=./mem.prof</code></pre></div>
+
             </div>
             <hr>
             <div>
@@ -225,18 +263,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2020/08/18/Go/debug/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile"></span>
-                        <span class="visible-mobile">Previous</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2020/08/03/MySQL/InnoDBLock/">
-                        <span class="hidden-mobile">Transaction Isolation in Innodb</span>
+                      <a href="/2020/10/03/Comcon/linuxCommand/">
+                        <span class="hidden-mobile">Linux Cheat sheet</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

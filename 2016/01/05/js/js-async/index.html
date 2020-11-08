@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -251,8 +251,8 @@ alert(<span class="hljs-string">'end'</span>);</code></pre></div>
 <div class="hljs"><pre><code>&lt;link rel=&quot;prefetch&quot; href=&quot;http://&quot;&gt; &lt;!--利用空余时间加载剩下的网页--&gt;
 </code></pre></div>
 <p>2.HTML5的defer async标签实现异步加载</p>
-<div class="hljs"><pre><code class="hljs javascript">&lt;script defer="true" type="text/javascript"&gt;&lt;/script&gt;&lt;!--不等js加载完成就加载后边的图片--&gt;
-&lt;script async="true" type="text/javascript"&gt;&lt;/script&gt;</code></pre></div>
+<div class="hljs"><pre><code class="hljs javascript">&lt;script defer=<span class="hljs-string">"true"</span> type=<span class="hljs-string">"text/javascript"</span>&gt;<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span><span class="xml"><span class="hljs-comment">&lt;!--不等js加载完成就加载后边的图片--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">async</span>=<span class="hljs-string">"true"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span></code></pre></div>
 <p>3.动态加载js</p>
 <div class="hljs"><pre><code class="hljs javascript"><span class="hljs-built_in">document</span>.write(<span class="hljs-string">"&lt;script src="</span>a.js<span class="hljs-string">"&gt;&lt;/script&gt;"</span>);
 <span class="hljs-comment">/*还有修改src路径、创建script标签再将其放进DOM中，这些都是对DOM操作*/</span></code></pre></div>

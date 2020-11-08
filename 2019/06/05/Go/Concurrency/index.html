@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -338,8 +338,8 @@ channel的一些问题：</p>
     fmt.Println(<span class="hljs-string">"a main:"</span>,a)<span class="hljs-comment">//4</span>
 &#125;</code></pre></div>
 <p>输出</p>
-<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-attr">a:</span> <span class="hljs-number">123</span>
-<span class="hljs-attr">a main:</span> <span class="hljs-number">123</span></code></pre></div>
+<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-selector-tag">a</span>: <span class="hljs-number">123</span>
+<span class="hljs-selector-tag">a</span> main: <span class="hljs-number">123</span></code></pre></div>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">var</span> temp=<span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">int</span>,<span class="hljs-number">10</span>)<span class="hljs-comment">//带缓冲</span>
 <span class="hljs-keyword">var</span> a=<span class="hljs-string">"123"</span>
 
@@ -353,7 +353,7 @@ channel的一些问题：</p>
     fmt.Println(<span class="hljs-string">"a main:"</span>,a)<span class="hljs-comment">//4</span>
 &#125;</code></pre></div>
 <p>不能保证1, 2 和 3 的发生顺序，就很有可能只输出</p>
-<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-attr">a main:</span> <span class="hljs-number">123</span></code></pre></div>
+<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-selector-tag">a</span> main: <span class="hljs-number">123</span></code></pre></div>
 <blockquote>
 <blockquote>
 <p>The kth receive on a channel with capacity C happens before the k+Cth send from that channel completes.

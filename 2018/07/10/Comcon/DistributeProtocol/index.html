@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.7k 字
+      3k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      33
+      36
        分钟
     </span>
   
@@ -247,60 +247,65 @@
 <p>每个basic-paxos的实例（或执行者）决定于一个输出值。该协议在多轮通信中进行;
 成功的有两轮，每轮有a，b，我们假定是在一个异步模型里面，即一个processor可能在第一轮，另一个可能在第二轮</p>
 <p>首先进行典型的2PC 协议</p>
-<p>Phase 1：</p>
+<h5 id="phase-1：">Phase 1：</h5>
 <ol>
 <li>1a：Prepare</li>
 </ol>
-<p>Proposer创建一个信息，我们称为<strong>Prepare</strong>，附带一个<strong>唯一标识数字 n</strong> 。</p>
+<p><code>Proposer</code>创建一个信息，我们称为<strong>Prepare</strong>，附带一个<strong>唯一标识数字 n</strong> :</p>
 <ul>
-<li>而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;</li>
-<li>每次n = ++maxProposal;</li>
-<li>Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的???)</li>
+<li>
+<p>而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;</p>
+</li>
+<li>
+<p>每次n = ++maxProposal;</p>
+</li>
+<li>
+<p><code>Porcessor</code>把这个带有 n 的Prepare信息（这里只带有n(id)，<strong>实际上它不用带其他信息</strong>，比如提议内容）发到在一个Quorum的<code>Acceptor</code>(实际就是集群上的所有机器)上（哪些Acceptor在Quorum里面是由Proposer决定的???)</p>
+</li>
 </ul>
 <p>如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos</p>
 <ol start="2">
 <li>1b：Promise
 （两个承诺，一个应答）</li>
 </ol>
-<p>每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：</p>
+<p>每一个<code>Acceptor</code>会等待<code>Proposer</code>的<code>Prepare</code>信息，如果一个Acceptor收到了，它会查看附带的n标识(id)，会有两种情况：</p>
 <ol>
 <li>
-<p>如果<strong>n比之前收到的所有proposal n都大</strong></p>
+<p>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong> (不再应答proposal n <strong>&lt;=</strong> 当前请求的<code>Propose</code>)!!!</p>
 <ul>
-<li>这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。</li>
-<li>如果这个Acceptor以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会<strong>持久化</strong>该proposal值）</li>
+<li>则不接受proposal n&lt;=当前请求的prepare请求，<code>Acceptor</code>能忽略这个提议;</li>
+<li>为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新;</li>
 </ul>
 </li>
 <li>
-<p>如果<strong>n出现&lt;=之前收到的任何一个proposal n</strong></p>
+<p>如果<strong>n比之前收到的所有proposal n都大</strong> (不再应答proposal n <strong>&lt;</strong> 当前请求的<code>Accept</code> 请求 )!!</p>
 <ul>
-<li>则不接受proposal n&lt;=当前请求的prepare请求，Acceptor能忽略这个提议;</li>
-<li>为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新</li>
+<li>这个<code>Acceptor</code>一定要返回一个信息Promise给对应的<code>Proposer</code>，然后会忽视所有未来的附带标识小于n的提议（信息）;</li>
+<li>如果这个<code>Acceptor</code>以前接收过<strong>其他提议</strong>，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w，没有就返回空;（这里Acceptor还会<strong>持久化</strong>该proposal值）;</li>
 </ul>
 </li>
 </ol>
-<p>Phase 2：</p>
+<p>注意上面两者的比较, <code>Acceptor</code>一定要接收Propose &gt; 当前n的请求 以及 可以接收 &gt;= 当前Accept的n 的请求</p>
+<h5 id="phase-2：">Phase 2：</h5>
 <ol>
 <li>2a： Accept(propose)</li>
 </ol>
-<p>如果一个Proposer收到了的从Quorum返回的response，</p>
+<p>如果一个<code>Proposer</code>收到了的从Quorum返回的response，</p>
 <ol>
-<li>如果未超过一半的Acceptors同意，提议失败</li>
+<li>如果未超过一半的<code>Acceptors</code>同意，提议失败</li>
 <li>如果超过了一半：</li>
 </ol>
-<div class="hljs"><pre><code>- 如果**所有**Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
+<div class="hljs"><pre><code>- 如果有**部分**`Acceptor`接到过内容，会从所有`Acceptor`接受过的内容(response)中，**选择proposal n最大**的内容作为真正的内容(value)，提议编号仍然为 n，**但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容**;
 
-- 如果有**部分**Acceptor接到过内容，会从所有接受过的内容中，**选择proposal n最大**的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;
+- 如果**所有**`Acceptor`应答的proposal内容都为null，即可随意决定发起proposal的内容(Value自己定)，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
 </code></pre></div>
 <ol start="2">
-<li>2b：Accepted
-如果Acceptor接收到了提议后，他必须遵循：
-<ul>
-<li>如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(<strong>持久化</strong>）<strong>当前proposal n 和内容</strong>;
-最后Proposer收到Quorum返回的Accept response后，形成决议</li>
-</ul>
-</li>
+<li>2b：Accepted</li>
 </ol>
+<p>如果<code>Acceptor</code>接收到了提议后，他必须遵循：</p>
+<div class="hljs"><pre><code>- 如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(**持久化**）当前proposal n 和内容(value);
+</code></pre></div>
+<p>最后<code>Proposer</code>收到Quorum返回的Accept response后，形成决议</p>
 <h4 id="图解在算法异常的情况下-工程下更加复杂-先占坑-：">图解在算法异常的情况下（工程下更加复杂，先占坑）：</h4>
 <ol>
 <li>没有失败的情况下</li>
@@ -404,7 +409,7 @@ Here, V is the last of (Va, Vb, Vc).</code></pre></div>
    </span>|<span class="hljs-string">      X------------&gt;</span>|<span class="hljs-string">-&gt;</span>|<span class="hljs-string">-&gt;</span>|<span class="hljs-string">       </span>|<span class="hljs-string">  </span>|<span class="hljs-string">  Accept!(3,Vb)
    </span>|<span class="hljs-string">      </span>|<span class="hljs-string">&lt;------------X--X--X       </span>|<span class="hljs-string">  </span>|<span class="hljs-string">  Nack(4)
    </span>|<span class="hljs-string">      </span>|<span class="hljs-string">  </span>|<span class="hljs-string">          </span>|<span class="hljs-string">  </span>|<span class="hljs-string">  </span>|<span class="hljs-string">       </span>|<span class="hljs-string">  </span>|<span class="hljs-string">  ... and so on ...</span></code></pre></div>
-<h3 id="multi-paxos">Multi-Paxos</h3>
+<h2 id="multi-paxos">Multi-Paxos</h2>
 <p>multi-Paxos将集群分为两种状态</p>
 <p>以上参考 *** <img src="https://webcache.googleusercontent.com/search?q=cache:zXcryn67tFcJ:https://en.wikipedia.org/wiki/Paxos_(computer_science)+&amp;cd=2&amp;hl=en&amp;ct=clnk" srcset="/img/loading.gif" alt="wiki-Paxos"> ***</p>
 <h2 id="raft">Raft</h2>
@@ -465,6 +470,26 @@ MTBF: 前一次失败和这一次失败间隔的平均时间（某个节点）</
 <p>为了保证安全，只能分为 <strong>两步提交</strong>
 一些系统就会做 第一步：关闭旧的配置，第二开启新配置</p>
 <p>在raft里面，节点第一次切换到新的配置，我们称之为joint consensus（交叉共识），一旦交叉共识被commit，整个系统就都转到了新的配置上</p>
+<h4 id="leadercrash">LeaderCrash</h4>
+<p>leader挂了的情况:</p>
+<h4 id="leaderstickness">LeaderStickness</h4>
+<p>Leader(或者某个服务器)被隔绝开集群</p>
+<ul>
+<li>自己就会选自己为leader，<strong>不断增加</strong>term，</li>
+<li>再次加入到集群中，自己的term远远大于当前集群的term，leader stepDown</li>
+</ul>
+<p>解决方法:
+Pre-Vote:</p>
+<ul>
+<li>新增一种Pre-Vote RPC( curTerm+1, lastLogIndex, lastLogTerm )</li>
+<li>不修改server的任何状态</li>
+<li>Pre-Vote RPC多数派返回成功，本地Term++，将节点状态转换为Candidate，发出真正的Vote RPC</li>
+<li>分区后节点，Pre-Vote不会成功，term不会增加，再次加入就不会导致集群异常;</li>
+</ul>
+<p>缺点:???</p>
+<ul>
+<li>个人认为增加了一个RPC，有延迟</li>
+</ul>
 <h4 id="joint-consensus">Joint consensus</h4>
 <p>交叉共识包含
 log entries会被复制到新旧配置中的所有server

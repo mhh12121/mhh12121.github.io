@@ -16,7 +16,7 @@
   <meta name="description" content>
   <meta name="author" content="Doujohner">
   <meta name="keywords" content>
-  <title>兜的破烂</title>
+  <title>Linux Cheat sheet - 兜的破烂</title>
 
   <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
 
@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -155,8 +155,8 @@
               
   <div class="mt-3 post-meta">
     <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-    <time datetime="2020-08-31 01:05" pubdate>
-      August 31, 2020 am
+    <time datetime="2020-10-03 14:20" pubdate>
+      October 3, 2020 pm
     </time>
   </div>
 
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      82 字
+      233 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      1
+      4
        分钟
     </span>
   
@@ -206,31 +206,84 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto" id="post">
             <!-- SEO header -->
-            <h1 style="display: none"></h1>
+            <h1 style="display: none">Linux Cheat sheet</h1>
             
             <div class="markdown-body" id="post-body">
-              <p>一些常用的debug，性能测试工具记录</p>
-<a id="more"></a>
-<h2 id="deubg">deubg</h2>
-<p>gdb,dlv</p>
-<h2 id="performance">Performance</h2>
-<h3 id="go-pprof">Go pprof</h3>
-<p>有两个包</p>
-<p><code>runtime/pprof</code>
-<code>net/pprof</code>用于网络型，可以实时监控</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof  xxx.pprof</code></pre></div>
-<p>也可以展示http网页</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof -http localhost:<span class="hljs-number">9190</span> xxx.pprof</code></pre></div>
-<h3 id="go-test">Go test</h3>
-<p>pprof还可以与go test结合</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> test -bench . -cpuprofile=cpu.prof
+              <ul>
+<li>ps
+From MANNUAL:</li>
+</ul>
+<p>EXAMPLES
+To see every process on the system using standard syntax:
+ps -e
+ps -ef
+ps -eF
+ps -ely</p>
+<div class="hljs"><pre><code>   To see every process on the system using BSD syntax:
+      ps ax
+      ps axu
 
-<span class="hljs-keyword">go</span> test -bench . -memprofile=./mem.prof</code></pre></div>
+   To print a process tree:
+      ps -ejH
+      ps axjf
+
+   To get info about threads:
+      ps -eLf
+      ps axms
+
+   To get security info:
+      ps -eo euser,ruser,suser,fuser,f,comm,label
+      ps axZ
+      ps -eM
+
+   To see every process running as root (real &amp; effective ID) in user format:
+      ps -U root -u root u
+
+   To see every process with a user-defined format:
+      ps -eo pid,tid,class,rtprio,ni,pri,psr,pcpu,stat,wchan:14,comm
+      ps axo stat,euid,ruid,tty,tpgid,sess,pgrp,ppid,pid,pcpu,comm
+      ps -Ao pid,tt,user,fname,tmout,f,wchan
+
+   Print only the process IDs of syslogd:
+      ps -C syslogd -o pid=
+
+   Print only the name of PID 42:
+      ps -q 42 -o comm=
+</code></pre></div>
+<ul>
+<li>转换文件编码格式:</li>
+</ul>
+<div class="hljs"><pre><code class="hljs shell">iconv -f [encoding] -t [encoding] sourcefile -o outputfile</code></pre></div>
+<ul>
+<li>strace</li>
+</ul>
+<p>一般用于<strong>系统调用</strong>的trace;</p>
+<ul>
+<li>tcpdump
+可以结合wireshark分析tcpdump</li>
+</ul>
+<ul>
+<li>sysctl -a
+查看sys设置参数，包括ip设置，tcp设置等;
+相关设置在<code>/etc/sysctl.conf</code>中;</li>
+</ul>
+<p>在 <code>/proc/sys/net</code>也可以观察到;</p>
+<ul>
+<li>tcpdump</li>
+</ul>
+
             </div>
             <hr>
             <div>
               <div class="post-metas mb-3">
                 
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Linux/">Linux</a>
+                    
+                  </div>
                 
               </div>
               
@@ -241,7 +294,7 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2020/08/31/Go/Practice/">
+                      <a href="/2020/11/08/Go/debug/">
                         <i class="iconfont icon-arrowleft"></i>
                         <span class="hidden-mobile"></span>
                         <span class="visible-mobile">Previous</span>
@@ -251,8 +304,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2020/08/03/MySQL/InnoDBLock/">
-                        <span class="hidden-mobile">Transaction Isolation in Innodb</span>
+                      <a href="/2020/09/30/Comcon/interviewBackend/">
+                        <span class="hidden-mobile">Interview</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -391,7 +444,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "&nbsp;",
+        "Linux Cheat sheet&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
