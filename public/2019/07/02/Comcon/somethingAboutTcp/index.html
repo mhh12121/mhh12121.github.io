@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      3.2k 字
+      3.3k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      35
+      37
        分钟
     </span>
   
@@ -408,14 +408,27 @@ Nagle就是解决这种问题，具体做法</p>
 <p>每个已经完成的三路握手的客户对应其中的一员，这些套接字处于ESTABLISHED状态。</p>
 </li>
 </ul>
-<p>如图<img src="/img/" srcset="/img/loading.gif" alt="tcpsynlog"></p>
+<p>如图<img src="/img/tcpsynlogs.png" srcset="/img/loading.gif" alt="tcpsynlog"></p>
 <p>TCP在未完成队列接收SYN的request，当三次握手完成(established)后，就会将这个request移到已完成的连接队列的尾部;</p>
 <p>除了两个队列模型外，TCP listen path也用无锁方式来改进???（似乎有点问题）4.7内核版本改进</p>
 <h4 id="dns协议">DNS协议</h4>
 <p>首先这🐔是<strong>应用层</strong>协议！！！
 功能主要就是<strong>把域名转换为IP地址</strong>
-然后，主要是在<strong>UDP</strong>上面跑，端口<strong>53</strong>
-长度最多是<strong>512Bytes</strong>，若过多要用 <img src="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS" srcset="/img/loading.gif" alt="EDNS"></p>
+然后，主要是在<strong>UDP</strong>上面跑(为什么说主要，因为协议其实规定在超过512B时，应该用<code>TCP</code>进行重试)，端口<strong>53</strong>
+长度最多是<strong>512Bytes</strong>，若过多要用 <a href="https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS" target="_blank" rel="noopener">EDNS</a> (最多支持4096B)</p>
+<p>为什么选UDP/TCP?</p>
+<ul>
+<li>
+<p>UDP 协议</p>
+<p>DNS 查询的数据包较小、机制简单；</p>
+<p>UDP 协议的额外开销小、有着更好的性能表现；</p>
+</li>
+<li>
+<p>TCP 协议</p>
+<p>DNS 查询由于 DNSSEC 和 IPv6 的引入迅速膨胀，导致 DNS 响应经常超过 MTU 造成数据的分片和丢失，我们需要依靠更加可靠的 TCP 协议完成数据的传输；</p>
+<p>随着 DNS 查询中包含的数据不断增加，TCP 协议头以及三次握手带来的额外开销比例逐渐降低，不再是占据总传输数据大小的主要部分；</p>
+</li>
+</ul>
 <h4 id="uri-和-url-和域名">URI 和 URL 和域名</h4>
 <p>URI（统一资源标识符） 包括 URL（统一资源定位符）和URN（统一资源名称）</p>
 <p>URI通用模式：</p>

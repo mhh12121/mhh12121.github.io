@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      5k 字
+      16.6k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      77
+      262
        分钟
     </span>
   
@@ -211,119 +211,104 @@
             <div class="markdown-body" id="post-body">
               <h1>golang内存管理</h1>
 <a id="more"></a>
-<p>go的内存管理是基于tcmalloc，<a href="http://goog-perftools.sourceforge.net/doc/tcmalloc.html" target="_blank" rel="noopener">这个连接</a>看详情</p>
+<p>go的内存管理是基于tcmalloc，<a href="http://goog-perftools.sourceforge.net/doc/tcmalloc.html" target="_blank" rel="noopener">这个连接</a>看详情
+盗来<img src="/img/tcmalloc.jpg" srcset="/img/loading.gif" alt="一张图"></p>
 <p>任何大小的内存页可以被分割成<strong>一系列同样大小的object</strong>,这些规定的大小size则被定义在<a href="#sizetoclass">sizetoclass</a>,然后被一个<strong>bitmap</strong>管理</p>
-<h2 id="基本数据结构">基本数据结构</h2>
+<h2 id="内存总体结构设计">内存总体结构设计</h2>
+<p>暂时将linux amd64作为例子</p>
+<h3 id="虚拟内存布局">虚拟内存布局</h3>
+<ul>
+<li>
+<p>1.10以前，内存不是初始化就分配虚拟内存
+arena大小为512G，为了方便将其分为一个个page，所以总共也有512G/8KB = 65536个page</p>
+<p>span区域存放指向span的指针，表示arena区域page所属的span，所以其大小即为 512GB/8KB* 8B(指针大小) = 512M</p>
+<p>bitmap主要用于GC，两个bit表示arena中一个字的可用状态，所以表示为 (512GB/ 8(8个byte一个字，即指令长度)) * 2 /8 (8个bit一个byte) = 16G 长度</p>
+</li>
+<li>
+<p>1.11以后</p>
+<p>改成两阶段稀疏索引方式，内存允许超过512G，也可以允许不连续内存
+mheap中的arenas字段实际是一个指针数组，每个<code>heapArena</code>管理一个<strong>64MB</strong>的内存
+其结构如下:</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//// heapArenaBitmapBytes is the size of each heap arena's bitmap.</span>
+	heapArenaBitmapBytes = heapArenaBytes / (sys.PtrSize * <span class="hljs-number">8</span> / <span class="hljs-number">2</span>)
+	pagesPerArena = heapArenaBytes / pageSize
+<span class="hljs-comment">// A heapArena stores metadata for a heap arena. heapArenas are stored</span>
+<span class="hljs-comment">// outside of the Go heap and accessed via the mheap_.arenas index.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//go:notinheap</span>
+<span class="hljs-keyword">type</span> heapArena <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">// bitmap stores the pointer/scalar bitmap for the words in</span>
+	<span class="hljs-comment">// this arena. See mbitmap.go for a description. Use the</span>
+	<span class="hljs-comment">// heapBits type to access this.</span>
+	<span class="hljs-comment">//即是内存中bitmap对应</span>
+	bitmap [heapArenaBitmapBytes]<span class="hljs-keyword">byte</span>
+
+	<span class="hljs-comment">// spans maps from virtual address page ID within this arena to *mspan.</span>
+	<span class="hljs-comment">// For allocated spans, their pages map to the span itself.</span>
+	<span class="hljs-comment">// For free spans, only the lowest and highest pages map to the span itself.</span>
+	<span class="hljs-comment">// Internal pages map to an arbitrary span.</span>
+	<span class="hljs-comment">// For pages that have never been allocated, spans entries are nil.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Modifications are protected by mheap.lock. Reads can be</span>
+	<span class="hljs-comment">// performed without locking, but ONLY from indexes that are</span>
+	<span class="hljs-comment">// known to contain in-use or stack spans. This means there</span>
+	<span class="hljs-comment">// must not be a safe-point between establishing that an</span>
+	<span class="hljs-comment">// address is live and looking it up in the spans array.</span>
+	<span class="hljs-comment">//这里的safe-point一般就指STW和栈扫描时期</span>
+	<span class="hljs-comment">//与内存中spans对应</span>
+	spans [pagesPerArena]*mspan
+
+	<span class="hljs-comment">// pageInUse is a bitmap that indicates which spans are in</span>
+	<span class="hljs-comment">// state mSpanInUse. This bitmap is indexed by page number,</span>
+	<span class="hljs-comment">// but only the bit corresponding to the first page in each</span>
+	<span class="hljs-comment">// span is used.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Reads and writes are atomic.</span>
+	pageInUse [pagesPerArena / <span class="hljs-number">8</span>]<span class="hljs-keyword">uint8</span>
+
+	<span class="hljs-comment">// pageMarks is a bitmap that indicates which spans have any</span>
+	<span class="hljs-comment">// marked objects on them. Like pageInUse, only the bit</span>
+	<span class="hljs-comment">// corresponding to the first page in each span is used.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Writes are done atomically during marking. Reads are</span>
+	<span class="hljs-comment">// non-atomic and lock-free since they only occur during</span>
+	<span class="hljs-comment">// sweeping (and hence never race with writes).</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// This is used to quickly find whole spans that can be freed.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// TODO(austin): It would be nice if this was uint64 for</span>
+	<span class="hljs-comment">// faster scanning, but we don't have 64-bit atomic bit</span>
+	<span class="hljs-comment">// operations.</span>
+	pageMarks [pagesPerArena / <span class="hljs-number">8</span>]<span class="hljs-keyword">uint8</span>
+
+	<span class="hljs-comment">// zeroedBase marks the first byte of the first page in this</span>
+	<span class="hljs-comment">// arena which hasn't been used yet and is therefore already</span>
+	<span class="hljs-comment">// zero. zeroedBase is relative to the arena base.</span>
+	<span class="hljs-comment">// Increases monotonically until it hits heapArenaBytes.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// This field is sufficient to determine if an allocation</span>
+	<span class="hljs-comment">// needs to be zeroed because the page allocator follows an</span>
+	<span class="hljs-comment">// address-ordered first-fit policy.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Read atomically and written with an atomic CAS.</span>
+	<span class="hljs-comment">//字段指向了该结构体管理的内存的基地址</span>
+	<span class="hljs-comment">//很多在堆上的零值都是指向了这里</span>
+	zeroedBase <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
+<p>bitmap和spans功能不变</p>
+<h2 id="基本内存管理级别">基本内存管理级别</h2>
 <p>类似于<a href="http://goog-perftools.sourceforge.net/doc/tcmalloc.html" target="_blank" rel="noopener">TCMalloc</a></p>
 <p>大概概括:
 其目的是 减少多线程对内存请求时候的锁竞争，在对小内存的申请时甚至可以无锁操作，获取大内存时用spinlocks；但是其在TLS会预分配一部分空间，所以启动时相比dlmalloc等其他内存分配器空间较大，但是最终会接近;</p>
-<p><strong>class_to_allocnpages</strong>总共有67个范围</p>
+<p><strong>class_to_allocnpages</strong>总共有<code>67</code>???个范围(应该是程序经过测试得来的数值)</p>
 <p>栈的分配也是多层次和多class的</p>
-<ul>
-<li>
-<p>mspan (主要使用该机制减少碎片):</p>
-<p>被内存堆管理的的页面，至少一个页(8KB)，用于范围分配内存，比如16-32B则分配32B,112~128则分配128B的span</p>
-</li>
-<li>
-<p>mcentral</p>
-<p>全局有 67 × 2 (?) 个对应不同size的span <strong>后备</strong>mcentral
-收集所有特定size的span，如果也被用完，则再次转向mheap申请</p>
-</li>
-</ul>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mheap <span class="hljs-keyword">struct</span>&#123;
-	...
-	<span class="hljs-comment">// central free lists for small size classes.</span>
-	<span class="hljs-comment">// the padding makes sure that the mcentrals are</span>
-	<span class="hljs-comment">// spaced CacheLinePadSize bytes apart, so that each mcentral.lock</span>
-	<span class="hljs-comment">// gets its own cache line.</span>
-	<span class="hljs-comment">// central is indexed by spanClass.</span>
-	<span class="hljs-comment">//numSpanClasses = _NumSizeClasses &lt;&lt; 1 = 134</span>
-	central [numSpanClasses]<span class="hljs-keyword">struct</span> &#123;
-		mcentral <span class="hljs-keyword">type</span> mcentral <span class="hljs-keyword">struct</span> &#123;
-					lock      mutex
-					spanclass spanClass
-					nonempty  mSpanList <span class="hljs-comment">// list of spans with a free object, ie a nonempty free list</span>
-					empty     mSpanList <span class="hljs-comment">// list of spans with no free objects (or cached in an mcache)</span>
-
-					<span class="hljs-comment">// nmalloc is the cumulative count of objects allocated from</span>
-					<span class="hljs-comment">// this mcentral, assuming all spans in mcaches are</span>
-					<span class="hljs-comment">// fully-allocated. Written atomically, read under STW.</span>
-					nmalloc <span class="hljs-keyword">uint64</span>
-				&#125;
-		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral&#123;&#125;)%cpu.CacheLinePadSize]<span class="hljs-keyword">byte</span>
-	&#125;
-	....
-&#125;</code></pre></div>
-<p>代码中的pad是用作分割多个mcentral，以CacheLinePadSize个Bytes分割开，所以每一个mcentral的lock可以得到自己的cache line
-我认为可以看做是内存对齐的一种方法(???是不是捏)</p>
-<ul>
-<li>
-<p>mcache</p>
-<p>多层次的cache用来减少分配冲突，mcache是per-P的，所以无锁，mspan的每个P(process)下的可用cache空间；小于16B直接使用P中的macache</p>
-</li>
-</ul>
-<div class="hljs"><pre><code class="hljs golang">	<span class="hljs-comment">// Per-thread (in Go, per-P) cache for small objects.</span>
-<span class="hljs-comment">// No locking needed because it is per-thread (per-P).</span>
-<span class="hljs-comment">//</span>
-<span class="hljs-comment">// mcaches are allocated from non-GC'd memory, so any heap pointers</span>
-<span class="hljs-comment">// must be specially handled.</span>
-<span class="hljs-comment">//</span>
-<span class="hljs-comment">//因为只用作local P，所以自然无锁</span>
-<span class="hljs-comment">//go:notinheap</span>
-<span class="hljs-comment">//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中</span>
-<span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span> &#123;
-	<span class="hljs-comment">// The following members are accessed on every malloc,</span>
-	<span class="hljs-comment">// so they are grouped here for better caching.</span>
-	next_sample <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// trigger heap sample after allocating this many bytes</span>
-	local_scan  <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// bytes of scannable heap allocated</span>
-
-	<span class="hljs-comment">// Allocator cache for tiny objects w/o pointers.</span>
-	<span class="hljs-comment">// See "Tiny allocator" comment in malloc.go.</span>
-	<span class="hljs-comment">//具体可以见下面的tiny allocator分配器</span>
-	<span class="hljs-comment">// tiny points to the beginning of the current tiny block, or</span>
-	<span class="hljs-comment">// nil if there is no current tiny block.</span>
-	<span class="hljs-comment">//</span>
-	<span class="hljs-comment">// tiny is a heap pointer. Since mcache is in non-GC'd memory,</span>
-	<span class="hljs-comment">// we handle it by clearing it in releaseAll during mark</span>
-	<span class="hljs-comment">// termination.</span>
-	tiny             <span class="hljs-keyword">uintptr</span>
-	tinyoffset       <span class="hljs-keyword">uintptr</span>
-	local_tinyallocs <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// number of tiny allocs not counted in other stats</span>
-
-	<span class="hljs-comment">// The rest is not accessed on every malloc.</span>
-
-	alloc [numSpanClasses]*mspan <span class="hljs-comment">// spans to allocate from, indexed by spanClass</span>
-
-	stackcache [_NumStackOrders]stackfreelist
-
-	<span class="hljs-comment">// Local allocator stats, flushed during GC.</span>
-	local_largefree  <span class="hljs-keyword">uintptr</span>                  <span class="hljs-comment">// bytes freed for large objects (&gt;maxsmallsize)</span>
-	local_nlargefree <span class="hljs-keyword">uintptr</span>                  <span class="hljs-comment">// number of frees for large objects (&gt;maxsmallsize)</span>
-	local_nsmallfree [_NumSizeClasses]<span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// number of frees for small objects (&lt;=maxsmallsize)</span>
-
-	<span class="hljs-comment">// flushGen indicates the sweepgen during which this mcache</span>
-	<span class="hljs-comment">// was last flushed. If flushGen != mheap_.sweepgen, the spans</span>
-	<span class="hljs-comment">// in this mcache are stale and need to the flushed so they</span>
-	<span class="hljs-comment">// can be swept. This is done in acquirep.</span>
-	flushGen <span class="hljs-keyword">uint32</span>
-&#125;</code></pre></div>
-<ul>
-<li>fixalloc</li>
-</ul>
-<p>一个不定长度的列表，用来管理<strong>不在堆上</strong>的固定的对象，这些对象都是runtime上大小固定的结构，比如mspan，mcache</p>
-<ul>
-<li>
-<p>mheap:</p>
-<p>全局只有一个
-内存堆，以页为粒度(8KB)进行管理,结构体为treap，维护空闲连续page，归还内存到heap中时，连续地址会合并；大于32KB内存申请直接从mheap中拿，剩下的则先使用当前P的mcache中对应的size class分配，如果其对应的span已经无可用的块，则向mcentral请求，如果没有则在mheap申请，如果还不够则要向操作系统申请;</p>
-</li>
-<li>
-<p>mstatisitc</p>
-<p>提供管理信息</p>
-</li>
-</ul>
-<h3 id="mspan的结构体">mspan的结构体</h3>
+<h3 id="mspan-主要使用该机制减少碎片">mspan (主要使用该机制减少碎片):</h3>
+<p><strong>基本单元内存单元</strong>
+被内存堆管理的的页面，至少一个页(8KB)，用于范围分配内存，比如16-32B则分配32B,112~128则分配<strong>128B</strong>的span</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mspan <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">//实际是一个doubly-linked lilst</span>
 	next *mspan     <span class="hljs-comment">// next span in list, or nil if none</span>
 	prev *mspan     <span class="hljs-comment">// previous span in list, or nil if none</span>
 	list *mSpanList <span class="hljs-comment">// For debugging. <span class="hljs-doctag">TODO:</span> Remove.</span>
@@ -343,6 +328,7 @@
 	<span class="hljs-comment">//</span>
 	<span class="hljs-comment">// allocBits is a bitmap of objects in this span.</span>
 	<span class="hljs-comment">// If n &gt;= freeindex and allocBits[n/8] &amp; (1&lt;&lt;(n%8)) is 0</span>
+	<span class="hljs-comment">//???为什么这样计算</span>
 	<span class="hljs-comment">// then object n is free;</span>
 	<span class="hljs-comment">// otherwise, object n is allocated. Bits starting at nelem are</span>
 	<span class="hljs-comment">// undefined and should never be referenced.</span>
@@ -359,6 +345,10 @@
 	<span class="hljs-comment">// ctz (count trailing zero) to use it directly.</span>
 	<span class="hljs-comment">// allocCache may contain bits beyond s.nelems; the caller must ignore</span>
 	<span class="hljs-comment">// these.</span>
+	<span class="hljs-comment">//- allocBits在freeIndex上的缓存;</span>
+	<span class="hljs-comment">//- allocBits的补码,ctz可以直接使用来计算查找空闲的内存;</span>
+	<span class="hljs-comment">//- 会包含一些s.nelems前面的位，调用者要忽略这些位;</span>
+	<span class="hljs-comment">//在mspan.refillAllocCache()时改变值;</span>
 	allocCache <span class="hljs-keyword">uint64</span>
 
 	<span class="hljs-comment">// allocBits and gcmarkBits hold pointers to a span's mark and</span>
@@ -393,12 +383,13 @@
 	<span class="hljs-comment">// if sweepgen == h-&gt;sweepgen + 1, the span was cached before sweep began and is still cached, and needs sweeping</span>
 	<span class="hljs-comment">// if sweepgen == h-&gt;sweepgen + 3, the span was swept and then cached and is still cached</span>
 	<span class="hljs-comment">// h-&gt;sweepgen is incremented by 2 after every GC</span>
-
+	<span class="hljs-comment">//sweepgen 的分代，用于垃圾回收，与</span>
 	sweepgen    <span class="hljs-keyword">uint32</span>
 	divMul      <span class="hljs-keyword">uint16</span>     <span class="hljs-comment">// for divide by elemsize - divMagic.mul</span>
 	baseMask    <span class="hljs-keyword">uint16</span>     <span class="hljs-comment">// if non-0, elemsize is a power of 2, &amp; this will get object allocation base</span>
 	allocCount  <span class="hljs-keyword">uint16</span>     <span class="hljs-comment">// number of allocated objects</span>
 	spanclass   spanClass  <span class="hljs-comment">// size class and noscan (uint8)</span>
+	<span class="hljs-comment">//管理状态</span>
 	state       mSpanState <span class="hljs-comment">// mspaninuse etc</span>
 	needzero    <span class="hljs-keyword">uint8</span>      <span class="hljs-comment">// needs to be zeroed before allocation</span>
 	divShift    <span class="hljs-keyword">uint8</span>      <span class="hljs-comment">// for divide by elemsize - divMagic.shift</span>
@@ -412,38 +403,974 @@
 <p>主要的字段:</p>
 <ul>
 <li>
-<p>elementsize: slot大小，B为单位</p>
+<p><code>startAddr</code>和<code>npages</code>确定结构体管理的多个页所在的内存，每个页都是8KB</p>
 </li>
 <li>
-<p>freeindex，&lt;该值的已经被分配，&gt;=该位置的可能未被分配，需要配合allocCache查找,每次分配后，freeindex设置为分配的slot+1</p>
+<p><code>elementsize</code>: slot大小，Byte为单位</p>
 </li>
 <li>
-<p>allocBits表示上一次GC之后哪一些slot被使用，0未使用或释放，1已分配</p>
+<p><code>freeindex</code>，&lt;该值的已经被分配，&gt;=该位置的可能未被分配，需要配合allocCache查找,每次分配后，freeindex设置为分配的slot+1,用作扫描野种空闲对象的初始索引;</p>
 </li>
 <li>
-<p>allocCache表示从freeindex开始的64个slot的分配情况，1为未分配，0为已分配，使用ctz(Count trailing zeros指令)找到第一个非0位，使用完了就从allocBits加载，取反；</p>
+<p><code>allocBits</code> 标记内存占用状态，表示上一次<strong>GC</strong>之后哪一些slot被使用，0未使用或释放，1已分配</p>
 </li>
 <li>
-<p>每次gc完的sweep阶段，将allocBits设置为gcmarkbits</p>
+<p><code>gcmarkBits</code> 标记内存回收状态</p>
+</li>
+<li>
+<p>每次gc完的sweep阶段，将<code>allocBits</code>设置为<code>gcmarkbits</code></p>
+</li>
+<li>
+<p><code>allocCache</code> 是<code>allocBits</code>的表示从freeindex开始的64个slot的分配情况，1为未分配，0为已分配，使用ctz(Count trailing zeros指令)找到第一个非0位，使用完了就从allocBits加载，取反；</p>
+</li>
+<li>
+<p><code>sweepgen</code>,垃圾回收的分代状态，主要拥有同<code>mheap</code>中的当前<code>mSpan</code>的<code>sweepgen</code>进行比较:</p>
+<p>每次GC，<code>h-&gt;sweepgen</code>都会 +2 ;</p>
+<ol>
+<li>如果 sweepgen == h-&gt;sweepgen - 2, 这个span需要清除</li>
+<li>如果 sweepgen == h-&gt;sweepgen - 1, 这个span正在被清除</li>
+<li>if sweepgen == h-&gt;sweepgen, 这个span已经被清除过并且就绪可用</li>
+<li>if sweepgen == h-&gt;sweepgen + 1, 这个span在清除之前就被缓存且仍在缓存中，需要被清除（很明显这里mSpan的sweepgen&gt;h.sweepgen，证明已经活过了上一次清除,即被缓存下来);</li>
+<li>if sweepgen == h-&gt;sweepgen + 3, 这个span被清除后缓存，且在缓存中(一般来讲是不需要再缓存了???)</li>
+</ol>
 </li>
 </ul>
-<h2 id="内存总体结构">内存总体结构</h2>
-<p>暂时将linux amd64作为例子</p>
+<h4 id="管理结构">管理结构</h4>
 <ul>
 <li>
-<p>1.10以前，内存不是初始化就分配虚拟内存
-arena大小为512G，为了方便将其分为一个个page，所以总共也有512G/8KB = 65536个page</p>
-<p>span区域存放指向span的指针，表示arena区域page所属的span，所以其大小即为 512GB/8KB* 8B(指针大小) = 512M</p>
-<p>bitmap主要用于GC，两个bit表示arena中一个字的可用状态，所以表示为 (512GB/ 8(8个byte一个字，即指令长度)) * 2 /8 (8个bit一个byte) = 16G 长度</p>
+<p>当结构体管理内存不足时</p>
+<p>其会以<code>页</code>为单位向堆申请内存, 涉及<code>npages</code>字段</p>
 </li>
 <li>
-<p>1.11以后
-改成两阶段稀疏索引方式，内存允许超过512G，也可以允许不连续内存
-mheap中的arenas字段实际是一个指针数组，每个heapArena管理一个64MB的内存
-bitmap和spans功能不变</p>
+<p>当用户程序或者线程向<code>mspan</code>申请内存时</p>
+<p>该结构会使用<code>allocCache</code>字段以<strong>对象为单位</strong>在管理的内存中快速查找待分配的空间,</p>
 </li>
 </ul>
-<h2 id="go的分配内存策略：">go的分配内存策略：</h2>
+<p>如果找得到就返回，如果找不到，更上一级的<code>mcache</code>会调用<code>mcache.refill</code>更新内存管理单元<code>mspan</code>满足需求</p>
+<h4 id="状态">状态</h4>
+<p>结构体下面的</p>
+<p><code>mSpanStateBox</code> 会用来存储<code>mSpan</code>的状态</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mSpan <span class="hljs-keyword">struct</span>&#123;
+	...
+	state mSpanStateBox
+	...
+&#125;
+
+<span class="hljs-comment">// An mspan representing actual memory has state mSpanInUse,</span>
+<span class="hljs-comment">// mSpanManual, or mSpanFree. Transitions between these states are</span>
+<span class="hljs-comment">// constrained as follows:</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// * A span may transition from free to in-use or manual during any GC</span>
+<span class="hljs-comment">//   phase.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// * During sweeping (gcphase == _GCoff), a span may transition from</span>
+<span class="hljs-comment">//   in-use to free (as a result of sweeping) or manual to free (as a</span>
+<span class="hljs-comment">//   result of stacks being freed).</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// * During GC (gcphase != _GCoff), a span *must not* transition from</span>
+<span class="hljs-comment">//   manual or in-use to free. Because concurrent GC may read a pointer</span>
+<span class="hljs-comment">//   and then look up its span, the span state must be monotonic.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Setting mspan.state to mSpanInUse or mSpanManual must be done</span>
+<span class="hljs-comment">// atomically and only after all other span fields are valid.</span>
+<span class="hljs-comment">// Likewise, if inspecting a span is contingent on it being</span>
+<span class="hljs-comment">// mSpanInUse, the state should be loaded atomically and checked</span>
+<span class="hljs-comment">// before depending on other fields. This allows the garbage collector</span>
+<span class="hljs-comment">// to safely deal with potentially invalid pointers, since resolving</span>
+<span class="hljs-comment">// such pointers may race with a span being allocated.</span>
+<span class="hljs-keyword">type</span> mSpanState <span class="hljs-keyword">uint8</span>
+<span class="hljs-keyword">const</span> (
+	mSpanDead   mSpanState = <span class="hljs-literal">iota</span>
+	mSpanInUse             <span class="hljs-comment">// allocated for garbage collected heap</span>
+	mSpanManual            <span class="hljs-comment">// allocated for manual management (e.g., stack allocator)</span>
+)</code></pre></div>
+<p>里面一大段注释其实差不多讲明了状态转换:</p>
+<ol>
+<li>当<code>mspan</code>在空闲的堆中，就会处于<code>mspanFree</code>状态</li>
+<li>当<code>mspan</code>已经被分配，就会处于<code>mspanInUse</code>,<code>mSpanMannual</code>状态,其转换有:
+<ul>
+<li>gc的任何阶段，可能从<code>mSpanFree</code>转到<code>mSpanInUse</code>,<code>mSpanMannual</code></li>
+<li>gc的<strong>清除</strong>阶段，可能从<code>mSpanInUse</code>转到<code>mSpanMannual</code>，<code>mSpanFree</code></li>
+<li>gc的标记阶段,可能从<code>mSpanInUse</code>转到<code>mSpanMannual</code>,<code>mSpanFree</code></li>
+</ul>
+</li>
+</ol>
+<p>其状态转换还一定要是原子操作，避免竞态条件</p>
+<h4 id="spanclass">spanClass</h4>
+<p><code>spanClass</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mSpan <span class="hljs-keyword">struct</span>&#123;
+	...
+	spanClass spanClass
+	...
+&#125;
+<span class="hljs-comment">// A spanClass represents the size class and noscan-ness of a span.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Each size class has a noscan spanClass and a scan spanClass. The</span>
+<span class="hljs-comment">// noscan spanClass contains only noscan objects, which do not contain</span>
+<span class="hljs-comment">// pointers and thus do not need to be scanned by the garbage</span>
+<span class="hljs-comment">// collector.</span>
+<span class="hljs-comment">//前7位存其ID，最后一位是noscan位</span>
+<span class="hljs-keyword">type</span> spanClass <span class="hljs-keyword">uint8</span></code></pre></div>
+<p>这个是<code>mSpan</code>的跨度类,决定了内存管理单元的存储对象<strong>大小</strong>和<strong>数量</strong>,</p>
+<ul>
+<li>
+<p>有67种，在<code>class_to_size</code> 和 <code>class_to_allocnpages</code>上,参照下面<a href="#%E8%A1%A5%E5%85%A8%E7%9A%84spanClass">补全的表格</a></p>
+</li>
+<li>
+<p>其除了保存类别的ID，还会保存<code>noscan</code>标记位，这个标记了对象<strong>是否包含指针</strong>，gc会对无该标记位的<code>mspan</code>扫描</p>
+</li>
+</ul>
+<p>以下的函数为ID和标记位的保存方式:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">makeSpanClass</span><span class="hljs-params">(sizeclass <span class="hljs-keyword">uint8</span>, noscan <span class="hljs-keyword">bool</span>)</span> <span class="hljs-title">spanClass</span></span>&#123;
+	<span class="hljs-keyword">return</span> spanClass(sizeclass&lt;&lt;<span class="hljs-number">1</span>) | spanClass(bool2int(noscan))
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(sc spanClass)</span> <span class="hljs-title">sizeclass</span><span class="hljs-params">()</span> <span class="hljs-title">int8</span></span> &#123;
+	<span class="hljs-keyword">return</span> <span class="hljs-keyword">int8</span>(sc &gt;&gt; <span class="hljs-number">1</span>)
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(sc spanClass)</span> <span class="hljs-title">noscan</span><span class="hljs-params">()</span> <span class="hljs-title">bool</span></span> &#123;
+	<span class="hljs-keyword">return</span> sc&amp;<span class="hljs-number">1</span> != <span class="hljs-number">0</span>
+&#125;</code></pre></div>
+<h3 id="mcache">mcache</h3>
+<p>主要用来缓存<code>小对象</code>(0~32KB),里面就有基本单元<code>mspan</code>, 与线程上的处理器一一绑定;</p>
+<ul>
+<li>多层次的cache用来减少分配冲突，<code>mcache</code>是<code>per-P</code>的，所以无锁；小于16B直接使用P中的<code>macache</code>???</li>
+</ul>
+<p>每一个<code>mcache</code>都有<em><em>67</em>2</em>*个<code>mspan</code>结构，都在<code>alloc</code>字段中;</p>
+<ul>
+<li>其初始化的时候不包含<code>mspan</code>,只有当用户申请内存才会从上一级<code>mspan</code>来满足要求</li>
+</ul>
+<h4 id="结构">结构</h4>
+<div class="hljs"><pre><code class="hljs go">	<span class="hljs-comment">// Per-thread (in Go, per-P) cache for small objects.</span>
+<span class="hljs-comment">// No locking needed because it is per-thread (per-P).</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// mcaches are allocated from non-GC'd memory, so any heap pointers</span>
+<span class="hljs-comment">// must be specially handled.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//因为只用作local P，所以自然无锁</span>
+<span class="hljs-comment">//go:notinheap</span>
+<span class="hljs-comment">//这个标志说明了不在heap中，也可以理解，per - P好明显不在公共heap中</span>
+<span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">// The following members are accessed on every malloc,</span>
+	<span class="hljs-comment">// so they are grouped here for better caching.</span>
+	next_sample <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// trigger heap sample after allocating this many bytes</span>
+	local_scan  <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// bytes of scannable heap allocated</span>
+
+	<span class="hljs-comment">// Allocator cache for tiny objects w/o pointers.</span>
+	<span class="hljs-comment">// See "Tiny allocator" comment in malloc.go.</span>
+	<span class="hljs-comment">//具体可以见下面的tiny allocator分配器</span>
+	<span class="hljs-comment">// tiny points to the beginning of the current tiny block, or</span>
+	<span class="hljs-comment">// nil if there is no current tiny block.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// tiny is a heap pointer. Since mcache is in non-GC'd memory,</span>
+	<span class="hljs-comment">// we handle it by clearing it in releaseAll during mark</span>
+	<span class="hljs-comment">// termination.</span>
+	tiny             <span class="hljs-keyword">uintptr</span>
+	tinyoffset       <span class="hljs-keyword">uintptr</span>
+	local_tinyallocs <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// number of tiny allocs not counted in other stats</span>
+
+	<span class="hljs-comment">// The rest is not accessed on every malloc.</span>
+	<span class="hljs-comment">//都保存在这里,67*2个</span>
+	alloc [numSpanClasses]*mspan <span class="hljs-comment">// spans to allocate from, indexed by spanClass</span>
+
+	stackcache [_NumStackOrders]stackfreelist
+
+	<span class="hljs-comment">// Local allocator stats, flushed during GC.</span>
+	local_largefree  <span class="hljs-keyword">uintptr</span>                  <span class="hljs-comment">// bytes freed for large objects (&gt;maxsmallsize)</span>
+	local_nlargefree <span class="hljs-keyword">uintptr</span>                  <span class="hljs-comment">// number of frees for large objects (&gt;maxsmallsize)</span>
+	local_nsmallfree [_NumSizeClasses]<span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// number of frees for small objects (&lt;=maxsmallsize)</span>
+
+	<span class="hljs-comment">// flushGen indicates the sweepgen during which this mcache</span>
+	<span class="hljs-comment">// was last flushed. If flushGen != mheap_.sweepgen, the spans</span>
+	<span class="hljs-comment">// in this mcache are stale and need to the flushed so they</span>
+	<span class="hljs-comment">// can be swept. This is done in acquirep.</span>
+	<span class="hljs-comment">//用作标记该mcache在最后一次写入磁盘的sweep状态</span>
+	<span class="hljs-comment">//如果其不等于mheap中的sweepgen,证明该mcahce内的spans都是稳定的且需要被写入磁盘，所以可以被清除；</span>
+	<span class="hljs-comment">//整个过程在acquirep中完成;</span>
+	flushGen <span class="hljs-keyword">uint32</span>
+&#125;</code></pre></div>
+<h4 id="初始化">初始化</h4>
+<p>如下代码所示，实际会在systemstack中使用<code>mheap</code>的mcache分配器分配新的<code>mcache</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">allocmcache</span><span class="hljs-params">()</span> *<span class="hljs-title">mcache</span></span> &#123;
+	<span class="hljs-keyword">var</span> c *mcache
+	systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+		lock(&amp;mheap_.lock)
+		c = (*mcache)(mheap_.cachealloc.alloc())
+		<span class="hljs-comment">//让flushGen设为mheap的sweepgen，未稳定，所以不可以被清除;</span>
+		c.flushGen = mheap_.sweepgen
+		unlock(&amp;mheap_.lock)
+	&#125;)
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> c.alloc &#123;
+		<span class="hljs-comment">//每个元素只是一个emptySpan占位符;</span>
+		c.alloc[i] = &amp;emptymspan
+	&#125;
+	c.next_sample = nextSample()
+	<span class="hljs-keyword">return</span> c
+
+&#125;</code></pre></div>
+<h4 id="替换已有的mspan">替换已有的mspan</h4>
+<p><code>mcache.refill</code>方法会使<code>mcache</code>获取一个指定的spanClass(从下一级<code>mcentral</code>中)，被替换的mSpan<strong>不可以</strong>有空闲的内存空间(否则可能会频繁替换),
+而获取的mspan中需要至少包含一个空闲对象用于分配内存;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// refill acquires a new span of span class spc for c. This span will</span>
+<span class="hljs-comment">// have at least one free object. The current span in c must be full.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Must run in a non-preemptible context since otherwise the owner of</span>
+<span class="hljs-comment">// c could change.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcache)</span> <span class="hljs-title">refill</span><span class="hljs-params">(spc spanClass)</span></span> &#123;
+	<span class="hljs-comment">// Return the current cached span to the central lists.</span>
+	s := c.alloc[spc]
+	<span class="hljs-comment">//allocCount必须要=nelems判断span的空间已经被用完</span>
+	<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(s.allocCount) != s.nelems &#123;
+		throw(<span class="hljs-string">"refill of span with free space remaining"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> s != &amp;emptymspan &#123;
+		<span class="hljs-comment">// Mark this span as no longer cached.</span>
+		<span class="hljs-keyword">if</span> s.sweepgen != mheap_.sweepgen+<span class="hljs-number">3</span> &#123;
+			throw(<span class="hljs-string">"bad sweepgen in refill"</span>)
+		&#125;
+		<span class="hljs-comment">//标记该mSpan=mheap.sweepgen+3， 即不需要再缓存???</span>
+		atomic.Store(&amp;s.sweepgen, mheap_.sweepgen)
+	&#125;
+
+	<span class="hljs-comment">// Get a new cached span from the central lists.</span>
+	<span class="hljs-comment">//从mcentral取的mSpan</span>
+	s = mheap_.central[spc].mcentral.cacheSpan()
+	<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+		throw(<span class="hljs-string">"out of memory"</span>)
+	&#125;
+	<span class="hljs-comment">//判断取来的mSpan是不是已经无空余空间了</span>
+	<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(s.allocCount) == s.nelems &#123;
+		throw(<span class="hljs-string">"span has no free space"</span>)
+	&#125;
+
+	<span class="hljs-comment">// Indicate that this span is cached and prevent asynchronous</span>
+	<span class="hljs-comment">// sweeping in the next sweep phase.</span>
+	s.sweepgen = mheap_.sweepgen + <span class="hljs-number">3</span>
+&#125;</code></pre></div>
+<p>注意这个是向<code>mcache</code>插入<code>mSpan</code>的唯一方法;</p>
+<h4 id="分配超小-tiny-对象-16kb-的字段">分配超小(tiny)对象(&lt;16KB)的字段</h4>
+<p>mcache还对微小对象进行了分配处理:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span> &#123;
+	....
+	tiny             <span class="hljs-keyword">uintptr</span>
+	tinyoffset       <span class="hljs-keyword">uintptr</span>
+	local_tinyallocs <span class="hljs-keyword">uintptr</span>
+	....
+&#125;</code></pre></div>
+<p>其中要注意：</p>
+<ul>
+<li>tinyAllocator只分配非指针类型的内存</li>
+<li><code>tiny</code>指向堆中的一块内存，<code>tinyOffset</code>是下一个空闲内存的offset，<code>localtinyallocs</code>会记录内存分配器中分配的对象个数</li>
+</ul>
+<p>可以见下面的<a href="#tinyAllocator">分配器</a></p>
+<h3 id="mcentral">mcentral</h3>
+<p>可以看做是一种缓存(<code>mcache</code>的下一级)，但内存管理单元<code>mspan</code>不存在空闲对象时，程序就会从这个缓存中拿新的内存单元;</p>
+<p>与<code>mcache</code>不同，该结构的<code>mSpan</code>需要加锁访问(非per-P);</p>
+<p>全局有 <code>67 × 2</code> (指针的有67，非指针的有67) 个对应不同size的span <strong>后备</strong>mcentral</p>
+<p>收集所有特定size的span，如果也被用完，则再次转向<code>mheap</code>申请(这个<code>mcentral</code>其实就是属于<code>mheap</code>的，其都会<strong>直接</strong>从系统中申请内存)</p>
+<h4 id="结构体">结构体</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mcentral <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">//加锁</span>
+	lock      mutex
+	spanclass spanClass
+	<span class="hljs-comment">//管理包含空闲对象的mSpan list</span>
+	nonempty  mSpanList <span class="hljs-comment">// list of spans with a free object, ie a nonempty free list</span>
+	<span class="hljs-comment">//不包含空闲对象对象或者是在mcache中缓存的mSpan list</span>
+	empty     mSpanList <span class="hljs-comment">// list of spans with no free objects (or cached in an mcache)</span>
+
+	<span class="hljs-comment">// nmalloc is the cumulative count of objects allocated from</span>
+	<span class="hljs-comment">// this mcentral, assuming all spans in mcaches are</span>
+	<span class="hljs-comment">// fully-allocated. Written atomically, read under STW.</span>
+	nmalloc <span class="hljs-keyword">uint64</span>
+&#125;</code></pre></div>
+<p>可以看到mcentral有两个<code>mSpanList</code>，分别是包含空闲对象的链表和不包含空闲对象的链表;</p>
+<p>初始化时两个链表都不包含任何内存，扩容时<code>nmalloc</code>会记录分配的对象个数,<strong>写入</strong>该值时是用<code>atomic</code>写入，<strong>读取</strong>因为是在STW中，所以无锁(这个很像mSpan中???);</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mheap <span class="hljs-keyword">struct</span>&#123;
+	...
+	<span class="hljs-comment">// central free lists for small size classes.</span>
+	<span class="hljs-comment">// the padding makes sure that the mcentrals are</span>
+	<span class="hljs-comment">// spaced CacheLinePadSize bytes apart, so that each mcentral.lock</span>
+	<span class="hljs-comment">// gets its own cache line.</span>
+	<span class="hljs-comment">// central is indexed by spanClass.</span>
+	<span class="hljs-comment">//numSpanClasses = _NumSizeClasses &lt;&lt; 1 = 134</span>
+	central [numSpanClasses]<span class="hljs-keyword">struct</span> &#123;
+		mcentral mcentral 
+		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral&#123;&#125;)%cpu.CacheLinePadSize]<span class="hljs-keyword">byte</span>
+	&#125;
+	....
+&#125;</code></pre></div>
+<p>代码中的pad是用作分割多个<code>mcentral</code>，以<code>CacheLinePadSize</code>个Bytes分割开，所以每一个<code>mcentral</code>的lock可以得到自己的cache line
+我认为可以看做是内存对齐的一种方法(???是不是捏)</p>
+<h4 id="获得mspan">获得mSpan</h4>
+<p><code>mcache</code>会通过<code>mcentral.cacheSpan</code>方法获取新的内存管理单元<code>mSpan</code>:</p>
+<p>可以大致分为几个步骤:</p>
+<ol>
+<li>
+<p>从有空闲对象的<code>mSpan</code>链表获取可以使用的内存管理单元;</p>
+</li>
+<li>
+<p>从没有空闲对象的 <code>mSpan</code> 链表中查找可以使用的内存管理单元；</p>
+</li>
+<li>
+<p>调用 <code>mcentral.grow</code> 从堆中申请新的内存管理单元；</p>
+</li>
+<li>
+<p>更新内存管理单元的 <code>allocCache</code> 等字段帮助快速分配内存；</p>
+</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcentral)</span> <span class="hljs-title">cacheSpan</span><span class="hljs-params">()</span> *<span class="hljs-title">mspan</span></span> &#123;
+	<span class="hljs-comment">// Deduct credit for this span allocation and sweep if necessary.</span>
+	spanBytes := <span class="hljs-keyword">uintptr</span>(class_to_allocnpages[c.spanclass.sizeclass()]) * _PageSize
+	deductSweepCredit(spanBytes, <span class="hljs-number">0</span>)
+
+	lock(&amp;c.lock)
+	traceDone := <span class="hljs-literal">false</span>
+	<span class="hljs-keyword">if</span> trace.enabled &#123;
+		traceGCSweepStart()
+	&#125;
+	<span class="hljs-comment">//mheap中的sweepgen</span>
+	sg := mheap_.sweepgen
+retry:
+	<span class="hljs-keyword">var</span> s *mspan
+	<span class="hljs-comment">//从nonempty的list一一取出mSpan，判断其sweepgen</span>
+	<span class="hljs-keyword">for</span> s = c.nonempty.first; s != <span class="hljs-literal">nil</span>; s = s.next &#123;
+		<span class="hljs-comment">//1. mSpan等待回收状态(mspan.sweepgen = h.sweepgen-2)</span>
+		<span class="hljs-keyword">if</span> s.sweepgen == sg<span class="hljs-number">-2</span> &amp;&amp; atomic.Cas(&amp;s.sweepgen, sg<span class="hljs-number">-2</span>, sg<span class="hljs-number">-1</span>) &#123;
+			<span class="hljs-comment">//从nonempty中移除，因为是等待回收了，就肯定是属于空闲链表;</span>
+			c.nonempty.remove(s)
+			<span class="hljs-comment">//插入empty链表</span>
+			c.empty.insertBack(s)
+			unlock(&amp;c.lock)
+			<span class="hljs-comment">//并且清理该mSpan</span>
+			s.sweep(<span class="hljs-literal">true</span>)
+			<span class="hljs-keyword">goto</span> havespan
+		&#125;
+		<span class="hljs-comment">//2. mspan.sweepgen=h.sweepgen-1, 正在被清除</span>
+		<span class="hljs-keyword">if</span> s.sweepgen == sg<span class="hljs-number">-1</span> &#123;
+			<span class="hljs-comment">// the span is being swept by background sweeper, skip</span>
+			<span class="hljs-keyword">continue</span>
+		&#125;
+		<span class="hljs-comment">//3. mspan已经被清除</span>
+		<span class="hljs-comment">// we have a nonempty span that does not require sweeping, allocate from it</span>
+		c.nonempty.remove(s)
+		c.empty.insertBack(s)
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">goto</span> havespan
+	&#125;
+
+	....
+&#125;</code></pre></div>
+<p>接下来如果<code>mcentral</code>没在<code>nonemtpy</code>中找到可用的mSpan，会继续遍历其<code>empty</code>链表,处理几乎一样(可以注意一下用到了<code>freeIndex</code>来快速判断有无可用<code>mSpan</code>);</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcentral)</span> <span class="hljs-title">cacheSpan</span><span class="hljs-params">()</span> *<span class="hljs-title">mspan</span></span> &#123;
+	...
+retry:
+	...
+	<span class="hljs-keyword">for</span> s = c.empty.first; s != <span class="hljs-literal">nil</span>; s = s.next &#123;
+		<span class="hljs-keyword">if</span> s.sweepgen == sg<span class="hljs-number">-2</span> &amp;&amp; atomic.Cas(&amp;s.sweepgen, sg<span class="hljs-number">-2</span>, sg<span class="hljs-number">-1</span>) &#123;
+			<span class="hljs-comment">// we have an empty span that requires sweeping,</span>
+			<span class="hljs-comment">// sweep it and see if we can free some space in it</span>
+			c.empty.remove(s)
+			<span class="hljs-comment">// swept spans are at the end of the list</span>
+			c.empty.insertBack(s)
+			unlock(&amp;c.lock)
+			s.sweep(<span class="hljs-literal">true</span>)
+			freeIndex := s.nextFreeIndex()
+			<span class="hljs-keyword">if</span> freeIndex != s.nelems &#123;
+				s.freeindex = freeIndex
+				<span class="hljs-keyword">goto</span> havespan
+			&#125;
+			lock(&amp;c.lock)
+			<span class="hljs-comment">// the span is still empty after sweep</span>
+			<span class="hljs-comment">// it is already in the empty list, so just retry</span>
+			<span class="hljs-keyword">goto</span> retry
+		&#125;
+		<span class="hljs-keyword">if</span> s.sweepgen == sg<span class="hljs-number">-1</span> &#123;
+			<span class="hljs-comment">// the span is being swept by background sweeper, skip</span>
+			<span class="hljs-keyword">continue</span>
+		&#125;
+		<span class="hljs-comment">// already swept empty span,</span>
+		<span class="hljs-comment">// all subsequent ones must also be either swept or in process of sweeping</span>
+		<span class="hljs-keyword">break</span>
+	&#125;
+	...
+&#125;</code></pre></div>
+<p>如果在<code>nonempty</code>和<code>empty</code>都找不到可用的<code>mSpan</code>，就会触发申请内存<code>c.grow</code>;</p>
+<p>最后只要有申请到可用的<code>mSpan</code>进入HaveSpan中，都会对<code>allocCache</code>,<code>allocBits</code>等字段进行更新;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcentral)</span> <span class="hljs-title">cacheSpan</span><span class="hljs-params">()</span> *<span class="hljs-title">mspan</span></span> &#123;
+	...
+retry:
+	...
+	<span class="hljs-keyword">if</span> trace.enabled &#123;
+		traceGCSweepDone()
+		traceDone = <span class="hljs-literal">true</span>
+	&#125;
+	unlock(&amp;c.lock)
+
+	<span class="hljs-comment">// Replenish central list if empty.</span>
+	<span class="hljs-comment">//申请内存</span>
+	s = c.grow()
+	<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+	&#125;
+	lock(&amp;c.lock)
+	<span class="hljs-comment">//将其放入到empty链表中</span>
+	c.empty.insertBack(s)
+	unlock(&amp;c.lock)
+	<span class="hljs-comment">// At this point s is a non-empty span, queued at the end of the empty list,</span>
+	<span class="hljs-comment">// c is unlocked.</span>
+havespan:
+	<span class="hljs-keyword">if</span> trace.enabled &amp;&amp; !traceDone &#123;
+		traceGCSweepDone()
+	&#125;
+	n := <span class="hljs-keyword">int</span>(s.nelems) - <span class="hljs-keyword">int</span>(s.allocCount)
+	<span class="hljs-keyword">if</span> n == <span class="hljs-number">0</span> || s.freeindex == s.nelems || <span class="hljs-keyword">uintptr</span>(s.allocCount) == s.nelems &#123;
+		throw(<span class="hljs-string">"span has no free objects"</span>)
+	&#125;
+	<span class="hljs-comment">// Assume all objects from this span will be allocated in the</span>
+	<span class="hljs-comment">// mcache. If it gets uncached, we'll adjust this.</span>
+	atomic.Xadd64(&amp;c.nmalloc, <span class="hljs-keyword">int64</span>(n))
+	usedBytes := <span class="hljs-keyword">uintptr</span>(s.allocCount) * s.elemsize
+	atomic.Xadd64(&amp;memstats.heap_live, <span class="hljs-keyword">int64</span>(spanBytes)-<span class="hljs-keyword">int64</span>(usedBytes))
+	<span class="hljs-keyword">if</span> trace.enabled &#123;
+		<span class="hljs-comment">// heap_live changed.</span>
+		traceHeapAlloc()
+	&#125;
+	<span class="hljs-keyword">if</span> gcBlackenEnabled != <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// heap_live changed.</span>
+		gcController.revise()
+	&#125;
+	freeByteBase := s.freeindex &amp;^ (<span class="hljs-number">64</span> - <span class="hljs-number">1</span>)
+	whichByte := freeByteBase / <span class="hljs-number">8</span>
+	<span class="hljs-comment">// Init alloc bits cache.</span>
+	s.refillAllocCache(whichByte)
+
+	<span class="hljs-comment">// Adjust the allocCache so that s.freeindex corresponds to the low bit in</span>
+	<span class="hljs-comment">// s.allocCache.</span>
+	s.allocCache &gt;&gt;= s.freeindex % <span class="hljs-number">64</span>
+
+	<span class="hljs-keyword">return</span> s
+&#125;</code></pre></div>
+<p><code>mcentral.grow()</code>方法如下：</p>
+<ol>
+<li>会根据预先分配的<code>class_to_allocnpages</code>和<code>class_to_size</code>进行分配page或者spanClass对应的size;</li>
+<li>并且调用<code>mheap.alloc</code>获取新的<code>mSpan</code></li>
+<li>获取<code>mSpan</code>后，会初始化<code>mSpan.liimt</code>字段，并清除在<code>mheap</code>上的<code>bitmap</code></li>
+</ol>
+<div class="hljs"><pre><code class="hljs go">
+<span class="hljs-comment">// grow allocates a new empty span from the heap and initializes it for c's size class.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcentral)</span> <span class="hljs-title">grow</span><span class="hljs-params">()</span> *<span class="hljs-title">mspan</span></span> &#123;
+	npages := <span class="hljs-keyword">uintptr</span>(class_to_allocnpages[c.spanclass.sizeclass()])
+	size := <span class="hljs-keyword">uintptr</span>(class_to_size[c.spanclass.sizeclass()])
+
+	s := mheap_.alloc(npages, c.spanclass, <span class="hljs-literal">true</span>)
+	<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+	&#125;
+
+	<span class="hljs-comment">// Use division by multiplication and shifts to quickly compute:</span>
+	<span class="hljs-comment">// n := (npages &lt;&lt; _PageShift) / size</span>
+	<span class="hljs-comment">//size =binary( s.divShift * uintptr(s.divMul) &gt;&gt; s.divShift2 )???todo</span>
+	n := (npages &lt;&lt; _PageShift) &gt;&gt; s.divShift * <span class="hljs-keyword">uintptr</span>(s.divMul) &gt;&gt; s.divShift2
+
+	s.limit = s.base() + size*n
+	heapBitsForAddr(s.base()).initSpan(s)
+	<span class="hljs-keyword">return</span> s
+&#125;</code></pre></div>
+<h3 id="mheap">mheap:</h3>
+<p>全局只有<strong>一个</strong>内存堆，主要可以关注<code>mcentral</code>和<code>arenas</code>相关字段;</p>
+<p>以页为粒度(8KB，在64位上每个<code>heapArena</code>都会管理64MB内存)进行管理,</p>
+<p>上面有列举出<code>mcentral</code>的结构体;
+其中<code>numSpanClasses</code>=134, 其中67个为scan的<code>mcentral</code>,另外67个为noscan;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//</span>
+<span class="hljs-keyword">type</span> mheap <span class="hljs-keyword">struct</span>&#123;
+	central [numSpanClasses]<span class="hljs-keyword">struct</span> &#123;
+		mcentral mcentral
+		pad      [cpu.CacheLinePadSize - unsafe.Sizeof(mcentral&#123;&#125;)%cpu.CacheLinePadSize]<span class="hljs-keyword">byte</span>
+	&#125;
+
+&#125;</code></pre></div>
+<p>其中<code>arenas</code>字段在不同OS上面有不同的长度;
+其长度采用的就是多级缓存思想来计算(todo???)</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mheap <span class="hljs-keyword">struct</span>&#123;
+	<span class="hljs-comment">// arenas is the heap arena map. It points to the metadata for</span>
+	<span class="hljs-comment">// the heap for every arena frame of the entire usable virtual</span>
+	<span class="hljs-comment">// address space.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Use arenaIndex to compute indexes into this array.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// For regions of the address space that are not backed by the</span>
+	<span class="hljs-comment">// Go heap, the arena map contains nil.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Modifications are protected by mheap_.lock. Reads can be</span>
+	<span class="hljs-comment">// performed without locking; however, a given entry can</span>
+	<span class="hljs-comment">// transition from nil to non-nil at any time when the lock</span>
+	<span class="hljs-comment">// isn't held. (Entries never transitions back to nil.)</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// In general, this is a two-level mapping consisting of an L1</span>
+	<span class="hljs-comment">// map and possibly many L2 maps. This saves space when there</span>
+	<span class="hljs-comment">// are a huge number of arena frames. However, on many</span>
+	<span class="hljs-comment">// platforms (even 64-bit), arenaL1Bits is 0, making this</span>
+	<span class="hljs-comment">// effectively a single-level map. In this case, arenas[0]</span>
+	<span class="hljs-comment">// will never be nil.</span>
+	arenas [<span class="hljs-number">1</span> &lt;&lt; arenaL1Bits]*[<span class="hljs-number">1</span> &lt;&lt; arenaL2Bits]*heapArena
+&#125;</code></pre></div>
+<p>结构体为<code>treap</code>，维护空闲连续page，归还内存到heap中时，连续地址会合并；
+大于32KB内存申请直接从<code>mheap</code>中拿，剩下的则先使用当前P的<code>mcache</code>中对应的<code>size class</code>分配，如果其对应的span已经无可用的块，则向<code>mcentral</code>请求，如果没有则在mheap申请，如果还不够则要向操作系统申请;</p>
+<h4 id="初始化-v2">初始化</h4>
+<p>回到我们的初始化，终于可以从头开始进行：</p>
+<ol>
+<li>首先是一系列分配器,全部属于<code>fixAlloc</code>，都有<code>init</code>方法;可以参考<a href="#go%E7%9A%84%E5%88%86%E9%85%8D%E5%86%85%E5%AD%98%E7%AD%96%E7%95%A5">下一节</a>,对每一种都详细说明</li>
+<li>还会在该方法中初始化所有的<code>mcentral</code>，这些<code>mcentral</code>会维护全局的内存管理单元，各个线程会通过<code>mcentral</code>获取新的内存单元。</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">init</span><span class="hljs-params">()</span></span> &#123;
+	<span class="hljs-comment">//一系列alloc</span>
+	h.spanalloc.init(unsafe.Sizeof(mspan&#123;&#125;), recordspan, unsafe.Pointer(h), &amp;memstats.mspan_sys)
+	h.cachealloc.init(unsafe.Sizeof(mcache&#123;&#125;), <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, &amp;memstats.mcache_sys)
+	h.specialfinalizeralloc.init(unsafe.Sizeof(specialfinalizer&#123;&#125;), <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, &amp;memstats.other_sys)
+	h.specialprofilealloc.init(unsafe.Sizeof(specialprofile&#123;&#125;), <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, &amp;memstats.other_sys)
+	h.arenaHintAlloc.init(unsafe.Sizeof(arenaHint&#123;&#125;), <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, &amp;memstats.other_sys)
+	<span class="hljs-comment">// Don't zero mspan allocations. Background sweeping can</span>
+	<span class="hljs-comment">// inspect a span concurrently with allocating it, so it's</span>
+	<span class="hljs-comment">// important that the span's sweepgen survive across freeing</span>
+	<span class="hljs-comment">// and re-allocating a span to prevent background sweeping</span>
+	<span class="hljs-comment">// from improperly cas'ing it from 0.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// This is safe because mspan contains no heap pointers.</span>
+	h.spanalloc.zero = <span class="hljs-literal">false</span>
+
+	<span class="hljs-comment">// h-&gt;mapcache needs no init</span>
+
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> h.central &#123;
+		h.central[i].mcentral.init(spanClass(i))
+	&#125;
+	h.pages.init(&amp;h.lock, &amp;memstats.gc_sys)
+&#125;</code></pre></div>
+<p>其中<code>mheap</code>自带一个<code>alloc</code>方法，在系统栈中获得新的<code>mSpan</code>:
+在分配n个页面时，为了防止内存大量占用和堆的增加，会检查<code>sweepdone</code>字段，然后<code>reclaim</code>至少n个pages;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// alloc allocates a new span of npage pages from the GC'd heap.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// spanclass indicates the span's size class and scannability.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// If needzero is true, the memory for the returned span will be zeroed.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">alloc</span><span class="hljs-params">(npages <span class="hljs-keyword">uintptr</span>, spanclass spanClass, needzero <span class="hljs-keyword">bool</span>)</span> *<span class="hljs-title">mspan</span></span> &#123;
+	<span class="hljs-comment">// Don't do any operations that lock the heap on the G stack.</span>
+	<span class="hljs-comment">// It might trigger stack growth, and the stack growth code needs</span>
+	<span class="hljs-comment">// to be able to allocate heap.</span>
+	<span class="hljs-keyword">var</span> s *mspan
+	systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+		<span class="hljs-comment">// To prevent excessive heap growth, before allocating n pages</span>
+		<span class="hljs-comment">// we need to sweep and reclaim at least n pages.</span>
+		<span class="hljs-comment">//会检查回收n个pages</span>
+		<span class="hljs-keyword">if</span> h.sweepdone == <span class="hljs-number">0</span> &#123;
+			h.reclaim(npages)
+		&#125;
+		s = h.allocSpan(npages, <span class="hljs-literal">false</span>, spanclass, &amp;memstats.heap_inuse)
+	&#125;)
+
+	<span class="hljs-keyword">if</span> s != <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">if</span> needzero &amp;&amp; s.needzero != <span class="hljs-number">0</span> &#123;
+			memclrNoHeapPointers(unsafe.Pointer(s.base()), s.npages&lt;&lt;_PageShift)
+		&#125;
+		s.needzero = <span class="hljs-number">0</span>
+	&#125;
+	<span class="hljs-keyword">return</span> s
+&#125;</code></pre></div>
+<p>接下来在<code>mheap.allocSpan</code>方法中，大概步骤为:</p>
+<ol>
+<li>
+<p>选择从堆上分配新的内存页和<code>mSpan</code>;</p>
+</li>
+<li>
+<p>初始化<code>mSpan</code>并将其加入<code>mheap</code>的list</p>
+</li>
+</ol>
+<ul>
+<li>注意有小优化，当要求的npage较小的时候 <code>npages&lt;pageCahcePages/4</code>，会尝试<code>pages.AllocToCache()</code>拿pageCache，然后从拿到的page Cache申请内存;</li>
+<li>较大的时候,就会直接用<code>pages.Alloc()</code>在页堆上拿内存;</li>
+<li>内存不足时，会调用<code>mheap.grow</code>扩容并重新调用<code>pages.Alloc()</code>,不成功则说明OOM了，整个机器都没有内存，直接中止;</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// allocSpan allocates an mspan which owns npages worth of memory.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// If manual == false, allocSpan allocates a heap span of class spanclass</span>
+<span class="hljs-comment">// and updates heap accounting. If manual == true, allocSpan allocates a</span>
+<span class="hljs-comment">// manually-managed span (spanclass is ignored), and the caller is</span>
+<span class="hljs-comment">// responsible for any accounting related to its use of the span. Either</span>
+<span class="hljs-comment">// way, allocSpan will atomically add the bytes in the newly allocated</span>
+<span class="hljs-comment">// span to *sysStat.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// The returned span is fully initialized.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// h must not be locked.</span>
+<span class="hljs-comment">//mheap不可以被锁？？？（初始化为什么不能被锁住???）</span>
+<span class="hljs-comment">// allocSpan must be called on the system stack both because it acquires</span>
+<span class="hljs-comment">// the heap lock and because it must block GC transitions.</span>
+<span class="hljs-comment">// 但是这个allocSpan方法必须在systemstack内，因为其要用heap的锁以及要阻塞GC；</span>
+<span class="hljs-comment">//go:systemstack</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">allocSpan</span><span class="hljs-params">(npages <span class="hljs-keyword">uintptr</span>, manual <span class="hljs-keyword">bool</span>, spanclass spanClass, sysStat *<span class="hljs-keyword">uint64</span>)</span> <span class="hljs-params">(s *mspan)</span></span> &#123;
+	<span class="hljs-comment">// Function-global state.</span>
+	gp := getg()
+	base, scav := <span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>), <span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>)
+
+	<span class="hljs-comment">// If the allocation is small enough, try the page cache!</span>
+	pp := gp.m.p.ptr()
+	<span class="hljs-keyword">if</span> pp != <span class="hljs-literal">nil</span> &amp;&amp; npages &lt; pageCachePages/<span class="hljs-number">4</span> &#123;
+		c := &amp;pp.pcache
+
+		<span class="hljs-comment">// If the cache is empty, refill it.</span>
+		<span class="hljs-keyword">if</span> c.empty() &#123;
+			lock(&amp;h.lock)
+			*c = h.pages.allocToCache()
+			unlock(&amp;h.lock)
+		&#125;
+
+		<span class="hljs-comment">// Try to allocate from the cache.</span>
+		base, scav = c.alloc(npages)
+		<span class="hljs-keyword">if</span> base != <span class="hljs-number">0</span> &#123;
+			s = h.tryAllocMSpan()
+
+			<span class="hljs-keyword">if</span> s != <span class="hljs-literal">nil</span> &amp;&amp; gcBlackenEnabled == <span class="hljs-number">0</span> &amp;&amp; (manual || spanclass.sizeclass() != <span class="hljs-number">0</span>) &#123;
+				<span class="hljs-keyword">goto</span> HaveSpan
+			&#125;
+			<span class="hljs-comment">// We're either running duing GC, failed to acquire a mspan,</span>
+			<span class="hljs-comment">// or the allocation is for a large object. This means we</span>
+			<span class="hljs-comment">// have to lock the heap and do a bunch of extra work,</span>
+			<span class="hljs-comment">// so go down the HaveBaseLocked path.</span>
+			<span class="hljs-comment">//</span>
+			<span class="hljs-comment">// We must do this during GC to avoid skew with heap_scan</span>
+			<span class="hljs-comment">// since we flush mcache stats whenever we lock.</span>
+			<span class="hljs-comment">//</span>
+			<span class="hljs-comment">// TODO(mknyszek): It would be nice to not have to</span>
+			<span class="hljs-comment">// lock the heap if it's a large allocation, but</span>
+			<span class="hljs-comment">// it's fine for now. The critical section here is</span>
+			<span class="hljs-comment">// short and large object allocations are relatively</span>
+			<span class="hljs-comment">// infrequent.</span>
+		&#125;
+	&#125;
+
+	<span class="hljs-comment">// For one reason or another, we couldn't get the</span>
+	<span class="hljs-comment">// whole job done without the heap lock.</span>
+	lock(&amp;h.lock)
+
+	<span class="hljs-keyword">if</span> base == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// Try to acquire a base address.</span>
+		base, scav = h.pages.alloc(npages)
+		<span class="hljs-keyword">if</span> base == <span class="hljs-number">0</span> &#123;
+			<span class="hljs-keyword">if</span> !h.grow(npages) &#123;
+				unlock(&amp;h.lock)
+				<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+			&#125;
+			base, scav = h.pages.alloc(npages)
+			<span class="hljs-keyword">if</span> base == <span class="hljs-number">0</span> &#123;
+				throw(<span class="hljs-string">"grew heap, but no adequate free space found"</span>)
+			&#125;
+		&#125;
+	&#125;
+	<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-comment">// We failed to get an mspan earlier, so grab</span>
+		<span class="hljs-comment">// one now that we have the heap lock.</span>
+		s = h.allocMSpanLocked()
+	&#125;
+	...
+
+&#125;</code></pre></div>
+<p>分配到<code>mSpan</code>后,都要对所有字段进行初始化,一些<code>freeindex</code> , <code>allocCache</code>, <code>gcmarkBits</code>等</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">allocSpan</span><span class="hljs-params">(npages <span class="hljs-keyword">uintptr</span>, manual <span class="hljs-keyword">bool</span>, spanclass spanClass, sysStat *<span class="hljs-keyword">uint64</span>)</span> <span class="hljs-params">(s *mspan)</span></span> &#123;
+	...
+HaveSpan:
+	<span class="hljs-comment">// At this point, both s != nil and base != 0, and the heap</span>
+	<span class="hljs-comment">// lock is no longer held. Initialize the span.</span>
+	s.init(base, npages)
+	<span class="hljs-keyword">if</span> h.allocNeedsZero(base, npages) &#123;
+		s.needzero = <span class="hljs-number">1</span>
+	&#125;
+	nbytes := npages * pageSize
+	<span class="hljs-keyword">if</span> manual &#123;
+		s.manualFreeList = <span class="hljs-number">0</span>
+		s.nelems = <span class="hljs-number">0</span>
+		s.limit = s.base() + s.npages*pageSize
+		<span class="hljs-comment">// Manually managed memory doesn't count toward heap_sys.</span>
+		mSysStatDec(&amp;memstats.heap_sys, s.npages*pageSize)
+		s.state.set(mSpanManual)
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">// We must set span properties before the span is published anywhere</span>
+		<span class="hljs-comment">// since we're not holding the heap lock.</span>
+		s.spanclass = spanclass
+		<span class="hljs-keyword">if</span> sizeclass := spanclass.sizeclass(); sizeclass == <span class="hljs-number">0</span> &#123;
+			s.elemsize = nbytes
+			s.nelems = <span class="hljs-number">1</span>
+
+			s.divShift = <span class="hljs-number">0</span>
+			s.divMul = <span class="hljs-number">0</span>
+			s.divShift2 = <span class="hljs-number">0</span>
+			s.baseMask = <span class="hljs-number">0</span>
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			s.elemsize = <span class="hljs-keyword">uintptr</span>(class_to_size[sizeclass])
+			s.nelems = nbytes / s.elemsize
+
+			m := &amp;class_to_divmagic[sizeclass]
+			s.divShift = m.shift
+			s.divMul = m.mul
+			s.divShift2 = m.shift2
+			s.baseMask = m.baseMask
+		&#125;
+
+		<span class="hljs-comment">// Initialize mark and allocation structures.</span>
+		s.freeindex = <span class="hljs-number">0</span>
+		s.allocCache = ^<span class="hljs-keyword">uint64</span>(<span class="hljs-number">0</span>) <span class="hljs-comment">// all 1s indicating all free.</span>
+		s.gcmarkBits = newMarkBits(s.nelems)
+		s.allocBits = newAllocBits(s.nelems)
+
+		<span class="hljs-comment">// It's safe to access h.sweepgen without the heap lock because it's</span>
+		<span class="hljs-comment">// only ever updated with the world stopped and we run on the</span>
+		<span class="hljs-comment">// systemstack which blocks a STW transition.</span>
+		atomic.Store(&amp;s.sweepgen, h.sweepgen)
+
+		<span class="hljs-comment">// Now that the span is filled in, set its state. This</span>
+		<span class="hljs-comment">// is a publication barrier for the other fields in</span>
+		<span class="hljs-comment">// the span. While valid pointers into this span</span>
+		<span class="hljs-comment">// should never be visible until the span is returned,</span>
+		<span class="hljs-comment">// if the garbage collector finds an invalid pointer,</span>
+		<span class="hljs-comment">// access to the span may race with initialization of</span>
+		<span class="hljs-comment">// the span. We resolve this race by atomically</span>
+		<span class="hljs-comment">// setting the state after the span is fully</span>
+		<span class="hljs-comment">// initialized, and atomically checking the state in</span>
+		<span class="hljs-comment">// any situation where a pointer is suspect.</span>
+		s.state.set(mSpanInUse)
+	&#125;
+	...
+&#125;</code></pre></div>
+<ul>
+<li>fixalloc</li>
+</ul>
+<p>一个不定长度的列表，用来管理<strong>不在堆上</strong>的固定的对象，这些对象都是runtime上大小固定的结构，比如mspan，mcache</p>
+<ul>
+<li>
+<p>mstatisitc</p>
+<p>提供管理信息</p>
+</li>
+</ul>
+<h4 id="扩容">扩容</h4>
+<p><code>mheap</code>的<code>grow()</code>方法扩容，会从堆中拿回最少的npage(期望)需要的内存，并返回成功与否，并且整个过程一定要被<code>锁住</code>;</p>
+<ul>
+<li>如果在当前的<code>arena</code>无足够的空间，会向OS要求分配更多的<code>arena</code>空间（但不保证连续，所以我们需要请求整个chunks）</li>
+<li>接着会扩容<code>arena</code>区域，并更新页分配器的metadata</li>
+<li>heap增长，要考虑回收一部分内存，在某些情况（？？？哪些）会调用<code>scavenge</code>回收一些空闲的内存页;</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">grow</span><span class="hljs-params">(npage <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">bool</span></span> &#123;
+	<span class="hljs-comment">// We must grow the heap in whole palloc chunks.</span>
+	ask := alignUp(npage, pallocChunkPages) * pageSize
+
+	totalGrowth := <span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>)
+	nBase := alignUp(h.curArena.base+ask, physPageSize)
+	<span class="hljs-keyword">if</span> nBase &gt; h.curArena.end &#123;
+		<span class="hljs-comment">// Not enough room in the current arena. Allocate more</span>
+		<span class="hljs-comment">// arena space. This may not be contiguous with the</span>
+		<span class="hljs-comment">// current arena, so we have to request the full ask.</span>
+		av, asize := h.sysAlloc(ask)
+		<span class="hljs-keyword">if</span> av == <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: out of memory: cannot allocate "</span>, ask, <span class="hljs-string">"-byte block ("</span>, memstats.heap_sys, <span class="hljs-string">" in use)\n"</span>)
+			<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+		&#125;
+
+		<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(av) == h.curArena.end &#123;
+			<span class="hljs-comment">// The new space is contiguous with the old</span>
+			<span class="hljs-comment">// space, so just extend the current space.</span>
+			h.curArena.end = <span class="hljs-keyword">uintptr</span>(av) + asize
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			<span class="hljs-comment">// The new space is discontiguous. Track what</span>
+			<span class="hljs-comment">// remains of the current space and switch to</span>
+			<span class="hljs-comment">// the new space. This should be rare.</span>
+			<span class="hljs-keyword">if</span> size := h.curArena.end - h.curArena.base; size != <span class="hljs-number">0</span> &#123;
+				h.pages.grow(h.curArena.base, size)
+				totalGrowth += size
+			&#125;
+			<span class="hljs-comment">// Switch to the new space.</span>
+			h.curArena.base = <span class="hljs-keyword">uintptr</span>(av)
+			h.curArena.end = <span class="hljs-keyword">uintptr</span>(av) + asize
+		&#125;
+
+		<span class="hljs-comment">// The memory just allocated counts as both released</span>
+		<span class="hljs-comment">// and idle, even though it's not yet backed by spans.</span>
+		<span class="hljs-comment">//</span>
+		<span class="hljs-comment">// The allocation is always aligned to the heap arena</span>
+		<span class="hljs-comment">// size which is always &gt; physPageSize, so its safe to</span>
+		<span class="hljs-comment">// just add directly to heap_released.</span>
+		mSysStatInc(&amp;memstats.heap_released, asize)
+		mSysStatInc(&amp;memstats.heap_idle, asize)
+
+		<span class="hljs-comment">// Recalculate nBase</span>
+		nBase = alignUp(h.curArena.base+ask, physPageSize)
+	&#125;
+
+	<span class="hljs-comment">// Grow into the current arena.</span>
+	v := h.curArena.base
+	h.curArena.base = nBase
+	h.pages.grow(v, nBase-v)
+	totalGrowth += nBase - v
+
+	<span class="hljs-comment">// We just caused a heap growth, so scavenge down what will soon be used.</span>
+	<span class="hljs-comment">// By scavenging inline we deal with the failure to allocate out of</span>
+	<span class="hljs-comment">// memory fragments by scavenging the memory fragments that are least</span>
+	<span class="hljs-comment">// likely to be re-used.</span>
+	<span class="hljs-keyword">if</span> retained := heapRetained(); retained+<span class="hljs-keyword">uint64</span>(totalGrowth) &gt; h.scavengeGoal &#123;
+		todo := totalGrowth
+		<span class="hljs-keyword">if</span> overage := <span class="hljs-keyword">uintptr</span>(retained + <span class="hljs-keyword">uint64</span>(totalGrowth) - h.scavengeGoal); todo &gt; overage &#123;
+			todo = overage
+		&#125;
+		h.pages.scavenge(todo, <span class="hljs-literal">true</span>)
+	&#125;
+	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+&#125;</code></pre></div>
+<p>其中<code>sysAlloc</code>是尝试申请虚拟内存，大概分为以下步骤：</p>
+<ol>
+<li>先在预留的区域申请内存,这里会使用<code>linearAlloc.alloc</code>方法;</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">sysAlloc</span><span class="hljs-params">(n <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-params">(v unsafe.Pointer, size <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+	n = alignUp(n, heapArenaBytes)
+
+	<span class="hljs-comment">// 1. First, try the arena pre-reservation.</span>
+	v = h.arena.alloc(n, heapArenaBytes, &amp;memstats.heap_sys)
+	<span class="hljs-keyword">if</span> v != <span class="hljs-literal">nil</span> &#123;
+		size = n
+		<span class="hljs-keyword">goto</span> mapped
+	&#125;
+	...</code></pre></div>
+<ol start="2">
+<li>然后尝试用拿回的值预留的内存中申请一块可以使用的空间,如果无可用空间，就会根据<code>arenaHints</code>在目标地址上尝试扩容;</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">sysAlloc</span><span class="hljs-params">(n <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-params">(v unsafe.Pointer, size <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+	...
+	<span class="hljs-comment">// Try to grow the heap at a hint address.</span>
+	<span class="hljs-keyword">for</span> h.arenaHints != <span class="hljs-literal">nil</span> &#123;
+		hint := h.arenaHints
+		p := hint.addr
+		<span class="hljs-keyword">if</span> hint.down &#123;
+			p -= n
+		&#125;
+		<span class="hljs-keyword">if</span> p+n &lt; p &#123;
+			<span class="hljs-comment">// We can't use this, so don't ask.</span>
+			v = <span class="hljs-literal">nil</span>
+		&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> arenaIndex(p+n<span class="hljs-number">-1</span>) &gt;= <span class="hljs-number">1</span>&lt;&lt;arenaBits &#123;
+			<span class="hljs-comment">// Outside addressable heap. Can't use.</span>
+			v = <span class="hljs-literal">nil</span>
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			<span class="hljs-comment">//</span>
+			v = sysReserve(unsafe.Pointer(p), n)
+		&#125;
+		<span class="hljs-keyword">if</span> p == <span class="hljs-keyword">uintptr</span>(v) &#123;
+			<span class="hljs-comment">// Success. Update the hint.</span>
+			<span class="hljs-keyword">if</span> !hint.down &#123;
+				p += n
+			&#125;
+			hint.addr = p
+			size = n
+			<span class="hljs-keyword">break</span>
+		&#125;
+		<span class="hljs-comment">// Failed. Discard this hint and try the next.</span>
+		<span class="hljs-comment">//</span>
+		<span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> This would be cleaner if sysReserve could be</span>
+		<span class="hljs-comment">// told to only return the requested address. In</span>
+		<span class="hljs-comment">// particular, this is already how Windows behaves, so</span>
+		<span class="hljs-comment">// it would simplify things there.</span>
+		<span class="hljs-keyword">if</span> v != <span class="hljs-literal">nil</span> &#123;
+			sysFree(v, n, <span class="hljs-literal">nil</span>)
+		&#125;
+		h.arenaHints = hint.next
+		h.arenaHintAlloc.free(unsafe.Pointer(hint))
+	&#125;
+
+	<span class="hljs-keyword">if</span> size == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			<span class="hljs-comment">// The race detector assumes the heap lives in</span>
+			<span class="hljs-comment">// [0x00c000000000, 0x00e000000000), but we</span>
+			<span class="hljs-comment">// just ran out of hints in this region. Give</span>
+			<span class="hljs-comment">// a nice failure.</span>
+			throw(<span class="hljs-string">"too many address space collisions for -race mode"</span>)
+		&#125;
+
+		<span class="hljs-comment">// All of the hints failed, so we'll take any</span>
+		<span class="hljs-comment">// (sufficiently aligned) address the kernel will give</span>
+		<span class="hljs-comment">// us.</span>
+		v, size = sysReserveAligned(<span class="hljs-literal">nil</span>, n, heapArenaBytes)
+		<span class="hljs-keyword">if</span> v == <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>
+		&#125;
+
+		<span class="hljs-comment">// Create new hints for extending this region.</span>
+		hint := (*arenaHint)(h.arenaHintAlloc.alloc())
+		hint.addr, hint.down = <span class="hljs-keyword">uintptr</span>(v), <span class="hljs-literal">true</span>
+		hint.next, mheap_.arenaHints = mheap_.arenaHints, hint
+		hint = (*arenaHint)(h.arenaHintAlloc.alloc())
+		hint.addr = <span class="hljs-keyword">uintptr</span>(v) + size
+		hint.next, mheap_.arenaHints = mheap_.arenaHints, hint
+	&#125;
+	...
+	<span class="hljs-comment">//从Reserved状态到Prepared状态</span>
+	sysMap(v, size, &amp;memstats.heap_sys)
+	...
+&#125;</code></pre></div>
+<ol start="3">
+<li>到达mapped状态后，会初始化一个新的<code>heapArena</code>来管理刚刚申请的内存空间,该结构体会被加入页堆的二维数组中</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(h *mheap)</span> <span class="hljs-title">sysAlloc</span><span class="hljs-params">(n <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-params">(v unsafe.Pointer, size <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+	...
+mapped:
+	<span class="hljs-comment">// Create arena metadata.</span>
+	<span class="hljs-keyword">for</span> ri := arenaIndex(<span class="hljs-keyword">uintptr</span>(v)); ri &lt;= arenaIndex(<span class="hljs-keyword">uintptr</span>(v)+size<span class="hljs-number">-1</span>); ri++ &#123;
+		l2 := h.arenas[ri.l1()]
+		<span class="hljs-keyword">if</span> l2 == <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-comment">// Allocate an L2 arena map.</span>
+			l2 = (*[<span class="hljs-number">1</span> &lt;&lt; arenaL2Bits]*heapArena)(persistentalloc(unsafe.Sizeof(*l2), sys.PtrSize, <span class="hljs-literal">nil</span>))
+			<span class="hljs-keyword">if</span> l2 == <span class="hljs-literal">nil</span> &#123;
+				throw(<span class="hljs-string">"out of memory allocating heap arena map"</span>)
+			&#125;
+			atomic.StorepNoWB(unsafe.Pointer(&amp;h.arenas[ri.l1()]), unsafe.Pointer(l2))
+		&#125;
+
+		<span class="hljs-keyword">if</span> l2[ri.l2()] != <span class="hljs-literal">nil</span> &#123;
+			throw(<span class="hljs-string">"arena already initialized"</span>)
+		&#125;
+		<span class="hljs-keyword">var</span> r *heapArena
+		r = (*heapArena)(h.heapArenaAlloc.alloc(unsafe.Sizeof(*r), sys.PtrSize, &amp;memstats.gc_sys))
+		<span class="hljs-keyword">if</span> r == <span class="hljs-literal">nil</span> &#123;
+			r = (*heapArena)(persistentalloc(unsafe.Sizeof(*r), sys.PtrSize, &amp;memstats.gc_sys))
+			<span class="hljs-keyword">if</span> r == <span class="hljs-literal">nil</span> &#123;
+				throw(<span class="hljs-string">"out of memory allocating heap arena metadata"</span>)
+			&#125;
+		&#125;
+
+		<span class="hljs-comment">// Add the arena to the arenas list.</span>
+		<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(h.allArenas) == <span class="hljs-built_in">cap</span>(h.allArenas) &#123;
+			size := <span class="hljs-number">2</span> * <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>(h.allArenas)) * sys.PtrSize
+			<span class="hljs-keyword">if</span> size == <span class="hljs-number">0</span> &#123;
+				size = physPageSize
+			&#125;
+			newArray := (*notInHeap)(persistentalloc(size, sys.PtrSize, &amp;memstats.gc_sys))
+			<span class="hljs-keyword">if</span> newArray == <span class="hljs-literal">nil</span> &#123;
+				throw(<span class="hljs-string">"out of memory allocating allArenas"</span>)
+			&#125;
+			oldSlice := h.allArenas
+			*(*notInHeapSlice)(unsafe.Pointer(&amp;h.allArenas)) = notInHeapSlice&#123;newArray, <span class="hljs-built_in">len</span>(h.allArenas), <span class="hljs-keyword">int</span>(size / sys.PtrSize)&#125;
+			<span class="hljs-built_in">copy</span>(h.allArenas, oldSlice)
+			<span class="hljs-comment">// Do not free the old backing array because</span>
+			<span class="hljs-comment">// there may be concurrent readers. Since we</span>
+			<span class="hljs-comment">// double the array each time, this can lead</span>
+			<span class="hljs-comment">// to at most 2x waste.</span>
+		&#125;
+
+		<span class="hljs-comment">//保存每个mapped的arena的index;</span>
+		h.allArenas = h.allArenas[:<span class="hljs-built_in">len</span>(h.allArenas)+<span class="hljs-number">1</span>]
+		h.allArenas[<span class="hljs-built_in">len</span>(h.allArenas)<span class="hljs-number">-1</span>] = ri
+
+		<span class="hljs-comment">// Store atomically just in case an object from the</span>
+		<span class="hljs-comment">// new heap arena becomes visible before the heap lock</span>
+		<span class="hljs-comment">// is released (which shouldn't happen, but there's</span>
+		<span class="hljs-comment">// little downside to this).</span>
+		atomic.StorepNoWB(unsafe.Pointer(&amp;l2[ri.l2()]), unsafe.Pointer(r))
+	&#125;
+&#125;</code></pre></div>
+<h2 id="内存策略：">内存策略：</h2>
+<p>堆上的所有对象都会通过<code>runtime.newobject</code>方法分配内存，该方法会调用<code>mallocgc</code>分配指定内存大小的空间:
+其中申请的大小类型不同会有不同行为:</p>
 <h3 id="小对象-小于32k-和大对象的不同">小对象（小于32K）和大对象的不同</h3>
 <ol>
 <li>小于32KB的小对象时，会直接去 P (process)的cache的list里面拿，大于32KB的才去堆拿;
@@ -462,29 +1389,9 @@ bitmap和spans功能不变</p>
 		<span class="hljs-keyword">return</span> unsafe.Pointer(&amp;zerobase)
 	&#125;
 	......
-	
-	<span class="hljs-comment">// assistG is the G to charge for this allocation, or nil if</span>
-	<span class="hljs-comment">// GC is not currently active.</span>
-	<span class="hljs-keyword">var</span> assistG *g
-	<span class="hljs-keyword">if</span> gcBlackenEnabled != <span class="hljs-number">0</span> &#123;
-		<span class="hljs-comment">// Charge the current user G for this allocation.</span>
-		assistG = getg()
-		<span class="hljs-keyword">if</span> assistG.m.curg != <span class="hljs-literal">nil</span> &#123;
-			assistG = assistG.m.curg
-		&#125;
-		<span class="hljs-comment">// Charge the allocation against the G. We'll account</span>
-		<span class="hljs-comment">// for internal fragmentation at the end of mallocgc.</span>
-		assistG.gcAssistBytes -= <span class="hljs-keyword">int64</span>(size)
-
-		<span class="hljs-keyword">if</span> assistG.gcAssistBytes &lt; <span class="hljs-number">0</span> &#123;
-			<span class="hljs-comment">// This G is in debt. Assist the GC to correct</span>
-			<span class="hljs-comment">// this before allocating. This must happen</span>
-			<span class="hljs-comment">// before disabling preemption.</span>
-			gcAssistAlloc(assistG)
-		&#125;
-	&#125;
 
 	<span class="hljs-comment">// Set mp.mallocing to keep from being preempted by GC.</span>
+	<span class="hljs-comment">//设置状态位，为正在分配mallocing,防止被GC抢占</span>
 	mp := acquirem()
 	<span class="hljs-keyword">if</span> mp.mallocing != <span class="hljs-number">0</span> &#123;
 		throw(<span class="hljs-string">"malloc deadlock"</span>)
@@ -502,8 +1409,9 @@ bitmap和spans功能不变</p>
 	noscan := typ == <span class="hljs-literal">nil</span> || typ.ptrdata == <span class="hljs-number">0</span>
 	<span class="hljs-keyword">if</span> size &lt;= maxSmallSize &#123;
 		...
-		<span class="hljs-comment">//tiny allocator分配方式的代码</span>
+		<span class="hljs-comment">//tiny对象与小对象的分配，见下一节</span>
 	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">//大对象</span>
 		<span class="hljs-keyword">var</span> s *mspan
 		shouldhelpgc = <span class="hljs-literal">true</span>
 		systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
@@ -581,17 +1489,7 @@ bitmap和spans功能不变</p>
 		&#125;
 	&#125;
 
-	<span class="hljs-keyword">if</span> assistG != <span class="hljs-literal">nil</span> &#123;
-		<span class="hljs-comment">// Account for internal fragmentation in the assist</span>
-		<span class="hljs-comment">// debt now that we know it.</span>
-		assistG.gcAssistBytes -= <span class="hljs-keyword">int64</span>(size - dataSize)
-	&#125;
-
-	<span class="hljs-keyword">if</span> shouldhelpgc &#123;
-		<span class="hljs-keyword">if</span> t := (gcTrigger&#123;kind: gcTriggerHeap&#125;); t.test() &#123;
-			gcStart(t)
-		&#125;
-	&#125;
+	...
 
 	<span class="hljs-keyword">return</span> x
 &#125;</code></pre></div>
@@ -615,12 +1513,24 @@ bitmap和spans功能不变</p>
 <ul>
 <li>每个P在本地维护了专门的memory block来存储tinyObject，分配时根据tinyoffset和需要的size及对齐来判断该block是否容纳该object，如果可以就返回地址</li>
 </ul>
+<p>大概流程为:</p>
+<ul>
+<li>
+<p>offset要进行roundup,<code>mcache</code>的<code>tiny</code>字段实际指向了<code>maxTinySize</code>大小的块，块中如果还有合适的内存，会通过基地址和位移来获取这块内存;</p>
+</li>
+<li>
+<p>当内存块不含有合适的内存时，就会从<code>spanClass</code>获得对应的<code>mspan</code>，然后调用<code>runtime.nextFreeIndex</code>方法获得空闲内存；如果空闲内存无法获得，会接着调用<code>mcache.nextFree</code>方法从<code>mcentral</code>或者<code>mheap</code>中获取;</p>
+</li>
+<li>
+<p>获得空闲内存块后，会用<code>runtime.memclrNoHeapPointers</code>清空空闲内存中的数据，更新<code>tiny</code>和<code>tinyoffset</code>并返回新内存块</p>
+</li>
+</ul>
 <div class="hljs"><pre><code class="hljs go">
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">mallocgc</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>, typ *_type, needzero <span class="hljs-keyword">bool</span>)</span> <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span></span> &#123;
 	....
 	<span class="hljs-comment">//maxSmallsize = 32786</span>
 	<span class="hljs-keyword">if</span> size&lt;=maxSmallSize &#123;
-		<span class="hljs-comment">//申请对象不含指针且小于16B则会调用tiny allocator</span>
+		<span class="hljs-comment">//申请对象不含指针(noscan)且小于16B则会调用tiny allocator</span>
 		<span class="hljs-keyword">if</span> noscan &amp;&amp; size &lt; maxTinySize &#123;
 			<span class="hljs-comment">// Tiny allocator.</span>
 			<span class="hljs-comment">//</span>
@@ -661,9 +1571,11 @@ bitmap和spans功能不变</p>
 			&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> size&amp;<span class="hljs-number">1</span> == <span class="hljs-number">0</span> &#123;
 				off = round(off, <span class="hljs-number">2</span>)
 			&#125;
+			<span class="hljs-comment">//这里发现还有剩余空间</span>
 			<span class="hljs-keyword">if</span> off+size &lt;= maxTinySize &amp;&amp; c.tiny != <span class="hljs-number">0</span> &#123;
 				<span class="hljs-comment">// The object fits into existing tiny block.</span>
 				<span class="hljs-comment">//该对象适合于已有的tinyblock</span>
+				<span class="hljs-comment">//移位获得剩余空间地址</span>
 				x = unsafe.Pointer(c.tiny + off)
 				c.tinyoffset = off + size
 				c.local_tinyallocs++
@@ -673,22 +1585,26 @@ bitmap和spans功能不变</p>
 			&#125;
 			<span class="hljs-comment">// Allocate a new maxTinySize block.</span>
 			span := c.alloc[tinySpanClass]
+			<span class="hljs-comment">//从mspan的alloccache，快速获取</span>
 			v := nextFreeFast(span)
 			<span class="hljs-keyword">if</span> v == <span class="hljs-number">0</span> &#123;
+				<span class="hljs-comment">//从mcentral或mheap获取;</span>
 				v, _, shouldhelpgc = c.nextFree(tinySpanClass)
 			&#125;
+			<span class="hljs-comment">//获得后清空内存块</span>
 			x = unsafe.Pointer(v)
 			(*[<span class="hljs-number">2</span>]<span class="hljs-keyword">uint64</span>)(x)[<span class="hljs-number">0</span>] = <span class="hljs-number">0</span>
 			(*[<span class="hljs-number">2</span>]<span class="hljs-keyword">uint64</span>)(x)[<span class="hljs-number">1</span>] = <span class="hljs-number">0</span>
 			<span class="hljs-comment">// See if we need to replace the existing tiny block with the new one</span>
 			<span class="hljs-comment">// based on amount of remaining free space.</span>
+			<span class="hljs-comment">//将tiny和tinyoffset放回内存块</span>
 			<span class="hljs-keyword">if</span> size &lt; c.tinyoffset || c.tiny == <span class="hljs-number">0</span> &#123;
 				c.tiny = <span class="hljs-keyword">uintptr</span>(x)
 				c.tinyoffset = size
 			&#125;
 			size = maxTinySize
 		&#125; <span class="hljs-keyword">else</span> &#123;
-			<span class="hljs-comment">//在32KB以内，16B以上的</span>
+			<span class="hljs-comment">//在32KB以内，16B以上的小对象</span>
 			<span class="hljs-keyword">var</span> sizeclass <span class="hljs-keyword">uint8</span>
 			<span class="hljs-comment">//smallSizeMax = 1024</span>
 			<span class="hljs-keyword">if</span> size &lt;= smallSizeMax<span class="hljs-number">-8</span> &#123;
@@ -699,8 +1615,11 @@ bitmap和spans功能不变</p>
 			size = <span class="hljs-keyword">uintptr</span>(class_to_size[sizeclass])
 			spc := makeSpanClass(sizeclass, noscan)
 			span := c.alloc[spc]
+
+			<span class="hljs-comment">//大同小异，先从mspan</span>
 			v := nextFreeFast(span)
 			<span class="hljs-keyword">if</span> v == <span class="hljs-number">0</span> &#123;
+				<span class="hljs-comment">//再从mcentral和mheap</span>
 				v, span, shouldhelpgc = c.nextFree(spc)
 			&#125;
 			x = unsafe.Pointer(v)
@@ -713,10 +1632,205 @@ bitmap和spans功能不变</p>
 	&#125;
 	....
 &#125;</code></pre></div>
+<p>以上<code>nextFreeFast</code>从<code>mSpan</code>取空闲空间</p>
+<ul>
+<li>使用<code>mspan.allocCache</code>字段快速计算是否有空闲对象</li>
+<li>如果有，取出并更新<code>mspan.freeIndex</code>和<code>mspan.allocCache</code></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// nextFreeFast returns the next free object if one is quickly available.</span>
+<span class="hljs-comment">// Otherwise it returns 0.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">nextFreeFast</span><span class="hljs-params">(s *mspan)</span> <span class="hljs-title">gclinkptr</span></span> &#123;
+	<span class="hljs-comment">//从右边(low-order)开始数0的个数,都是0就返回64</span>
+	theBit := sys.Ctz64(s.allocCache) <span class="hljs-comment">// Is there a free object in the allocCache?</span>
+	<span class="hljs-keyword">if</span> theBit &lt; <span class="hljs-number">64</span> &#123;
+		result := s.freeindex + <span class="hljs-keyword">uintptr</span>(theBit)
+		<span class="hljs-keyword">if</span> result &lt; s.nelems &#123;
+			freeidx := result + <span class="hljs-number">1</span>
+			<span class="hljs-keyword">if</span> freeidx%<span class="hljs-number">64</span> == <span class="hljs-number">0</span> &amp;&amp; freeidx != s.nelems &#123;
+				<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+			&#125;
+			s.allocCache &gt;&gt;= <span class="hljs-keyword">uint</span>(theBit + <span class="hljs-number">1</span>)
+			s.freeindex = freeidx
+			s.allocCount++
+			<span class="hljs-keyword">return</span> gclinkptr(result*s.elemsize + s.base())
+		&#125;
+	&#125;
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+&#125;</code></pre></div>
+<p><code>nextFree()</code>方法,从<code>mcache</code>,<code>mcentral</code>,<code>mheap</code>取空间:</p>
+<ul>
+<li>要在不被抢占的上下文环境运行，因为<code>mcache</code>可能被其他P抢占;</li>
+<li>其实还是要先从<code>mSpan</code>通过<code>nextFreeIndex</code>检查有无可用对象</li>
+<li>无的话，会调用<code>mcache.refill</code>从<code>mcentral</code>拿缓存(详细可见前几节),然后更新<code>freeIndex</code>为接下来判断是否真的拿到了准确值;</li>
+<li></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// nextFree returns the next free object from the cached span if one is available.</span>
+<span class="hljs-comment">// Otherwise it refills the cache with a span with an available object and</span>
+<span class="hljs-comment">// returns that object along with a flag indicating that this was a heavy</span>
+<span class="hljs-comment">// weight allocation. If it is a heavy weight allocation the caller must</span>
+<span class="hljs-comment">// determine whether a new GC cycle needs to be started or if the GC is active</span>
+<span class="hljs-comment">// whether this goroutine needs to assist the GC.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Must run in a non-preemptible context since otherwise the owner of</span>
+<span class="hljs-comment">// c could change.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(c *mcache)</span> <span class="hljs-title">nextFree</span><span class="hljs-params">(spc spanClass)</span> <span class="hljs-params">(v gclinkptr, s *mspan, shouldhelpgc <span class="hljs-keyword">bool</span>)</span></span> &#123;
+	s = c.alloc[spc]
+	shouldhelpgc = <span class="hljs-literal">false</span>
+	freeIndex := s.nextFreeIndex()
+	<span class="hljs-keyword">if</span> freeIndex == s.nelems &#123;
+		<span class="hljs-comment">// The span is full.</span>
+		<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(s.allocCount) != s.nelems &#123;
+			<span class="hljs-built_in">println</span>(<span class="hljs-string">"runtime: s.allocCount="</span>, s.allocCount, <span class="hljs-string">"s.nelems="</span>, s.nelems)
+			throw(<span class="hljs-string">"s.allocCount != s.nelems &amp;&amp; freeIndex == s.nelems"</span>)
+		&#125;
+		c.refill(spc)
+		shouldhelpgc = <span class="hljs-literal">true</span>
+		s = c.alloc[spc]
+
+		freeIndex = s.nextFreeIndex()
+	&#125;
+
+	<span class="hljs-keyword">if</span> freeIndex &gt;= s.nelems &#123;
+		throw(<span class="hljs-string">"freeIndex is not valid"</span>)
+	&#125;
+
+	v = gclinkptr(freeIndex*s.elemsize + s.base())
+	s.allocCount++
+	<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(s.allocCount) &gt; s.nelems &#123;
+		<span class="hljs-built_in">println</span>(<span class="hljs-string">"s.allocCount="</span>, s.allocCount, <span class="hljs-string">"s.nelems="</span>, s.nelems)
+		throw(<span class="hljs-string">"s.allocCount &gt; s.nelems"</span>)
+	&#125;
+	<span class="hljs-keyword">return</span>
+&#125;</code></pre></div>
+<h4 id="大对象分配">大对象分配</h4>
+<p>接上一节，大对象的分配会调用<code>largeAlloc</code>方法</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">mallocgc</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>, typ *_type, needzero <span class="hljs-keyword">bool</span>)</span> <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span></span> &#123;
+	...
+	<span class="hljs-keyword">if</span> size &lt;= maxSmallSize &#123;
+		....<span class="hljs-comment">//小对象分配</span>
+	&#125;<span class="hljs-keyword">else</span>&#123;
+		<span class="hljs-keyword">var</span> s *mspan
+		shouldhelpgc = <span class="hljs-literal">true</span>
+		systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+			s = largeAlloc(size, needzero, noscan)
+		&#125;)
+		s.freeindex = <span class="hljs-number">1</span>
+		s.allocCount = <span class="hljs-number">1</span>
+		x = unsafe.Pointer(s.base())
+		size = s.elemsize
+	&#125;
+	...
+
+	<span class="hljs-comment">// Ensure that the stores above that initialize x to</span>
+	<span class="hljs-comment">// type-safe memory and set the heap bits occur before</span>
+	<span class="hljs-comment">// the caller can make x observable to the garbage</span>
+	<span class="hljs-comment">// collector. Otherwise, on weakly ordered machines,</span>
+	<span class="hljs-comment">// the garbage collector could follow a pointer to x,</span>
+	<span class="hljs-comment">// but see uninitialized memory or stale heap bits.</span>
+	publicationBarrier()
+
+	<span class="hljs-comment">// Allocate black during GC.</span>
+	<span class="hljs-comment">// All slots hold nil so no scanning is needed.</span>
+	<span class="hljs-comment">// This may be racing with GC so do it atomically if there can be</span>
+	<span class="hljs-comment">// a race marking the bit.</span>
+	<span class="hljs-keyword">if</span> gcphase != _GCoff &#123;
+		gcmarknewobject(<span class="hljs-keyword">uintptr</span>(x), size, scanSize)
+	&#125;
+
+	<span class="hljs-keyword">if</span> raceenabled &#123;
+		racemalloc(x, size)
+	&#125;
+
+	<span class="hljs-keyword">if</span> msanenabled &#123;
+		msanmalloc(x, size)
+	&#125;
+
+	mp.mallocing = <span class="hljs-number">0</span>
+	releasem(mp)
+
+	<span class="hljs-keyword">if</span> debug.allocfreetrace != <span class="hljs-number">0</span> &#123;
+		tracealloc(x, size, typ)
+	&#125;
+
+	<span class="hljs-keyword">if</span> rate := MemProfileRate; rate &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> rate != <span class="hljs-number">1</span> &amp;&amp; size &lt; c.next_sample &#123;
+			c.next_sample -= size
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			mp := acquirem()
+			profilealloc(mp, x, size)
+			releasem(mp)
+		&#125;
+	&#125;
+
+	<span class="hljs-keyword">if</span> assistG != <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-comment">// Account for internal fragmentation in the assist</span>
+		<span class="hljs-comment">// debt now that we know it.</span>
+		assistG.gcAssistBytes -= <span class="hljs-keyword">int64</span>(size - dataSize)
+	&#125;
+
+	<span class="hljs-keyword">if</span> shouldhelpgc &#123;
+		<span class="hljs-keyword">if</span> t := (gcTrigger&#123;kind: gcTriggerHeap&#125;); t.test() &#123;
+			gcStart(t)
+		&#125;
+	&#125;
+&#125;</code></pre></div>
+<p>其中<code>largeAlloc</code>函数会计算所需要的页数，计算成8KB的倍数为对象在堆上申请内存:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">largeAlloc</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>, needzero <span class="hljs-keyword">bool</span>, noscan <span class="hljs-keyword">bool</span>)</span> *<span class="hljs-title">mspan</span></span> &#123;
+	<span class="hljs-comment">// print("largeAlloc size=", size, "\n")</span>
+
+	<span class="hljs-keyword">if</span> size+_PageSize &lt; size &#123;
+		throw(<span class="hljs-string">"out of memory"</span>)
+	&#125;
+	npages := size &gt;&gt; _PageShift
+	<span class="hljs-comment">//计算页数,PageMask= 8191,一个页8KB，不够就往上取整</span>
+	<span class="hljs-keyword">if</span> size&amp;_PageMask != <span class="hljs-number">0</span> &#123;
+		npages++
+	&#125;
+	<span class="hljs-comment">// Deduct credit for this span allocation and sweep if</span>
+	<span class="hljs-comment">// necessary. mHeap_Alloc will also sweep npages, so this only</span>
+	<span class="hljs-comment">// pays the debt down to npage pages.</span>
+	deductSweepCredit(npages*_PageSize, npages)
+	<span class="hljs-comment">//份额内存空间</span>
+	s := mheap_.alloc(npages, makeSpanClass(<span class="hljs-number">0</span>, noscan), needzero)
+	<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+		throw(<span class="hljs-string">"out of memory"</span>)
+	&#125;
+	s.limit = s.base() + size
+	heapBitsForAddr(s.base()).initSpan(s)
+	<span class="hljs-keyword">return</span> s
+&#125;</code></pre></div>
+<h4 id="分配defer-arg-块">分配defer+arg 块</h4>
+<p>最后，如果该typ类型不是指针，还要判断其是否是<code>defer</code>类型，进行处理，更新<code>local_scan</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">mallocgc</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>, typ *_type, needzero <span class="hljs-keyword">bool</span>)</span> <span class="hljs-title">unsafe</span>.<span class="hljs-title">Pointer</span></span> &#123;
+	...
+	<span class="hljs-keyword">var</span> scanSize <span class="hljs-keyword">uintptr</span>
+	<span class="hljs-keyword">if</span> !noscan &#123;
+		<span class="hljs-comment">// If allocating a defer+arg block, now that we've picked a malloc size</span>
+		<span class="hljs-comment">// large enough to hold everything, cut the "asked for" size down to</span>
+		<span class="hljs-comment">// just the defer header, so that the GC bitmap will record the arg block</span>
+		<span class="hljs-comment">// as containing nothing at all (as if it were unused space at the end of</span>
+		<span class="hljs-comment">// a malloc block caused by size rounding).</span>
+		<span class="hljs-comment">// The defer arg areas are scanned as part of scanstack.</span>
+		<span class="hljs-keyword">if</span> typ == deferType &#123;
+			dataSize = unsafe.Sizeof(_defer&#123;&#125;)
+		&#125;
+		heapBitsSetType(<span class="hljs-keyword">uintptr</span>(x), size, dataSize, typ)
+		<span class="hljs-keyword">if</span> dataSize &gt; typ.size &#123;
+			<span class="hljs-comment">// Array allocation. If there are any</span>
+			<span class="hljs-comment">// pointers, GC has to scan to the last</span>
+			<span class="hljs-comment">// element.</span>
+			<span class="hljs-keyword">if</span> typ.ptrdata != <span class="hljs-number">0</span> &#123;
+				scanSize = dataSize - typ.size + typ.ptrdata
+			&#125;
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			scanSize = typ.ptrdata
+		&#125;
+		c.local_scan += scanSize
+	&#125;</code></pre></div>
 <h4 id="fixalloc">fixAlloc</h4>
 <p>因为我们的都知道go分配对象是在go gc heap中，并且由mspan，mcache，mcentral这些结构管理，但是这些结构的对象又是在哪里管理和分配呢？</p>
-<p>fixalloc就是做这个的：
-前面讲到fixalloc都是mheap中固定的结构</p>
+<p><code>fixalloc</code>就是做这个的：
+前面讲到<code>fixalloc</code>都是mheap中固定的结构</p>
 <ul>
 <li>主要目的就是一次性分配一大块内存(注意persistentalloc方法，使用是mmap，不指定地址，分配内存不再arena范围内，从进程空间获得可能百来KB)，
 每次请求对应的结构体大小，释放时就放在list链表中</li>
@@ -733,35 +1847,13 @@ bitmap和spans功能不变</p>
 	arenaHintAlloc        fixalloc <span class="hljs-comment">// allocator for arenaHints</span>
 	...
 &#125;</code></pre></div>
-<h4 id="stackcache">stackCache</h4>
-<p>在mcache结构上</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Number of orders that get caching. Order 0 is FixedStack</span>
-	<span class="hljs-comment">// and each successive order is twice as large.</span>
-	<span class="hljs-comment">// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks</span>
-	<span class="hljs-comment">// will be allocated directly.</span>
-	<span class="hljs-comment">// Since FixedStack is different on different systems, we</span>
-	<span class="hljs-comment">// must vary NumStackOrders to keep the same maximum cached size.</span>
-	<span class="hljs-comment">//   OS               | FixedStack | NumStackOrders</span>
-	<span class="hljs-comment">//   -----------------+------------+---------------</span>
-	<span class="hljs-comment">//   linux/darwin/bsd | 2KB        | 4</span>
-	<span class="hljs-comment">//   windows/32       | 4KB        | 3</span>
-	<span class="hljs-comment">//   windows/64       | 8KB        | 2</span>
-	<span class="hljs-comment">//   plan9            | 4KB        | 3</span>
-_NumStackOrders = <span class="hljs-number">4</span> - sys.PtrSize/<span class="hljs-number">4</span>*sys.GoosWindows - <span class="hljs-number">1</span>*sys.GoosPlan9
-<span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span>&#123;
-	...
-	stackcache [_NumStackOrders]stackfreelist 
-	...
-&#125;
-<span class="hljs-keyword">type</span> stackfreelist <span class="hljs-keyword">struct</span> &#123;
-	list gclinkptr <span class="hljs-comment">// linked list of free stacks</span>
-	size <span class="hljs-keyword">uintptr</span>   <span class="hljs-comment">// total size of stacks in list</span>
-&#125;</code></pre></div>
-<p>大概结构<img src="/img/stackCache.png" srcset="/img/loading.gif" alt="如图"></p>
-<p>stackCache是per-P的，在另外一篇文章<a href="../goroutine.html">goroutine</a>上讲过，主要用于分配goroutine的stack，同普通内存一样
-其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级</p>
-<p>其中 &gt; 16K的直接从全局stacklarge分配
-否则按照先从P的stackcache分配=&gt; 如果无法分配 =&gt; 从全局stackpool分配一批stack(stackpoolalloc)，赋给该p的stackcache，再从local stackcache分配</p>
+<p>有前面提到的<code>init</code>方法，
+还可以分别通过</p>
+<ul>
+<li><code>fixalloc.alloc</code></li>
+<li><code>fixalloc.free</code>
+来分配以及释放内存</li>
+</ul>
 <h3 id="一些重要参数">一些重要参数</h3>
 <ul>
 <li>
@@ -789,6 +1881,580 @@ _NumStackOrders = <span class="hljs-number">4</span> - sys.PtrSize/<span class="
 <p>stack span，只会在堆或者是栈内存其中之一</p>
 </li>
 </ol>
+<h2 id="栈内存">栈内存</h2>
+<p>前面提到的都是属于堆上的内存，由allocator和gc负责管理;</p>
+<h3 id="设计">设计</h3>
+<ul>
+<li>寄存器
+栈内存一般靠编译器来分配和释放,都是随着函数的生命周期变化而变化；
+而传入到函数中，栈寄存器用于存储了<code>基址地址</code>和<code>栈顶地址</code>, Go中则主要涉及<code>BP</code>和<code>SP</code>两个栈寄存器;</li>
+</ul>
+<p>对于大顶端(目前大多数使用),栈区内存就是从高地址到低地址扩展，释放内存的时候只需要更改<code>SP</code>的值，操作速度极快，占用极少；</p>
+<ul>
+<li>线程栈</li>
+</ul>
+<p>对于大部分OS，分配线程栈大小默认一般是2M~4MB，但是当调用栈过深，也会对栈进行扩容</p>
+<ul>
+<li>逃逸分析</li>
+</ul>
+<p>Go会动态管理内存位置，会对对象进行<code>逃逸分析</code>，一般遵循：</p>
+<ol>
+<li>指向堆上的对象的指针不能在栈中;</li>
+<li>指向栈对象的指针不能在栈对象回收后存活;</li>
+</ol>
+<h3 id="栈历史以及设计">栈历史以及设计</h3>
+<p>过去曾经使用过分段的栈(segmented stack)，扩容的时候会创建新的栈空间，然后用链表连接起来，但是会导致两个问题:</p>
+<ul>
+<li>如果当前goroutine栈容量接近上线，任意函数调用都会触发栈扩展，那么函数调用返回后，栈又会缩容，就有热分裂(hot split)问题;</li>
+<li>还会在goroutine的栈的分配中体现，如果其超过了分段栈的扩缩容阈值，都会出现从而导致更多的工作；</li>
+</ul>
+<p>现在则转向了连续栈(contiguous stack),<a href="https://docs.google.com/document/d/1wAaf1rYoM4S4gtnPh0zOlGzWtrZFQ5suE8qr2sD8uWQ/pub" target="_blank" rel="noopener">原设计文档</a>
+核心的原理就是当原栈空间不足，就会创建一个更大的空间并把原栈中所有值都移过去；
+所以当栈空间不足的时候，我们要考虑:</p>
+<ol>
+<li>内存空间分配更大的栈</li>
+<li><strong>将旧栈的内容copy到新栈</strong>;</li>
+<li>销毁并回收旧栈;</li>
+</ol>
+<p>最主要就在第二步，如果有<strong>指针类型</strong>呢？因为栈改变，内存肯定也会改变（<s>所以这里可以考虑来个映射？</s>)
+不考虑多余的映射的原因就是，之前提到的<code>逃逸分析</code>遵循的两个原则之一：<strong>指向堆上的对象的指针不能在栈中</strong>，意思就是这里发现的指针类型一定是指向栈内的，所以不需要考虑额外映射，就将所有**相对的变量（实际就是所有的）**一起进行调整即可。</p>
+<h3 id="结构-v2">结构</h3>
+<p>栈的结构体:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Stack describes a Go execution stack.</span>
+<span class="hljs-comment">// The bounds of the stack are exactly [lo, hi),</span>
+<span class="hljs-comment">// with no implicit data structures on either side.</span>
+<span class="hljs-keyword">type</span> stack <span class="hljs-keyword">struct</span> &#123;
+	lo <span class="hljs-keyword">uintptr</span>
+	hi <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
+<p>看起来很简单，但是其生成过程要从<code>编译期</code>到<code>运行期</code>代码结合：</p>
+<ul>
+<li>编译期，<code>cmd/internal/obj/x86.stacksplit</code> 在调用函数前插入<code>runtime.morestack</code>或<code>runtime.morestack_noctxt</code></li>
+<li>运行时，goroutine会在<code>runtime.mlag</code>中调用<code>runtime.stackalloc</code>申请新栈空间，并在编译器插入的<code>runtime.morestack</code>中检查栈空间是否充足;</li>
+</ul>
+<h3 id="栈初始化">栈初始化</h3>
+<p><code>runtime/stack.go</code>中:
+主要两个结构体<code>runtime.stackpool</code>和<code>runtime.stacklarge</code>，分别表示全局栈缓存和大栈缓存，区分就是栈大小是否大于32KB;</p>
+<p>而这两个结构体都与<code>mSpan</code>有关（<code>mSpanList</code>,<code>mcentral</code>中有nonempty和empty)，可以认为go的栈就是分配在堆上的</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Global pool of spans that have free stacks.</span>
+<span class="hljs-comment">// Stacks are assigned an order according to size.</span>
+<span class="hljs-comment">//     order = log_2(size/FixedStack)</span>
+<span class="hljs-comment">// There is a free list for each order.</span>
+<span class="hljs-keyword">var</span> stackpool [_NumStackOrders]<span class="hljs-keyword">struct</span> &#123;
+	item stackpoolItem
+	<span class="hljs-comment">//同mcentral很像，就是为了内存对齐而已;</span>
+	_    [cpu.CacheLinePadSize - unsafe.Sizeof(stackpoolItem&#123;&#125;)%cpu.CacheLinePadSize]<span class="hljs-keyword">byte</span>
+&#125;
+
+<span class="hljs-comment">//go:notinheap</span>
+<span class="hljs-keyword">type</span> stackpoolItem <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">//因为是全局栈，要加锁</span>
+	mu   mutex
+	span mSpanList
+&#125;
+
+<span class="hljs-comment">// Global pool of large stack spans.</span>
+<span class="hljs-keyword">var</span> stackLarge <span class="hljs-keyword">struct</span> &#123;
+	lock mutex
+	free [heapAddrBits - pageShift]mSpanList <span class="hljs-comment">// free lists by log_2(s.npages)</span>
+&#125;</code></pre></div>
+<p>再看一下初始化</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">stackinit</span><span class="hljs-params">()</span></span> &#123;
+	<span class="hljs-keyword">if</span> _StackCacheSize&amp;_PageMask != <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"cache size must be a multiple of page size"</span>)
+	&#125;
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> stackpool &#123;
+		stackpool[i].item.span.init()
+	&#125;
+	<span class="hljs-keyword">for</span> i := <span class="hljs-keyword">range</span> stackLarge.free &#123;
+		stackLarge.free[i].init()
+	&#125;
+&#125;</code></pre></div>
+<p>上面的结构<code>stackpoolItem</code>中有个锁，但是如果大家都用这个结构，就会发生锁竞争，所以在<code>mcache</code>中都增加了一个stackcache
+在<code>mcache</code>结构上</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Number of orders that get caching. Order 0 is FixedStack</span>
+	<span class="hljs-comment">// and each successive order is twice as large.</span>
+	<span class="hljs-comment">// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks</span>
+	<span class="hljs-comment">// will be allocated directly.</span>
+	<span class="hljs-comment">// Since FixedStack is different on different systems, we</span>
+	<span class="hljs-comment">// must vary NumStackOrders to keep the same maximum cached size.</span>
+	<span class="hljs-comment">//   OS               | FixedStack | NumStackOrders</span>
+	<span class="hljs-comment">//   -----------------+------------+---------------</span>
+	<span class="hljs-comment">//   linux/darwin/bsd | 2KB        | 4</span>
+	<span class="hljs-comment">//   windows/32       | 4KB        | 3</span>
+	<span class="hljs-comment">//   windows/64       | 8KB        | 2</span>
+	<span class="hljs-comment">//   plan9            | 4KB        | 3</span>
+_NumStackOrders = <span class="hljs-number">4</span> - sys.PtrSize/<span class="hljs-number">4</span>*sys.GoosWindows - <span class="hljs-number">1</span>*sys.GoosPlan9
+<span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span>&#123;
+	...
+	stackcache [_NumStackOrders]stackfreelist 
+	...
+&#125;
+<span class="hljs-keyword">type</span> stackfreelist <span class="hljs-keyword">struct</span> &#123;
+	list gclinkptr <span class="hljs-comment">// linked list of free stacks</span>
+	size <span class="hljs-keyword">uintptr</span>   <span class="hljs-comment">// total size of stacks in list</span>
+&#125;</code></pre></div>
+<p>Linux上 ,计算出的栈常数:
+<code>_StackCacheSize = 32768</code>,
+<code>_FixedStack = 2048</code>,  <code>_NumStackOrders = 4</code></p>
+<p>大概结构<img src="/img/stackCache.png" srcset="/img/loading.gif" alt="如图"></p>
+<p>stackCache是per-P的，在另外一篇文章<a href="../goroutine.html">goroutine</a>上讲过，主要用于分配goroutine的stack，同普通内存一样
+其分为多个segment，class, linux就分为2KB,4KB,8KB,16KB等级</p>
+<p>其中 &gt; 16K的直接从全局stacklarge分配
+否则按照先从P的stackcache分配=&gt; 如果无法分配 =&gt; 从全局stackpool分配一批stack(stackpoolalloc)，赋给该p的stackcache，再从local stackcache分配</p>
+<h3 id="栈的分配">栈的分配</h3>
+<p>分配栈空间主要是由<code>runtime.stackalloc</code>方法进行分配，其一定要在系统栈上运行因为其使用的是Per-P的资源且不可以切分整个栈;</p>
+<ul>
+<li>
+<p>其必须要在调度栈中运行？？？，所以在这个方法运行中，我们不会进行栈的扩容(否则会有死锁,可以试想栈扩容代码？？？)</p>
+</li>
+<li>
+<p>小一点的的栈空间，会用全局栈<code>stackpool</code>或者<code>mcache.stackcache</code>(固定大小空闲链表)来分配</p>
+</li>
+<li>
+<p>栈空间较大就从全局栈<code>stackpool</code>或者<code>stackLarge</code>分配;</p>
+</li>
+<li>
+<p>如果栈空间大的<code>stackLarge</code>都拿不到，就从堆上申请;</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// stackalloc allocates an n byte stack.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// stackalloc must run on the system stack because it uses per-P</span>
+<span class="hljs-comment">// resources and must not split the stack.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//go:systemstack</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">stackalloc</span><span class="hljs-params">(n <span class="hljs-keyword">uint32</span>)</span> <span class="hljs-title">stack</span></span> &#123;
+	<span class="hljs-comment">// Stackalloc must be called on scheduler stack, so that we</span>
+	<span class="hljs-comment">// never try to grow the stack during the code that stackalloc runs.</span>
+	<span class="hljs-comment">// Doing so would cause a deadlock (issue 1547).</span>
+	<span class="hljs-comment">//判断是否在调度栈中</span>
+	thisg := getg()
+	<span class="hljs-keyword">if</span> thisg != thisg.m.g0 &#123;
+		throw(<span class="hljs-string">"stackalloc not on scheduler stack"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> n&amp;(n<span class="hljs-number">-1</span>) != <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"stack size not a power of 2"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> stackDebug &gt;= <span class="hljs-number">1</span> &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"stackalloc "</span>, n, <span class="hljs-string">"\n"</span>)
+	&#125;
+
+	<span class="hljs-keyword">if</span> debug.efence != <span class="hljs-number">0</span> || stackFromSystem != <span class="hljs-number">0</span> &#123;
+		n = <span class="hljs-keyword">uint32</span>(alignUp(<span class="hljs-keyword">uintptr</span>(n), physPageSize))
+		v := sysAlloc(<span class="hljs-keyword">uintptr</span>(n), &amp;memstats.stacks_sys)
+		<span class="hljs-keyword">if</span> v == <span class="hljs-literal">nil</span> &#123;
+			throw(<span class="hljs-string">"out of memory (stackalloc)"</span>)
+		&#125;
+		<span class="hljs-keyword">return</span> stack&#123;<span class="hljs-keyword">uintptr</span>(v), <span class="hljs-keyword">uintptr</span>(v) + <span class="hljs-keyword">uintptr</span>(n)&#125;
+	&#125;
+
+	<span class="hljs-comment">// Small stacks are allocated with a fixed-size free-list allocator.</span>
+	<span class="hljs-comment">// If we need a stack of a bigger size, we fall back on allocating</span>
+	<span class="hljs-comment">// a dedicated span.</span>
+	<span class="hljs-comment">//Linux amd64: </span>
+	<span class="hljs-comment">//_StackCacheSize = 32768, _FixedStack = 2048, _NumStackOrders = 4</span>
+	<span class="hljs-comment">//1. 较小的栈</span>
+	<span class="hljs-keyword">var</span> v unsafe.Pointer
+	<span class="hljs-keyword">if</span> n &lt; _FixedStack&lt;&lt;_NumStackOrders &amp;&amp; n &lt; _StackCacheSize &#123;
+		order := <span class="hljs-keyword">uint8</span>(<span class="hljs-number">0</span>)
+		n2 := n
+		<span class="hljs-keyword">for</span> n2 &gt; _FixedStack &#123;
+			order++
+			n2 &gt;&gt;= <span class="hljs-number">1</span>
+		&#125;
+		<span class="hljs-keyword">var</span> x gclinkptr
+		c := thisg.m.mcache
+		<span class="hljs-keyword">if</span> stackNoCache != <span class="hljs-number">0</span> || c == <span class="hljs-literal">nil</span> || thisg.m.preemptoff != <span class="hljs-string">""</span> &#123;
+			<span class="hljs-comment">//从全局pool找</span>
+			<span class="hljs-comment">// c == nil can happen in the guts of exitsyscall or</span>
+			<span class="hljs-comment">// procresize. Just get a stack from the global pool.</span>
+			<span class="hljs-comment">// Also don't touch stackcache during gc</span>
+			<span class="hljs-comment">// as it's flushed concurrently.</span>
+			lock(&amp;stackpool[order].item.mu)
+			x = stackpoolalloc(order)
+			unlock(&amp;stackpool[order].item.mu)
+		&#125; <span class="hljs-keyword">else</span> &#123;
+			<span class="hljs-comment">//从mcache.stackCache找</span>
+			x = c.stackcache[order].list
+			<span class="hljs-keyword">if</span> x.ptr() == <span class="hljs-literal">nil</span> &#123;
+				stackcacherefill(c, order)
+				x = c.stackcache[order].list
+			&#125;
+			c.stackcache[order].list = x.ptr().next
+			c.stackcache[order].size -= <span class="hljs-keyword">uintptr</span>(n)
+		&#125;
+		v = unsafe.Pointer(x)
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">//2. 较大的栈</span>
+		<span class="hljs-keyword">var</span> s *mspan
+		npage := <span class="hljs-keyword">uintptr</span>(n) &gt;&gt; _PageShift
+		log2npage := stacklog2(npage)
+
+		<span class="hljs-comment">// Try to get a stack from the large stack cache.</span>
+		<span class="hljs-comment">//从stackLarge找</span>
+		lock(&amp;stackLarge.lock)
+		<span class="hljs-keyword">if</span> !stackLarge.free[log2npage].isEmpty() &#123;
+			s = stackLarge.free[log2npage].first
+			stackLarge.free[log2npage].remove(s)
+		&#125;
+		unlock(&amp;stackLarge.lock)
+
+		<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-comment">//stackLarge找不到，只能从mheap拿</span>
+			<span class="hljs-comment">// Allocate a new stack from the heap.</span>
+			s = mheap_.allocManual(npage, &amp;memstats.stacks_inuse)
+			<span class="hljs-keyword">if</span> s == <span class="hljs-literal">nil</span> &#123;
+				throw(<span class="hljs-string">"out of memory"</span>)
+			&#125;
+			<span class="hljs-comment">//这里针对某些操作系统进行的处理</span>
+			osStackAlloc(s)
+			s.elemsize = <span class="hljs-keyword">uintptr</span>(n)
+		&#125;
+		v = unsafe.Pointer(s.base())
+	&#125;
+	...</code></pre></div>
+<h3 id="栈扩容">栈扩容</h3>
+<p>上面说到编译期中的<code>stackSplit</code>会插入<code>runtime.morestack</code>来检查栈空间是否充足，如果不充足，
+就会先保存当前栈信息，然后调用<code>runtime.newstack</code>来分配栈空间</p>
+<ul>
+<li>
+<p>该方法是无writebarrier(error on write barrier in this or recursive callees
+)的，writebarrier会引发错误，因为其可以被栈扩容的其他nowritebarrier 方法(比如???)called,</p>
+</li>
+<li>
+<p>首先会检查是当前goroutine否可以被抢占,如果可以就触发<code>runtime.gogo</code>调度器调度; 这里有个小问题，是否可以抢占其中要判断一种状态就是goroutine是否在<code>_Grunning</code>，
+但是gc会将其状态从<code>Gwaiting</code>改成<code>Gscanwaiting</code>,所以如果遇到gc要等其完成才能继续，但是如果gc在某种情况下依赖goroutine的锁才能完成，这里就会形成死锁;
+而代码中，将这个检查提前了，就可以避免；（即使状态从<code>Grunning</code>到<code>Gwaiting</code>或者反复???)</p>
+</li>
+<li>
+<p>如果被gc<code>runtime.scanstack</code>方法标记了<code>preemptShrink</code>要收缩栈，则调用<code>runtime.shrinkstack</code></p>
+</li>
+<li>
+<p>如果当前goroutine被<code>runtime.suspendG</code>挂起(<code>preemptStop</code>)，要Park当前goroutine让其他抢占，然后修改状态为<code>_Gpreempted</code></p>
+</li>
+<li>
+<p>然后调用<code>runtime.gopreempt_m</code>让出goroutine，实际就是调用了<code>runtime.GoSched</code></p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Called from runtime·morestack when more stack is needed.</span>
+<span class="hljs-comment">// Allocate larger stack and relocate to new stack.</span>
+<span class="hljs-comment">// Stack growth is multiplicative, for constant amortized cost.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// g-&gt;atomicstatus will be Grunning or Gscanrunning upon entry.</span>
+<span class="hljs-comment">// If the scheduler is trying to stop this g, then it will set preemptStop.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// This must be nowritebarrierrec because it can be called as part of</span>
+<span class="hljs-comment">// stack growth from other nowritebarrierrec functions, but the</span>
+<span class="hljs-comment">// compiler doesn't check this.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">//go:nowritebarrierrec</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newstack</span><span class="hljs-params">()</span></span> &#123;
+	thisg := getg()
+	...
+	gp := thisg.m.curg<span class="hljs-comment">//需要扩容的栈的goroutine</span>
+	...
+	<span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> stackguard0 may change underfoot, if another thread</span>
+	<span class="hljs-comment">// is about to try to preempt gp. Read it just once and use that same</span>
+	<span class="hljs-comment">// value now and below.</span>
+	<span class="hljs-comment">//这里stackguard0随时会变化，所以要用原子读;</span>
+	preempt := atomic.Loaduintptr(&amp;gp.stackguard0) == stackPreempt
+	<span class="hljs-comment">// Be conservative about where we preempt.</span>
+	<span class="hljs-comment">// We are interested in preempting user Go code, not runtime code.</span>
+	<span class="hljs-comment">// If we're holding locks, mallocing, or preemption is disabled, don't</span>
+	<span class="hljs-comment">// preempt.</span>
+	<span class="hljs-comment">//在这种情况下才抢占:</span>
+	<span class="hljs-comment">//mp.locks == 0 &amp;&amp; mp.mallocing == 0 &amp;&amp; mp.preemptoff == "" &amp;&amp; mp.p.ptr().status == _Prunning</span>
+	<span class="hljs-comment">// This check is very early in newstack so that even the status change</span>
+	<span class="hljs-comment">// from Grunning to Gwaiting and back doesn't happen in this case.</span>
+	<span class="hljs-comment">// That status change by itself can be viewed as a small preemption,</span>
+	<span class="hljs-comment">// because the GC might change Gwaiting to Gscanwaiting, and then</span>
+	<span class="hljs-comment">// this goroutine has to wait for the GC to finish before continuing.</span>
+	<span class="hljs-comment">// If the GC is in some way dependent on this goroutine (for example,</span>
+	<span class="hljs-comment">// it needs a lock held by the goroutine), that small preemption turns</span>
+	<span class="hljs-comment">// into a real deadlock.</span>
+	<span class="hljs-keyword">if</span> preempt &#123;
+		<span class="hljs-keyword">if</span> !canPreemptM(thisg.m) &#123;
+			<span class="hljs-comment">// Let the goroutine keep running for now.</span>
+			<span class="hljs-comment">// gp-&gt;preempt is set, so it will be preempted next time.</span>
+			gp.stackguard0 = gp.stack.lo + _StackGuard
+			gogo(&amp;gp.sched) <span class="hljs-comment">// never return</span>
+		&#125;
+	&#125;
+
+	<span class="hljs-keyword">if</span> gp.stack.lo == <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"missing stack in newstack"</span>)
+	&#125;
+	sp := gp.sched.sp
+	<span class="hljs-keyword">if</span> sys.ArchFamily == sys.AMD64 || sys.ArchFamily == sys.I386 || sys.ArchFamily == sys.WASM &#123;
+		<span class="hljs-comment">// The call to morestack cost a word.</span>
+		sp -= sys.PtrSize
+	&#125;
+	<span class="hljs-keyword">if</span> stackDebug &gt;= <span class="hljs-number">1</span> || sp &lt; gp.stack.lo &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: newstack sp="</span>, hex(sp), <span class="hljs-string">" stack=["</span>, hex(gp.stack.lo), <span class="hljs-string">", "</span>, hex(gp.stack.hi), <span class="hljs-string">"]\n"</span>,
+			<span class="hljs-string">"\tmorebuf=&#123;pc:"</span>, hex(morebuf.pc), <span class="hljs-string">" sp:"</span>, hex(morebuf.sp), <span class="hljs-string">" lr:"</span>, hex(morebuf.lr), <span class="hljs-string">"&#125;\n"</span>,
+			<span class="hljs-string">"\tsched=&#123;pc:"</span>, hex(gp.sched.pc), <span class="hljs-string">" sp:"</span>, hex(gp.sched.sp), <span class="hljs-string">" lr:"</span>, hex(gp.sched.lr), <span class="hljs-string">" ctxt:"</span>, gp.sched.ctxt, <span class="hljs-string">"&#125;\n"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> sp &lt; gp.stack.lo &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: gp="</span>, gp, <span class="hljs-string">", goid="</span>, gp.goid, <span class="hljs-string">", gp-&gt;status="</span>, hex(readgstatus(gp)), <span class="hljs-string">"\n "</span>)
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: split stack overflow: "</span>, hex(sp), <span class="hljs-string">" &lt; "</span>, hex(gp.stack.lo), <span class="hljs-string">"\n"</span>)
+		throw(<span class="hljs-string">"runtime: split stack overflow"</span>)
+	&#125;
+
+	<span class="hljs-keyword">if</span> preempt &#123;
+		<span class="hljs-keyword">if</span> gp == thisg.m.g0 &#123;
+			throw(<span class="hljs-string">"runtime: preempt g0"</span>)
+		&#125;
+		<span class="hljs-keyword">if</span> thisg.m.p == <span class="hljs-number">0</span> &amp;&amp; thisg.m.locks == <span class="hljs-number">0</span> &#123;
+			throw(<span class="hljs-string">"runtime: g is running but p is not"</span>)
+		&#125;
+
+		<span class="hljs-keyword">if</span> gp.preemptShrink &#123;
+			<span class="hljs-comment">// We're at a synchronous safe point now, so</span>
+			<span class="hljs-comment">// do the pending stack shrink.</span>
+			gp.preemptShrink = <span class="hljs-literal">false</span>
+			shrinkstack(gp)
+		&#125;
+
+		<span class="hljs-keyword">if</span> gp.preemptStop &#123;
+			preemptPark(gp) <span class="hljs-comment">// never returns</span>
+		&#125;
+
+		<span class="hljs-comment">// Act like goroutine called runtime.Gosched.</span>
+		gopreempt_m(gp) <span class="hljs-comment">// never return</span>
+	&#125;
+	...
+&#125;</code></pre></div>
+<p>如果不需要抢占:</p>
+<ul>
+<li>分配更大的空间然后移动栈,新空间是旧空间两倍，但是都会判断是否大于最大的栈（<code>var maxstacksize uintptr = 1 &lt;&lt; 20</code>)</li>
+<li>将goroutine的状态从<code>Grunning</code>改为<code>Gcopystack</code></li>
+<li>然后复制旧栈到新栈（期间gc是不会扫描这个goroutine，因为这个goroutine在<code>Gcopystack</code>状态)</li>
+<li>然后将<code>Gcopystack</code>状态改为<code>Grunning</code>,再次调用<code>gogo</code></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">newstack</span><span class="hljs-params">()</span></span> &#123;
+	...
+	<span class="hljs-comment">// Allocate a bigger segment and move the stack.</span>
+	oldsize := gp.stack.hi - gp.stack.lo
+	newsize := oldsize * <span class="hljs-number">2</span>
+	<span class="hljs-keyword">if</span> newsize &gt; maxstacksize &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: goroutine stack exceeds "</span>, maxstacksize, <span class="hljs-string">"-byte limit\n"</span>)
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"runtime: sp="</span>, hex(sp), <span class="hljs-string">" stack=["</span>, hex(gp.stack.lo), <span class="hljs-string">", "</span>, hex(gp.stack.hi), <span class="hljs-string">"]\n"</span>)
+		throw(<span class="hljs-string">"stack overflow"</span>)
+	&#125;
+
+	<span class="hljs-comment">// The goroutine must be executing in order to call newstack,</span>
+	<span class="hljs-comment">// so it must be Grunning (or Gscanrunning).</span>
+	casgstatus(gp, _Grunning, _Gcopystack)
+
+	<span class="hljs-comment">// The concurrent GC will not scan the stack while we are doing the copy since</span>
+	<span class="hljs-comment">// the gp is in a Gcopystack status.</span>
+	copystack(gp, newsize)
+	<span class="hljs-keyword">if</span> stackDebug &gt;= <span class="hljs-number">1</span> &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"stack grow done\n"</span>)
+	&#125;
+	casgstatus(gp, _Gcopystack, _Grunning)
+	gogo(&amp;gp.sched)
+&#125;</code></pre></div>
+<p>我们看到<code>copystack</code>函数中:
+会调用<code>stackalloc</code>分配空间，这个之前已经讲过(从全局或者stackache或者largestack获取)</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Copies gp's stack to a new stack of a different size.</span>
+<span class="hljs-comment">// Caller must have changed gp status to Gcopystack.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">copystack</span><span class="hljs-params">(gp *g, newsize <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+	<span class="hljs-keyword">if</span> gp.syscallsp != <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"stack growth not allowed in system call"</span>)
+	&#125;
+	old := gp.stack
+	<span class="hljs-keyword">if</span> old.lo == <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"nil stackbase"</span>)
+	&#125;
+	used := old.hi - gp.sched.sp
+
+	<span class="hljs-comment">// allocate new stack</span>
+	<span class="hljs-built_in">new</span> := stackalloc(<span class="hljs-keyword">uint32</span>(newsize))
+	<span class="hljs-keyword">if</span> stackPoisonCopy != <span class="hljs-number">0</span> &#123;
+		fillstack(<span class="hljs-built_in">new</span>, <span class="hljs-number">0xfd</span>)
+	&#125;
+	...
+&#125;</code></pre></div>
+<p>较复杂的是，其中的指针如何复制:</p>
+<ul>
+<li>
+<p>检查stack内是否有未锁的channel，调用<code>runtime.adjustsudogs</code>或<code>runtime.syncadjustsudogs</code>方法对<code>runtime.sudog</code>结构体进行调整（调整的实际就是sudog结构体,sudog represents a g in a wait list, such as for sending/receiving on a channel.);</p>
+</li>
+<li>
+<p>用<code>runtime.memove</code>将旧栈（全部或剩下的数据）移到新栈；</p>
+</li>
+<li>
+<p>调整剩余的一些指针，比如<code>ctxt</code>,<code>defers</code>,<code>panics</code>等等</p>
+</li>
+<li>
+<p>其所有调整指针都会调用<code>runtime.adjustPointer</code>里面利用了新栈和旧栈内存地址的差来调整指针；</p>
+</li>
+<li>
+<p>到最后调用<code>runtime.stackfree</code>释放旧栈空间;</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Copies gp's stack to a new stack of a different size.</span>
+<span class="hljs-comment">// Caller must have changed gp status to Gcopystack.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">copystack</span><span class="hljs-params">(gp *g, newsize <span class="hljs-keyword">uintptr</span>)</span></span> &#123;
+	...
+	<span class="hljs-comment">// Compute adjustment.</span>
+	<span class="hljs-keyword">var</span> adjinfo adjustinfo
+	adjinfo.old = old
+	adjinfo.delta = <span class="hljs-built_in">new</span>.hi - old.hi
+
+	<span class="hljs-comment">// Adjust sudogs, synchronizing with channel ops if necessary.</span>
+	ncopy := used
+	<span class="hljs-keyword">if</span> !gp.activeStackChans &#123;
+		adjustsudogs(gp, &amp;adjinfo)
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">// sudogs may be pointing in to the stack and gp has</span>
+		<span class="hljs-comment">// released channel locks, so other goroutines could</span>
+		<span class="hljs-comment">// be writing to gp's stack. Find the highest such</span>
+		<span class="hljs-comment">// pointer so we can handle everything there and below</span>
+		<span class="hljs-comment">// carefully. (This shouldn't be far from the bottom</span>
+		<span class="hljs-comment">// of the stack, so there's little cost in handling</span>
+		<span class="hljs-comment">// everything below it carefully.)</span>
+		adjinfo.sghi = findsghi(gp, old)
+
+		<span class="hljs-comment">// Synchronize with channel ops and copy the part of</span>
+		<span class="hljs-comment">// the stack they may interact with.</span>
+		ncopy -= syncadjustsudogs(gp, used, &amp;adjinfo)
+	&#125;
+
+	<span class="hljs-comment">// Copy the stack (or the rest of it) to the new location</span>
+	memmove(unsafe.Pointer(<span class="hljs-built_in">new</span>.hi-ncopy), unsafe.Pointer(old.hi-ncopy), ncopy)
+
+	<span class="hljs-comment">// Adjust remaining structures that have pointers into stacks.</span>
+	<span class="hljs-comment">// We have to do most of these before we traceback the new</span>
+	<span class="hljs-comment">// stack because gentraceback uses them.</span>
+	adjustctxt(gp, &amp;adjinfo)
+	adjustdefers(gp, &amp;adjinfo)
+	adjustpanics(gp, &amp;adjinfo)
+	<span class="hljs-keyword">if</span> adjinfo.sghi != <span class="hljs-number">0</span> &#123;
+		adjinfo.sghi += adjinfo.delta
+	&#125;
+	<span class="hljs-comment">// Swap out old stack for new one</span>
+	<span class="hljs-comment">//切换指向的栈</span>
+	gp.stack = <span class="hljs-built_in">new</span>
+	gp.stackguard0 = <span class="hljs-built_in">new</span>.lo + _StackGuard <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> might clobber a preempt request</span>
+	gp.sched.sp = <span class="hljs-built_in">new</span>.hi - used
+	gp.stktopsp += adjinfo.delta
+
+	<span class="hljs-comment">// Adjust pointers in the new stack.</span>
+	gentraceback(^<span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>), ^<span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0</span>), <span class="hljs-number">0</span>, gp, <span class="hljs-number">0</span>, <span class="hljs-literal">nil</span>, <span class="hljs-number">0x7fffffff</span>, adjustframe, noescape(unsafe.Pointer(&amp;adjinfo)), <span class="hljs-number">0</span>)
+
+	<span class="hljs-comment">// free old stack</span>
+	<span class="hljs-keyword">if</span> stackPoisonCopy != <span class="hljs-number">0</span> &#123;
+		fillstack(old, <span class="hljs-number">0xfc</span>)
+	&#125;
+	stackfree(old)
+&#125;</code></pre></div>
+<h3 id="栈缩容">栈缩容</h3>
+<p>前面出现过的<code>runtime.shrinkstack</code></p>
+<ul>
+<li>要先检查我们当前是不是在goroutine上(own its stack)，是否安全(要有所有帧的pointers map才可以视为安全，两种情况会有不确定情况:1. syscall中 2.当前goroutine停止于 asynchronous safe point中	)，
+不允许debug设置<code>shrinkoff</code>缩容，不允许对<code>gcBgMarkWorker</code>缩容等等（还有，但是</li>
+<li></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Maybe shrink the stack being used by gp.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// gp must be stopped and we must own its stack. It may be in</span>
+<span class="hljs-comment">// _Grunning, but only if this is our own user G.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">shrinkstack</span><span class="hljs-params">(gp *g)</span></span> &#123;
+	<span class="hljs-keyword">if</span> gp.stack.lo == <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"missing stack in shrinkstack"</span>)
+	&#125;
+	<span class="hljs-comment">//如果不是_Gscan状态，我们无法通过这个状态获得栈，但是如果这个是我们当前使用的G，而且我们在系统栈中，就可以继续;</span>
+	<span class="hljs-keyword">if</span> s := readgstatus(gp); s&amp;_Gscan == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// We don't own the stack via _Gscan. We could still</span>
+		<span class="hljs-comment">// own it if this is our own user G and we're on the</span>
+		<span class="hljs-comment">// system stack.</span>
+		<span class="hljs-keyword">if</span> !(gp == getg().m.curg &amp;&amp; getg() != getg().m.curg &amp;&amp; s == _Grunning) &#123;
+			<span class="hljs-comment">// We don't own the stack.</span>
+			throw(<span class="hljs-string">"bad status in shrinkstack"</span>)
+		&#125;
+	&#125;
+	<span class="hljs-keyword">if</span> !isShrinkStackSafe(gp) &#123;
+		throw(<span class="hljs-string">"shrinkstack at bad time"</span>)
+	&#125;
+	<span class="hljs-comment">// Check for self-shrinks while in a libcall. These may have</span>
+	<span class="hljs-comment">// pointers into the stack disguised as uintptrs, but these</span>
+	<span class="hljs-comment">// code paths should all be nosplit.</span>
+	<span class="hljs-comment">//???不懂是啥东西</span>
+	<span class="hljs-keyword">if</span> gp == getg().m.curg &amp;&amp; gp.m.libcallsp != <span class="hljs-number">0</span> &#123;
+		throw(<span class="hljs-string">"shrinking stack in libcall"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> debug.gcshrinkstackoff &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+	f := findfunc(gp.startpc)
+	<span class="hljs-keyword">if</span> f.valid() &amp;&amp; f.funcID == funcID_gcBgMarkWorker &#123;
+		<span class="hljs-comment">// We're not allowed to shrink the gcBgMarkWorker</span>
+		<span class="hljs-comment">// stack (see gcBgMarkWorker for explanation).</span>
+		<span class="hljs-keyword">return</span>
+	&#125;
+	...
+&#125;</code></pre></div>
+<p>在一堆判断之后，确认可以缩容：</p>
+<ul>
+<li>有个最小值，小于最小值就不缩；</li>
+<li>使用容量小于原来栈的1/4就缩容，缩容为原来size的1/2</li>
+<li>原来的stack包括了SP指针以下的所有内容同stackguard空间(为了给nosplit function使用,nosplit function最大可以用的),这里用<code>stack.hi-sched.sp</code> + <code>_stackLimit</code></li>
+<li></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">shrinkstack</span><span class="hljs-params">(gp *g)</span></span> &#123;
+	....
+	oldsize := gp.stack.hi - gp.stack.lo
+	newsize := oldsize / <span class="hljs-number">2</span>
+	<span class="hljs-comment">// Don't shrink the allocation below the minimum-sized stack</span>
+	<span class="hljs-comment">// allocation.</span>
+	<span class="hljs-comment">//linux下&lt;2048 不缩了;</span>
+	<span class="hljs-keyword">if</span> newsize &lt; _FixedStack &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+	<span class="hljs-comment">// Compute how much of the stack is currently in use and only</span>
+	<span class="hljs-comment">// shrink the stack if gp is using less than a quarter of its</span>
+	<span class="hljs-comment">// current stack. The currently used stack includes everything</span>
+	<span class="hljs-comment">// down to the SP plus the stack guard space that ensures</span>
+	<span class="hljs-comment">// there's room for nosplit functions.</span>
+	avail := gp.stack.hi - gp.stack.lo
+	<span class="hljs-comment">//使用容量小于原来栈的1/4就缩容</span>
+	<span class="hljs-comment">// The maximum number of bytes that a chain of NOSPLIT</span>
+	<span class="hljs-comment">// functions can use.</span>
+	<span class="hljs-comment">//_StackLimit = _StackGuard - _StackSystem - _StackSmall</span>
+	<span class="hljs-keyword">if</span> used := gp.stack.hi - gp.sched.sp + _StackLimit; used &gt;= avail/<span class="hljs-number">4</span> &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+
+	<span class="hljs-keyword">if</span> stackDebug &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"shrinking stack "</span>, oldsize, <span class="hljs-string">"-&gt;"</span>, newsize, <span class="hljs-string">"\n"</span>)
+	&#125;
+
+	copystack(gp, newsize)
+&#125;</code></pre></div>
+<h3 id="gogo继续运行goroutine">gogo继续运行goroutine</h3>
+<p>//todo ???
+<code>gogo</code>方法是一串汇编，不会return，会直接跳出函数</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// func gogo(buf *gobuf)</span>
+<span class="hljs-comment">// restore state from Gobuf; longjmp</span>
+TEXT runtime·gogo(SB), NOSPLIT, $<span class="hljs-number">16</span><span class="hljs-number">-8</span>
+	MOVQ	buf+<span class="hljs-number">0</span>(FP), BX		<span class="hljs-comment">// gobuf</span>
+	MOVQ	gobuf_g(BX), DX
+	MOVQ	<span class="hljs-number">0</span>(DX), CX		<span class="hljs-comment">// make sure g != nil</span>
+	get_tls(CX)
+	MOVQ	DX, g(CX)
+	MOVQ	gobuf_sp(BX), SP	<span class="hljs-comment">// restore SP</span>
+	MOVQ	gobuf_ret(BX), AX
+	MOVQ	gobuf_ctxt(BX), DX
+	MOVQ	gobuf_bp(BX), BP
+	MOVQ	$<span class="hljs-number">0</span>, gobuf_sp(BX)	<span class="hljs-comment">// clear to help garbage collector</span>
+	MOVQ	$<span class="hljs-number">0</span>, gobuf_ret(BX)
+	MOVQ	$<span class="hljs-number">0</span>, gobuf_ctxt(BX)
+	MOVQ	$<span class="hljs-number">0</span>, gobuf_bp(BX)
+	MOVQ	gobuf_pc(BX), BX
+	JMP	BX</code></pre></div>
 <h2 id="内存对齐以及一些分配规则-补充前面的tcmalloc">内存对齐以及一些分配规则(补充前面的tcmalloc)</h2>
 <p>runtime/msize.go</p>
 <div class="hljs"><pre><code class="hljs golang"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">roundupsize</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span> &#123;
@@ -812,6 +2478,7 @@ _NumStackOrders = <span class="hljs-number">4</span> - sys.PtrSize/<span class="
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">round</span><span class="hljs-params">(n, a <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span> &#123;
 	<span class="hljs-keyword">return</span> (n + a - <span class="hljs-number">1</span>) &amp;^ (a - <span class="hljs-number">1</span>)
 &#125;</code></pre></div>
+<h3 id="补全的spanclass">补全的spanClass!!!</h3>
 <p>注意到<strong>class_to_size</strong>和<strong>size_to_class</strong>等等字段</p>
 <p><a id="sizetoclass">[sizetoclass]</a>
 实际上在runtime/sizeclasses.go里面可以体现出go对不同大小的class设置的size：
@@ -842,7 +2509,14 @@ PS: <strong>可以参照tcmalloc 实现思想基本一直</strong></p>
 <span class="hljs-comment">//    64      27264       81920        3         128     10.00%</span>
 <span class="hljs-comment">//    65      28672       57344        2           0      4.91%</span>
 <span class="hljs-comment">//    66      32768       32768        1           0     12.50%</span></code></pre></div>
-<p>可以看到bytes/obj一栏，就是go预定义object大小，最小是8B，最大是32KB（注意这里只是在32KB以内，还有大于32KB以外的），所以都可以解释到<strong>slice</strong>在扩容的时候可能会不遵守*2和1.25倍扩容的规则；</p>
+<p>上面的代码是8B~32KB的不同class的span的大小，对象的数目，浪费的空间</p>
+<p>如:
+class=3 时， 对象上限为32B，管理一个页(span=8KB)，最多可以有256个对象，刚刚好</p>
+<p>$$tailWaste = (bytes/span)mod(objects)$$</p>
+<p>当对象为 17B的时候:</p>
+<p>$$\frac{((32-17)*256+0)}{8192} = 0.4687$$</p>
+<p>除了上面的66个跨度，还会存储一个<code>ID=0</code>的跨度，其就是用作管理<strong>大于</strong>32KB的大对象;</p>
+<p>可以看到bytes/obj一栏，就是go预定义objects大小，最小是8B，最大是32KB（注意这里只是在32KB以内，还有大于32KB以外的），所以都可以解释到<strong>slice</strong>在扩容的时候可能会不遵守*2和1.25倍扩容的规则；</p>
 <p>相关的main方法可以在classToSize的转换runtime/mksizeclass.go中找到</p>
 <h3 id="golang的位运算">golang的位运算</h3>
 <p>有时候会经常看见会用一些全局常量：</p>
@@ -1122,6 +2796,45 @@ log.Printf(<span class="hljs-string">"%d"</span>,x)<span class="hljs-comment">//
 
 
 
+
+  
+
+  
+    <!-- MathJax -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        options: {
+          renderActions: {
+            findScript: [10, doc => {
+              document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+                const display = !!node.type.match(/; *mode=display/);
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+                const text = document.createTextNode('');
+                node.parentNode.replaceChild(text, node);
+                math.start = { node: text, delim: '', n: 0 };
+                math.end = { node: text, delim: '', n: 0 };
+                doc.math.push(math);
+              });
+            }, '', false],
+            insertedScript: [200, () => {
+              document.querySelectorAll('mjx-container').forEach(node => {
+                let target = node.parentNode;
+                if (target.nodeName.toLowerCase() === 'li') {
+                  target.parentNode.classList.add('has-jax');
+                }
+              });
+            }, '', false]
+          }
+        }
+      };
+    </script>
+
+    <script async src="https://cdn.staticfile.org/mathjax/3.0.5/es5/tex-svg.js" ></script>
+
+  
 
 
 

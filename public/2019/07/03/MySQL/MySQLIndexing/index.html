@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.8k 字
+      2k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      22
+      24
        分钟
     </span>
   
@@ -211,13 +211,8 @@
             <div class="markdown-body" id="post-body">
               <p>一些注意事项</p>
 <a id="more"></a>
-<h2 id="主键的问题">主键的问题</h2>
-<h3 id="复合主键和单个主键">复合主键和单个主键</h3>
-<h4 id="复合主键">复合主键</h4>
-<p>好处显而易见，可以依据多个列进行排序，但明显地，字符类的列相比int会比较复杂</p>
-<h3 id="自增主键和自定义主键">自增主键和自定义主键</h3>
-<h4 id="自增主键">自增主键</h4>
-<p>好处：</p>
+<h2 id="主键的问题"><a href="#主键的问题" class="headerlink" title="主键的问题"></a>主键的问题</h2><h3 id="复合主键和单个主键"><a href="#复合主键和单个主键" class="headerlink" title="复合主键和单个主键"></a>复合主键和单个主键</h3><h4 id="复合主键"><a href="#复合主键" class="headerlink" title="复合主键"></a>复合主键</h4><p>好处显而易见，可以依据多个列进行排序，但明显地，字符类的列相比int会比较复杂</p>
+<h3 id="自增主键和自定义主键"><a href="#自增主键和自定义主键" class="headerlink" title="自增主键和自定义主键"></a>自增主键和自定义主键</h3><h4 id="自增主键"><a href="#自增主键" class="headerlink" title="自增主键"></a>自增主键</h4><p>好处：</p>
 <ol>
 <li>由系统生成，顺序递增，速度肯定快</li>
 <li>int占用空间小，易排序</li>
@@ -227,91 +222,58 @@
 <li>自增主键可能不连续</li>
 <li>水平分片架构会出问题，全局不能保证唯一</li>
 </ol>
-<h4 id="自定义主键">自定义主键</h4>
-<p>好处：</p>
+<h4 id="自定义主键"><a href="#自定义主键" class="headerlink" title="自定义主键"></a>自定义主键</h4><p>好处：</p>
 <ol>
 <li>水平分片</li>
 </ol>
 <p>缺点：</p>
 <ol>
-<li>随机I/O，影响查找等操作</li>
+<li>随机I/O，影响查找等操作 </li>
 </ol>
-<h2 id="聚簇索引">聚簇索引</h2>
-<ul>
-<li>
-<p>当表有聚簇索引的时候，它的数据行实际上存放在索引的叶子页（leaf page）上
-聚簇代表了数据行和相邻的键值紧凑地存储在一起</p>
+<h2 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h2><ul>
+<li><p>当表有聚簇索引的时候，它的数据行实际上存放在索引的叶子页（leaf page）上<br>聚簇代表了数据行和相邻的键值紧凑地存储在一起</p>
 </li>
-<li>
-<p>InnoDB使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）。</p>
+<li><p>InnoDB使用聚集索引，数据记录本身被存于主索引（一颗B+Tree）的叶子节点上。这就要求同一个叶子节点内（大小为一个内存页或磁盘页）的各条数据记录按主键顺序存放，因此每当有一条新的记录插入时，MySQL会根据其主键将其插入适当的节点和位置，如果页面达到装载因子（InnoDB默认为15/16），则开辟一个新的页（节点）。</p>
 </li>
 </ul>
 <p>如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。这样就会形成一个紧凑的索引结构，近似顺序填满。由于每次插入时也不需要移动已有数据，因此效率很高，也不会增加很多开销在维护索引上。</p>
-<h2 id="大数据问题">大数据问题</h2>
-<h3 id="1-一次性插入大量数据">1. 一次性插入大量数据</h3>
-<p>MySQL 5.7 Refman官方文件给出的提示：
-8.2.4.1 Optimizing INSERT operation
-8.5.5 Bulk data loading in INNODB</p>
+<h2 id="大数据问题"><a href="#大数据问题" class="headerlink" title="大数据问题"></a>大数据问题</h2><h3 id="1-一次性插入大量数据"><a href="#1-一次性插入大量数据" class="headerlink" title="1. 一次性插入大量数据"></a>1. 一次性插入大量数据</h3><p>MySQL 5.7 Refman官方文件给出的提示：<br>8.2.4.1 Optimizing INSERT operation<br>8.5.5 Bulk data loading in INNODB</p>
 <blockquote>
 <blockquote>
 <p>To optimize insert speed, combine many small operations into a single large operation. Ideally, you make a single connection, send the data for many new rows at once, and delay all index updates and consistency checking until the very end.</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>If you are inserting many rows from the same client at the same time, use INSERT statements with multiple VALUES lists to insert several rows at a time. This is considerably faster (many times faster in some cases) than using separate single-row INSERT statements. If you are adding data to a nonempty table, you can tune the bulk_insert_buffer_size variable to make data insertion even faster. See Section 5.1.7, “Server System Variables”.</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>When loading a table from a text file, use LOAD DATA. This is usually 20 times faster than using INSERT statements. See Section 13.2.6, “LOAD DATA Syntax”.</p>
-</blockquote>
-</blockquote>
-<blockquote>
-<blockquote>
 <p>Take advantage of the fact that columns have default values. Insert values explicitly only when the value to be inserted differs from the default. This reduces the parsing that MySQL must do and improves the insert speed.</p>
 </blockquote>
 </blockquote>
-<h4 id="如果是从一个客户端同时插入多行">如果是从一个客户端同时插入多行</h4>
-<ol>
-<li>就是要合并多个插入操作成一个，如：</li>
-</ol>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">1</span>,<span class="hljs-string">"a"</span>,<span class="hljs-number">1</span>)
+<h4 id="如果是从一个客户端同时插入多行"><a href="#如果是从一个客户端同时插入多行" class="headerlink" title="如果是从一个客户端同时插入多行"></a>如果是从一个客户端同时插入多行</h4><ol>
+<li>就是要合并多个插入操作成一个，如：<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">1</span>,<span class="hljs-string">"a"</span>,<span class="hljs-number">1</span>)
 <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">2</span>,<span class="hljs-string">"b"</span>,<span class="hljs-number">1</span>)
 <span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">3</span>,<span class="hljs-string">"c"</span>,<span class="hljs-number">0</span>)</code></pre></div>
-<p>改为</p>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">1</span>,<span class="hljs-string">"a"</span>,<span class="hljs-number">1</span>),
+</li>
+</ol>
+<p>改为<br><div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">into</span> table1(<span class="hljs-string">`id`</span>,<span class="hljs-string">`name`</span>,<span class="hljs-string">`sex`</span>) <span class="hljs-keyword">values</span>(<span class="hljs-number">1</span>,<span class="hljs-string">"a"</span>,<span class="hljs-number">1</span>),
                                             (<span class="hljs-number">2</span>,<span class="hljs-string">"b"</span>,<span class="hljs-number">1</span>),
-                                            (<span class="hljs-number">3</span>,<span class="hljs-string">"c"</span>,<span class="hljs-number">0</span>);</code></pre></div>
-<ol start="2">
+                                            (<span class="hljs-number">3</span>,<span class="hljs-string">"c"</span>,<span class="hljs-number">0</span>);</code></pre></div></p>
+<ol>
 <li>开启 <strong>bulk_insert_buffer_size</strong> 更加加速插入</li>
 </ol>
-<h4 id="从文件中导入数据">从文件中导入数据</h4>
-<p>使用 <strong>LOAD DATA</strong></p>
-<h4 id="利用default-value">利用default value</h4>
-<p>每当插入数据不同于default值的时候再插入，使用ignore</p>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">ignore</span> <span class="hljs-keyword">into</span> table1 <span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>,<span class="hljs-string">'a'</span>，<span class="hljs-number">1</span>);</code></pre></div>
+<h4 id="从文件中导入数据"><a href="#从文件中导入数据" class="headerlink" title="从文件中导入数据"></a>从文件中导入数据</h4><p>使用 <strong>LOAD DATA</strong> </p>
+<h4 id="利用default-value"><a href="#利用default-value" class="headerlink" title="利用default value"></a>利用default value</h4><p>每当插入数据不同于default值的时候再插入，使用ignore<br><div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">insert</span> <span class="hljs-keyword">ignore</span> <span class="hljs-keyword">into</span> table1 <span class="hljs-keyword">values</span> (<span class="hljs-number">1</span>,<span class="hljs-string">'a'</span>，<span class="hljs-number">1</span>);</code></pre></div></p>
 <p>甚至还区分了 InnoDB引擎和MyISAM引擎的做法：</p>
-<h4 id="innodb：">InnoDB：</h4>
-<ol>
+<h4 id="InnoDB："><a href="#InnoDB：" class="headerlink" title="InnoDB："></a>InnoDB：</h4><ol>
 <li>关闭autocommit，因为每次插入，InnoDB都会写log;</li>
 <li>如果有unqiue 限制插入的列，可以暂时关闭 unique_checks;</li>
 <li>如果有外键在列，可以暂时关闭外键约束foreign_key_checks;</li>
 <li>插入数据的时候，如果数据能按照primary key的顺序插入，会大大加快速度（因为主键是聚簇索引）</li>
 <li>数据有自增主键的时候，把innodb_autoinc_lock_mode从1改为2（14.6.1.4)</li>
 </ol>
-<h4 id="myisam">MyISAM</h4>
-<p>//todo</p>
-<h2 id="log">Log</h2>
-<p>Undo日志记录某数据被修改前的值，可以用来在事务失败时进行回滚；Redo日志记录某数据块被修改后的值，可以用来恢复未写入data file的已成功事务更新的数据。</p>
-<h2 id="查询">查询</h2>
-<h3 id="in-查询">in 查询</h3>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> table_a <span class="hljs-keyword">where</span> A <span class="hljs-keyword">in</span> () <span class="hljs-keyword">AND</span> B <span class="hljs-keyword">in</span> ()</code></pre></div>
+<h4 id="MyISAM"><a href="#MyISAM" class="headerlink" title="MyISAM"></a>MyISAM</h4><p>LSM(log structured)模型，主要是顺序读写，写性能&gt;读性能;<br>//todo</p>
+<h2 id="Log"><a href="#Log" class="headerlink" title="Log"></a>Log</h2><p>Undo日志记录某数据被修改前的值，可以用来在事务失败时进行回滚；Redo日志记录某数据块被修改后的值，可以用来恢复未写入data file的已成功事务更新的数据。</p>
+<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><h3 id="in-查询"><a href="#in-查询" class="headerlink" title="in 查询"></a>in 查询</h3><div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> table_a <span class="hljs-keyword">where</span> A <span class="hljs-keyword">in</span> () <span class="hljs-keyword">AND</span> B <span class="hljs-keyword">in</span> ()</code></pre></div>
 <p>其实际会先从A筛选in出来再回一次表筛选B</p>
-<p>可以改写为</p>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> table_a <span class="hljs-keyword">where</span> (A,B) <span class="hljs-keyword">in</span> ((<span class="hljs-number">1.</span>..n),(<span class="hljs-number">2.</span>..m))</code></pre></div>
-<h3 id="order-by">order by</h3>
-<div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> tb1 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> idx1 <span class="hljs-keyword">limit</span> <span class="hljs-number">4</span>,<span class="hljs-number">1</span>;
+<p>可以改写为<br><div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> table_a <span class="hljs-keyword">where</span> (A,B) <span class="hljs-keyword">in</span> ((<span class="hljs-number">1.</span>..n),(<span class="hljs-number">2.</span>..m))</code></pre></div></p>
+<h3 id="order-by"><a href="#order-by" class="headerlink" title="order by"></a>order by</h3><div class="hljs"><pre><code class="hljs sql"><span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> tb1 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> idx1 <span class="hljs-keyword">limit</span> <span class="hljs-number">4</span>,<span class="hljs-number">1</span>;
 <span class="hljs-keyword">select</span> * <span class="hljs-keyword">from</span> tb1 <span class="hljs-keyword">force</span> <span class="hljs-keyword">index</span>(idx1) <span class="hljs-keyword">limit</span> <span class="hljs-number">4</span>,<span class="hljs-number">1</span>;</code></pre></div>
 <p>某种情况下得到不同结果;</p>
 <p>具体使用哪一种排序方式是优化器决定的，总的说来如下：</p>
@@ -319,9 +281,17 @@
 <p>快速排序算法：如果没有索引大量排序的情况下</p>
 <p>堆排序算法：如果没有索引排序量不大的情况下</p>
 <p>快排和堆排不稳定，</p>
-<h3 id="index">Index</h3>
-<h4 id="coveringindex-覆盖索引">coveringIndex(覆盖索引)</h4>
-<ol>
+<h3 id="count-count-1-count-column"><a href="#count-count-1-count-column" class="headerlink" title="count(*),count(1),count(column)"></a>count(*),count(1),count(column)</h3><p>明确在MYISAM和Innodb的速率是不一样的:</p>
+<ul>
+<li>MYISAM下count(*)可以直接得出数值，复杂度O(1),因为保存了一个变量</li>
+<li>INNODB因为支持了事务，有repeatable的隔离级别（用了MVCC），所以不同事务有不同的数据版本，不能采用保存一个变量这种做法</li>
+</ul>
+<p>然后count(*)和count(1)在INNODB中底层的性能其实是一致的：</p>
+<p><code>count(*)</code>会计算所有值<br><code>count(1)</code>会计算non-nil的值</p>
+<p>INNODB会有一个小优化，会使用最小的二级索引</p>
+<p><code>count(column)</code>在拿到值时先判断是否为空，然后再累加;<br>如果遇到的是二级索引，则要再回表一次根据主键得到数据，多了一次IO；</p>
+<h3 id="比较"><a href="#比较" class="headerlink" title="比较"></a>比较</h3><p>(a,b)&gt;(x,y) 等价于：<br><div class="hljs"><pre><code class="hljs undefined">(<span class="hljs-name">a</span> &gt; x) OR ((<span class="hljs-name">a</span> = x) AND (<span class="hljs-name">b</span> &gt; y))</code></pre></div></p>
+<h3 id="Index"><a href="#Index" class="headerlink" title="Index"></a>Index</h3><h4 id="coveringIndex-覆盖索引"><a href="#coveringIndex-覆盖索引" class="headerlink" title="coveringIndex(覆盖索引)"></a>coveringIndex(覆盖索引)</h4><ol>
 <li>索引项通常比记录要小，所以MySQL访问更少的数据</li>
 <li>索引都按值的大小顺序存储，相对于随机访问记录，需要更少的I/O</li>
 <li>大多数据引擎能更好的缓存索引，比如MyISAM只缓存索引</li>
@@ -329,11 +299,9 @@
 </ol>
 <p><strong>重要!!!</strong></p>
 <ul>
-<li>
-<p>select只能select在索引上的值（由定义可知道，索引保存的值即是你需要的值，否则又tm要回表查一次）</p>
+<li><p>select只能select在索引上的值（由定义可知道，索引保存的值即是你需要的值，否则又tm要回表查一次）</p>
 </li>
-<li>
-<p>一个覆盖索必须满足查询中给定表用到的所有的列仅仅是个前提条件，这个索引还必须包含指定表上包括WHERE子句, ORDER BY, GROUP BY子句等等</p>
+<li><p>一个覆盖索必须满足查询中给定表用到的所有的列仅仅是个前提条件，这个索引还必须包含指定表上包括WHERE子句, ORDER BY, GROUP BY子句等等</p>
 </li>
 </ul>
 <p>重复的index还会把覆盖索引给覆盖掉:</p>
@@ -342,15 +310,10 @@ index idx_n_id(name,id)
 <span class="hljs-comment">## 再单独创建一个索引在name上</span>
 index idx_n(name)
 <span class="hljs-comment"># 会将之前的索引覆盖掉</span></code></pre></div>
-<h3 id="唯一索引和普通索引">唯一索引和普通索引</h3>
-<ol>
-<li>
-<p>唯一索引<strong>搜索</strong>满足的第一条记录会立马返回，通知检索（因为唯一性的保证）。
-但是这个区别并没有很大的性能区别，因为Innodb是按照页（默认16KB）读写的，读数据的时候是从B+树的根节点开始搜索，搜索的时候将整个页从硬盘加载到内存。</p>
+<h4 id="唯一索引和普通索引"><a href="#唯一索引和普通索引" class="headerlink" title="唯一索引和普通索引"></a>唯一索引和普通索引</h4><ol>
+<li><p>唯一索引<strong>搜索</strong>满足的第一条记录会立马返回，通知检索（因为唯一性的保证）。<br>但是这个区别并没有很大的性能区别，因为Innodb是按照页（默认16KB）读写的，读数据的时候是从B+树的根节点开始搜索，搜索的时候将整个页从硬盘加载到内存。</p>
 </li>
-<li>
-<p>唯一索引在<strong>插入</strong>的时候会多做些判断，想要做这个判断就必须先把数据页读入内存。
-但是普通索引不需要做这个判断，就可以把需要更新的数据做判断：</p>
+<li><p>唯一索引在<strong>插入</strong>的时候会多做些判断，想要做这个判断就必须先把数据页读入内存。<br>但是普通索引不需要做这个判断，就可以把需要更新的数据做判断：</p>
 <ul>
 <li>如果数据在内存则直接更新；</li>
 <li>如果不在也不加载内存，而是先写入change buffer，等下次查询的时候再执行change buffer。</li>
@@ -359,16 +322,13 @@ index idx_n(name)
 </ol>
 <p>这样看来普通索引会相对性能好一些。</p>
 <p>但是注意：如果业务场景是写入后立马有查询，其实还是会立马需要把数据页加载到内存，这样的情况下其实并不能带来优化IO的操作。</p>
-<h3 id="最左匹配原则">最左匹配原则</h3>
-<p>``sql
-index id_key1_key2_key3()</p>
-<div class="hljs"><pre><code>针对上面的index，根据该原则，业务上各个列的使用频率和重要性应该是key1&gt;key2&gt;key3
-
-- 而且只有key1在条件内才会用到该索引
-- id_key1_key2_key3 等于创建了 id_key1, id_key1_key2, id_key1_key2_key3三个索引
-- 在该索引内使用范围查找会使其失效（in 属于精确查找）
-
-</code></pre></div>
+<h4 id="最左匹配原则"><a href="#最左匹配原则" class="headerlink" title="最左匹配原则"></a>最左匹配原则</h4><div class="hljs"><pre><code class="hljs sql">index id_key1_key2_key3()</code></pre></div>
+<p>针对上面的index，根据该原则，业务上各个列的 <strong>使用频率和重要性</strong> 应该是key1&gt;key2&gt;key3</p>
+<ul>
+<li>而且只有key1在条件内才会用到该索引</li>
+<li><code>id_key1_key2_key3</code> 等于创建了 <code>id_key1</code>, <code>id_key1_key2</code>, <code>id_key1_key2_key3</code>三个索引</li>
+<li>在该索引内使用范围查找会使其失效（in 属于精确查找）</li>
+</ul>
 
             </div>
             <hr>
@@ -392,9 +352,9 @@ index id_key1_key2_key3()</p>
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2019/07/09/Go/Goroutine/">
+                      <a href="/2019/07/09/Go/Goscheduler/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Goroutine Notes</span>
+                        <span class="hidden-mobile">Go Scheduler</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     

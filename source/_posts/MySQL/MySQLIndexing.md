@@ -48,6 +48,7 @@ tags: MySQL
 ## 大数据问题
 
 ### 1. 一次性插入大量数据
+
 MySQL 5.7 Refman官方文件给出的提示：
 8.2.4.1 Optimizing INSERT operation
 8.5.5 Bulk data loading in INNODB
@@ -90,7 +91,9 @@ insert ignore into table1 values (1,'a'，1);
 
 
 甚至还区分了 InnoDB引擎和MyISAM引擎的做法：
+
 #### InnoDB：
+
 1. 关闭autocommit，因为每次插入，InnoDB都会写log;
 2. 如果有unqiue 限制插入的列，可以暂时关闭 unique_checks;
 3. 如果有外键在列，可以暂时关闭外键约束foreign_key_checks;
@@ -99,6 +102,7 @@ insert ignore into table1 values (1,'a'，1);
 
 #### MyISAM
 
+LSM(log structured)模型，主要是顺序读写，写性能>读性能;
 //todo
 
 ## Log
@@ -144,6 +148,32 @@ select * from tb1 force index(idx1) limit 4,1;
 
 快排和堆排不稳定，
 
+### count(*),count(1),count(column)
+
+明确在MYISAM和Innodb的速率是不一样的:
+
+- MYISAM下count(*)可以直接得出数值，复杂度O(1),因为保存了一个变量
+- INNODB因为支持了事务，有repeatable的隔离级别（用了MVCC），所以不同事务有不同的数据版本，不能采用保存一个变量这种做法
+
+然后count(*)和count(1)在INNODB中底层的性能其实是一致的：
+
+`count(*)`会计算所有值
+`count(1)`会计算non-nil的值
+
+INNODB会有一个小优化，会使用最小的二级索引
+
+`count(column)`在拿到值时先判断是否为空，然后再累加;
+如果遇到的是二级索引，则要再回表一次根据主键得到数据，多了一次IO；
+
+
+### 比较
+
+
+(a,b)>(x,y) 等价于：
+```
+(a > x) OR ((a = x) AND (b > y))
+```
+
 ### Index
 
 #### coveringIndex(覆盖索引)
@@ -173,7 +203,7 @@ index idx_n(name)
 
 ```
 
-### 唯一索引和普通索引
+#### 唯一索引和普通索引
 
 1. 唯一索引**搜索**满足的第一条记录会立马返回，通知检索（因为唯一性的保证）。
 但是这个区别并没有很大的性能区别，因为Innodb是按照页（默认16KB）读写的，读数据的时候是从B+树的根节点开始搜索，搜索的时候将整个页从硬盘加载到内存。
@@ -188,14 +218,15 @@ index idx_n(name)
 但是注意：如果业务场景是写入后立马有查询，其实还是会立马需要把数据页加载到内存，这样的情况下其实并不能带来优化IO的操作。
 
 
-### 最左匹配原则
+#### 最左匹配原则
 
-``sql
+```sql
 index id_key1_key2_key3()
 ```
-针对上面的index，根据该原则，业务上各个列的使用频率和重要性应该是key1>key2>key3
+
+针对上面的index，根据该原则，业务上各个列的 **使用频率和重要性** 应该是key1>key2>key3
 
 - 而且只有key1在条件内才会用到该索引
-- id_key1_key2_key3 等于创建了 id_key1, id_key1_key2, id_key1_key2_key3三个索引
+- `id_key1_key2_key3` 等于创建了 `id_key1`, `id_key1_key2`, `id_key1_key2_key3`三个索引
 - 在该索引内使用范围查找会使其失效（in 属于精确查找）
 

@@ -26,7 +26,7 @@
 
   
     
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
   
 
   
@@ -52,7 +52,7 @@
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      593 字
+      830 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      7
+      11
        分钟
     </span>
   
@@ -211,9 +211,10 @@
             <div class="markdown-body" id="post-body">
               <p>比较容易混淆三种值:</p>
 <a id="more"></a>
+<h1>几个奇怪的值</h1>
 <p>指针值(Pointer value):比如stirng,int这种其实是一种指针值</p>
-<p>指针(Pointer)</p>
-<p>uintptr</p>
+<p>指针(Pointer): *T,跟c一样，长这个样子的就是指针</p>
+<p>uintptr:一个足够大的整数；</p>
 <div class="hljs"><pre><code class="hljs go"> <span class="hljs-comment">// Pointer represents a pointer to an arbitrary type. There are four special operations</span>
 <span class="hljs-comment">// available for type Pointer that are not available for other types:</span>
 <span class="hljs-comment">//	- A pointer value of any type can be converted to a Pointer.</span>
@@ -225,23 +226,47 @@ unsafe.Pointer(&amp;a)
 unsafe.Pointer(<span class="hljs-keyword">uintptr</span>(somePointer)+unsafe.sizeof(&amp;a))
 <span class="hljs-comment">//	- A Pointer can be converted to a uintptr.</span>
 <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(&amp;a))</code></pre></div>
+<blockquote>
+<blockquote>
+<p>任何类型的指针可以和unsafe.Pointer相互转换;
+uintptr类型和unsafe.Pointer可以相互转换;</p>
+</blockquote>
+</blockquote>
+<h2 id="一些cases">一些cases</h2>
 <p>因为指针可以随意读取内存而不经过go自己的type系统，要谨慎使用，注释里面有写到不可用作临时变量，如下：</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//错误！</span>
 tmp := <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(&amp;x)) + unsafe.Offsetof(x.b)
 pb := (*<span class="hljs-keyword">int16</span>)(unsafe.Pointer(tmp))
 *pb = <span class="hljs-number">42</span></code></pre></div>
 <p>这里主要跟gc的实现有关系，有时候垃圾回收器会移动（整理）一些变量来降低碎片度；变量被移动后当然其地址也会被改变，这个指针就要指向新地址。</p>
-<p>而上面这段代码中unsafe.Pointer就是一个<strong>指向变量的指针</strong>，被移动后就要改变，但是tmp实际在这段代码中却是作为一个<strong>普通的整数</strong>，值不应该被改变!</p>
-<p>因为垃圾回收器<strong>识别不出</strong>上面tmp其实是一个<strong>指向x的指针</strong>，当到第二行时，可能x地址已经被转移，tmp此时就不会是这个地址了，第三行可能向一个不知道什么地址赋值，肯定会出错。</p>
+<p>而上面这段代码中<code>unsafe.Pointer</code>就是一个<strong>指向变量的指针</strong>，被移动后就要改变，但是tmp实际在这段代码中却是作为一个<strong>普通的整数</strong>，值不应该被改变!</p>
+<p>而针对<code>uintptr</code>，因为垃圾回收器<strong>识别不出</strong>，tmp其实是一个<strong>指向x的指针</strong>，当到第二行时，可能x地址已经被转移，tmp此时就不会是这个地址了，第三行可能向一个不知道什么地址赋值，肯定会出错。</p>
 <p>还有一些:</p>
 <div class="hljs"><pre><code class="hljs go">pT := <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(<span class="hljs-built_in">new</span>(T))) <span class="hljs-comment">// 提示: 错误!</span></code></pre></div>
-<p>这里new(T)创建后并没有指针引用，这行跑完后垃圾回收器可能会立即回收掉内存空间，所以pT得到的就是无效的地址</p>
+<p>这里<code>new(T)</code>创建后并没有<strong>指针引用</strong>，这行跑完后获得的<code>uintptr</code>无指针的语义，垃圾回收器可能会立即回收掉内存空间，所以pT得到的就是无效的地址</p>
 <p>比较常见的</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">Bytes2String</span><span class="hljs-params">(b []<span class="hljs-keyword">byte</span>)</span> <span class="hljs-title">string</span></span>&#123;
     <span class="hljs-keyword">return</span> *(*<span class="hljs-keyword">string</span>)(unsafe.Pointer(&amp;b))
 &#125;</code></pre></div>
+<p>PS: 这里<code>string</code>和<code>bytes</code>的转换有个小坑,如下其转换的原理是将一个<code>byteHeader</code>的头部的指针指到<code>stringHeader</code>的指针,
+所以这个指针指向的内容仍然是有<code>string</code>的不可改变特性;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">String2Bytes</span><span class="hljs-params">(s <span class="hljs-keyword">string</span>)</span> []<span class="hljs-title">byte</span></span> &#123;
+	x := (*[<span class="hljs-number">2</span>]<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;s))
+	h := [<span class="hljs-number">3</span>]<span class="hljs-keyword">uintptr</span>&#123;x[<span class="hljs-number">0</span>], x[<span class="hljs-number">1</span>], x[<span class="hljs-number">1</span>]&#125;
+
+	<span class="hljs-keyword">return</span> *(*[]<span class="hljs-keyword">byte</span>)(unsafe.Pointer(&amp;h))
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+    a:=<span class="hljs-string">"abc"</span>
+    b:=String2Bytes(a)
+    b[<span class="hljs-number">0</span>]=<span class="hljs-string">'z'</span>
+&#125;
+<span class="hljs-comment">//得到结果</span>
+<span class="hljs-comment">//unexpected fault address 0x90820d</span>
+<span class="hljs-comment">//fatal error: fault</span>
+<span class="hljs-comment">//[signal SIGSEGV: segmentation violation code=0x2 addr=0x90820d pc=0x81ced4]</span></code></pre></div>
 <h2 id="uinputr">uinputr</h2>
-<p>uintptr是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象（很自然就不会有写屏障)</p>
+<p><code>uintptr</code>是一个整数，但是它没有指针的语义，即使它有保存某个对象的地址，但是垃圾回收器在这个对象转移的时候也不会更新uintptr的值，除非重新声明这个对象（很自然就不会有写屏障)，这里上面几个cases都有体现</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A uintptr is an integer, not a reference.</span>
 <span class="hljs-comment">// Converting a Pointer to a uintptr creates an integer value</span>
 <span class="hljs-comment">// with no pointer semantics.</span>
@@ -250,6 +275,18 @@ pb := (*<span class="hljs-keyword">int16</span>)(unsafe.Pointer(tmp))
 <span class="hljs-comment">// if the object moves, nor will that uintptr keep the object</span>
 <span class="hljs-comment">// from being reclaimed.</span>
 <span class="hljs-comment">//</span></code></pre></div>
+<h2 id="pointer">Pointer</h2>
+<ul>
+<li>
+<p>不能做运算</p>
+</li>
+<li>
+<p>不同类型的指针不能进行比较</p>
+</li>
+<li>
+<p>不同类型的指针不能互相转换</p>
+</li>
+</ul>
 
             </div>
             <hr>

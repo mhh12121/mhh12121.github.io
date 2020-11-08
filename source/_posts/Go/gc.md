@@ -20,6 +20,11 @@ tags: golang
 8. 是否智能化（根据某些系统条件进行调节）
 9. 是否可以自定义化参数 
 
+## 静态语言类一般会在程序的三个阶段涉及gc的操作
+
+- 编译期
+- 运行时内存分配
+- 运行时扫描
 
 ## 现在有的比较流行的GC
 
@@ -27,11 +32,305 @@ tags: golang
 
 2. mark & sweep，标记然后用监视内存的程序或者lazy清理（这个一般不会），golang现在用的就是这种
 
-3. 比较牛批的分代收集，如JAVA，什么新生代，老年代，eden等；不过这些都是
+3. 比较牛批的分代收集，如JAVA，什么新生代，老年代，eden等；不过这些都是比较老的比如JAVA一类的
 
 ## Go的GC
 
-### 步骤
+### 1. 编译阶段
+
+- 内存对齐
+略，这个可以参考自己的memManage
+
+- 初始化一些字段
+我们直接
+```go
+type _type struct {
+	...
+	ptrdata    uintptr // size of memory prefix holding all pointers
+	...
+	// gcdata stores the GC type data for the garbage collector.
+	// If the KindGCProg bit is set in kind, gcdata is a GC program.
+	// Otherwise it is a ptrmask bitmap. See mbitmap.go for details.
+	gcdata    *byte
+	
+	...
+}
+```
+
+
+举个例子
+```go
+type testStruct struct{
+	ptr uintptr//8
+	A uint8 //1
+	B *uint8//8
+	C uint32//4
+	D *uint64//8
+	E uint64//8
+}
+```
+我直接打点在`mbitmap.go:947`即`heapBitSetType`上面
+
+```yml
+*runtime._type {
+	size: 376, //该对象有多少个字(64位一个字=64bits=8Bytes)
+	ptrdata: 360, //其中的指针有多少个字
+	hash: 3901217204, 
+	tflag: tflagUncommon|tflagExtraStar|tflagNamed (7),
+	align: 8, fieldAlign: 8, 
+	kind: 25,
+	equal: nil, 
+	gcdata: *112, //0111 0000
+	str: 11827, 
+	ptrToThis: 41536}
+
+```
+
+- ptrdata
+
+	指针截止的长度
+
+
+- 重点看这个字段 `gcdata` :
+
+	`112`的二进制就是 `0111 0000`, 而`0111 0000` reverse一下就变成`(0000 1110)`<sub>2</sub> ，第2,3,4个bit为1，分别对应
+
+
+### 2. 运行阶段
+
+主要是`heapBitsSetType`这个函数
+
+```go
+func heapBitsSetType(x, size, dataSize uintptr, typ *_type) {}
+```
+其传入参数可以看到:
+- x :
+
+结构(对象)的**开始地址**，是uintptr
+
+- size: 
+
+
+
+- dataSize: 
+	
+	其值永远都是每次roundup（可能根据**sizetoclass(可以看下memManage那篇文章)**)得到的大小,
+	但是，在分配**defer块**的时候**不会**,sizeof(defer{})可以看见至少有6个字(6*64bits=48 Bytes,64位下),可能会偏大;
+
+- typ: 
+
+传入的类型，记录了结构的gc的map(gcdata)，大小，类型，hash等一系列值
+
+
+为什么不用原子性保证，并发问题？注释里面给出答案：
+因为每次都
+- 只会从一个span里面分配空间
+- span的bitmap每次都只会在规定的byte边界内（内存对齐的结果）
+
+所以写的冲突是不会出现的；
+
+
+```go
+
+// There can only be one allocation from a given span active at a time,
+// and the bitmap for a span always falls on byte boundaries,
+// so there are no write-write races for access to the heap bitmap.
+// Hence, heapBitsSetType can access the bitmap without atomics.
+//
+```
+
+主要逻辑:
+
+```go
+func heapBitsSetType(x, size, dataSize uintptr, typ *_type) {
+	...
+	//1. 通过分配地址反查到heap的heapBits结构
+	h := heapBitsForAddr(x)
+	//获取到类型的指针bitmap
+	ptrmask := typ.gcdata // start of 1-bit pointer mask (or GC program, handled below)
+	...
+	var ( ...)
+	//将h.bitp堆上的bitmap取出
+	hbitp = h.bitp
+	...
+	//该类型的bitmap
+	p = ptrmask
+
+	....
+
+
+	if p != nil {
+		//保存bitmap第一个Byte
+		b = uintptr(*p)
+		//p指向下一个Byte
+		p = add1(p)
+		nb = 8
+	}
+	//我们的结构是48==48，最简单的struct
+	if typ.size == dataSize {
+		// Single entry: can stop once we reach the non-pointer data.
+		//nw = 5 = 40 / 8  ，说明扫描到第5个字段即可,因为ptrdata就是已经划定了范围[0,40]
+		nw = typ.ptrdata / sys.PtrSize
+	} else {
+		//针对array的
+		// Repeated instances of typ in an array.
+		// Have to process first N-1 entries in full, but can stop
+		// once we reach the non-pointer data in the final entry.
+		nw = ((dataSize/typ.size-1)*typ.size + typ.ptrdata) / sys.PtrSize
+	}
+	//如果nw=0，该struct无指针
+	if nw == 0 {
+		// No pointers! Caller was supposed to check.
+		println("runtime: invalid type ", typ.string())
+		throw("heapBitsSetType: called with non-pointer type")
+		return
+	}
+	//至少要写入两个字，因为noscan 的编码要求todo???
+	if nw < 2 {
+		// Must write at least 2 words, because the "no scan"
+		// encoding doesn't take effect until the third word.
+		nw = 2
+	}
+
+	//接下来较为重要:
+	// Phase 1: Special case for leading byte (shift==0) or half-byte (shift==2).
+	// The leading byte is special because it contains the bits for word 1,
+	// which does not have the scan bit set.
+	// The leading half-byte is special because it's a half a byte,
+	// so we have to be careful with the bits already there.
+	switch {
+	default:
+		throw("heapBitsSetType: unexpected shift")
+
+	case h.shift == 0:
+		// Ptrmask and heap bitmap are aligned.
+		// Handle first byte of bitmap specially.
+		//
+		// The first byte we write out covers the first four
+		// words of the object. The scan/dead bit on the first
+		// word must be set to scan since there are pointers
+		// somewhere in the object. The scan/dead bit on the
+		// second word is the checkmark, so we don't set it.
+		// In all following words, we set the scan/dead
+		// appropriately to indicate that the object contains
+		// to the next 2-bit entry in the bitmap.
+		//
+		// TODO: It doesn't matter if we set the checkmark, so
+		// maybe this case isn't needed any more.
+		//b是类型的,b = 0001 0100
+		//bitPointerAll = 0000 1111
+		//hb = 0000 0100
+		hb = b & bitPointerAll
+		
+		hb |= bitScan | bitScan<<(2*heapBitsShift) | bitScan<<(3*heapBitsShift)
+		if w += 4; w >= nw {
+			goto Phase3
+		}
+		
+		*hbitp = uint8(hb)
+		//指针往后一个字节(递进一个)
+		hbitp = add1(hbitp)
+		b >>= 4
+		nb -= 4
+
+	case sys.PtrSize == 8 && h.shift == 2:
+		...
+	}
+
+	
+	// Phase 2: Full bytes in bitmap, up to but not including write to last byte (full or partial) in bitmap.
+	// The loop computes the bits for that last write but does not execute the write;
+	// it leaves the bits in hb for processing by phase 3.
+	// To avoid repeated adjustment of nb, we subtract out the 4 bits we're going to
+	// use in the first half of the loop right now, and then we only adjust nb explicitly
+	// if the 8 bits used by each iteration isn't balanced by 8 bits loaded mid-loop.
+	//继续处理后4个bit!!!
+	nb -= 4
+	for {
+		// Emit bitmap byte.
+		// b has at least nb+4 bits, with one exception:
+		// if w+4 >= nw, then b has only nw-w bits,
+		// but we'll stop at the break and then truncate
+		// appropriately in Phase 3.
+		hb = b & bitPointerAll
+		hb |= bitScanAll
+		if w += 4; w >= nw {
+			//已经处理完成，有指针的字段都包含在已经处理的ptrmask范围内
+			break
+		}
+		...
+	}
+
+//第三阶段,写入最后的byte或者是部分byte然后将剩下的bitmap置0
+Phase3:
+	// Phase 3: Write last byte or partial byte and zero the rest of the bitmap entries.
+	if w > nw {
+		// Counting the 4 entries in hb not yet written to memory,
+		// there are more entries than possible pointer slots.
+		// Discard the excess entries (can't be more than 3).
+		mask := uintptr(1)<<(4-(w-nw)) - 1
+		hb &= mask | mask<<4 // apply mask to both pointer bits and scan bits
+	}
+
+	// Change nw from counting possibly-pointer words to total words in allocation.
+	nw = size / sys.PtrSize
+
+	// Write whole bitmap bytes.
+	// The first is hb, the rest are zero.
+	if w <= nw {
+		*hbitp = uint8(hb)
+		hbitp = add1(hbitp)
+		hb = 0 // for possible final half-byte below
+		for w += 4; w <= nw; w += 4 {
+			*hbitp = 0
+			hbitp = add1(hbitp)
+		}
+	}
+
+	// Write final partial bitmap byte if any.
+	// We know w > nw, or else we'd still be in the loop above.
+	// It can be bigger only due to the 4 entries in hb that it counts.
+	// If w == nw+4 then there's nothing left to do: we wrote all nw entries
+	// and can discard the 4 sitting in hb.
+	// But if w == nw+2, we need to write first two in hb.
+	// The byte is shared with the next object, so be careful with
+	// existing bits.
+	if w == nw+2 {
+		*hbitp = *hbitp&^(bitPointer|bitScan|(bitPointer|bitScan)<<heapBitsShift) | uint8(hb)
+	}
+
+
+Phase4:
+	// Phase 4: Copy unrolled bitmap to per-arena bitmaps, if necessary.
+	...
+}
+```
+
+
+`heapSetBitsType`函数实际上主要做的就是 设置 `h.bitp`这个值,
+每分配一块内存，都会有一个bitmap对应这个内存块，指明指针的位置
+
+
+### 运行扫描阶段
+
+主要由两个行为：
+#### 1. scanstack
+从markroot开始，栈 、全局变量、寄存器等根对象开始扫描，
+创建一个DAG，将root对象放入一个队列中；
+
+```go
+
+
+```
+
+
+#### 2. scanobject
+异步的goroutine运行`gcDrain`函数，从队列里消费对象，
+
+
+
+
+### 一些gc相关的设置
 
 #### 触发
 触发gc可以由runtime.GC()(不一定,会判定是否执行)

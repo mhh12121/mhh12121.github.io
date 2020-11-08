@@ -30,14 +30,14 @@ But it should be noticed that all urls in new file have the same sequence as tho
 
 
 
-Go blog ![map in action](https://blog.golang.org/go-maps-in-action) says:
+Go blog [map in action](https://blog.golang.org/go-maps-in-action) says:
 
 >>> When iterating over a map with a range loop, the iteration order is not specified and is not guaranteed to be the same from one iteration to the next. Since the release of Go 1.0, the runtime has randomized map iteration order.
 
 ### SortedMap
 
 Someone has already implemented it 
-From Go blog  ![map in action](https://blog.golang.org/go-maps-in-action)
+From Go blog  [map in action](https://blog.golang.org/go-maps-in-action)
 
 ```go
 import "sort"
@@ -137,12 +137,12 @@ key:{2 0 0},value:1
 key:{4 0 0},value:1 
 ```
 
-Above example can be found in ![Golang slice doc examples](https://golang.org/pkg/sort/)
+Above example can be found in [Golang slice doc examples](https://golang.org/pkg/sort/)
 傻了，写到这里才发现，sortedMap有个鸡用，不符合这道题的要求啊！！！
 
 ### LinkedHashMap
 To just ensure **inserted order**:
-you can refer to ![Java LinkedHashMap]()//or arrayMap()
+you can refer to [Java LinkedHashMap]()//or arrayMap()
 
 **But** 
 here we won't achieve the LinkedHashMap, it's kind of troublesome...
@@ -456,4 +456,4 @@ func main(){
 #### unsafe
 map in golang is **not thread-safe**;
 So it involves with concurrency situation, you must add **sync.Mutex** or **sync.RWMutex**
-About that, can refer to ![my previous blog](/Concurrency)
+About that, can refer to [my previous blog](/Concurrency)

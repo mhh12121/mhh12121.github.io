@@ -46,13 +46,15 @@ Quorums被定义为某些Accetors的集合的子集，即任何两个Quorums都�
 
 首先进行典型的2PC 协议
 
-Phase 1：
+##### Phase 1：
 1.  1a：Prepare
 
- Proposer创建一个信息，我们称为**Prepare**，附带一个**唯一标识数字 n** 。
+ `Proposer`创建一个信息，我们称为**Prepare**，附带一个**唯一标识数字 n** :
+
   - 而且当前的 n 要大于这个Proposer之前发的信息附带的所有 nX;
   - 每次n = ++maxProposal;
-  - Porcessor把这个带有 n 的Prepare信息（这里只带有n，实际上它不用带其他信息，比如提议内容）发到在一个Quorum的Acceptor上（哪些Acceptor在Quorum里面是由Proposer决定的???)
+
+  - `Porcessor`把这个带有 n 的Prepare信息（这里只带有n(id)，**实际上它不用带其他信息**，比如提议内容）发到在一个Quorum的`Acceptor`(实际就是集群上的所有机器)上（哪些Acceptor在Quorum里面是由Proposer决定的???)
 
  如果Proposer不能与至少一个Quorum通信则不应该初始化Paxos
  
@@ -60,30 +62,38 @@ Phase 1：
 2.  1b：Promise
 （两个承诺，一个应答）
 
- 每一个Acceptor会等待Proposer的Prepare信息，如果一个Acceptor收到了，它会查看附带的n标识，会有两种情况：
-   1. 如果**n比之前收到的所有proposal n都大**
-      - 这个Acceptor一定要返回一个信息Promise给对应的Proposer，然后会忽视所有未来的附带标识小于n的提议（信息）。
-      - 如果这个Acceptor以前接收过**其他提议**，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w;（这里Acceptor还会**持久化**该proposal值）
+ 每一个`Acceptor`会等待`Proposer`的`Prepare`信息，如果一个Acceptor收到了，它会查看附带的n标识(id)，会有两种情况：
 
-   2. 如果**n出现<=之前收到的任何一个proposal n**
-      - 则不接受proposal n<=当前请求的prepare请求，Acceptor能忽略这个提议;
-      - 为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新
+   1. 如果**n出现<=之前收到的任何一个proposal n** (不再应答proposal n **<=** 当前请求的`Propose`)!!!
+      - 则不接受proposal n<=当前请求的prepare请求，`Acceptor`能忽略这个提议;
+      - 为了优化，还是可回一个denial response，提示Proposer可以停止创建带有n的提议了，且该response可以带上一个当前Acceptor的promiseProposal，以便Proposer的更新;
 
-Phase 2：
+   2. 如果**n比之前收到的所有proposal n都大** (不再应答proposal n **<** 当前请求的`Accept` 请求 )!!
+      - 这个`Acceptor`一定要返回一个信息Promise给对应的`Proposer`，然后会忽视所有未来的附带标识小于n的提议（信息）;
+      - 如果这个`Acceptor`以前接收过**其他提议**，返回给这个Proposer的response一定要包含之前的提议编号m，和对应的值w，没有就返回空;（这里Acceptor还会**持久化**该proposal值）;
+
+注意上面两者的比较, `Acceptor`一定要接收Propose > 当前n的请求 以及 可以接收 >= 当前Accept的n 的请求 
+
+##### Phase 2：
 1.  2a： Accept(propose)
 
-  如果一个Proposer收到了的从Quorum返回的response，
-  1. 如果未超过一半的Acceptors同意，提议失败
-  2. 如果超过了一半：
-    - 如果**所有**Acceptor都没有收到内容（null），即可发起proposal的内容，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
+  如果一个`Proposer`收到了的从Quorum返回的response，
 
-    - 如果有**部分**Acceptor接到过内容，会从所有接受过的内容中，**选择proposal n最大**的内容作为真正的内容，提议编号仍然为n，但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容;
+  1. 如果未超过一半的`Acceptors`同意，提议失败
+  2. 如果超过了一半：
+
+    - 如果有**部分**`Acceptor`接到过内容，会从所有`Acceptor`接受过的内容(response)中，**选择proposal n最大**的内容作为真正的内容(value)，提议编号仍然为 n，**但这时Proposer就不能提议自己的内容，只能信任Acceptor通过的内容**;
+
+    - 如果**所有**`Acceptor`应答的proposal内容都为null，即可随意决定发起proposal的内容(Value自己定)，然后带上当前的**proposal n**，向所有Acceptor再发送提议;
   
 
 2. 2b：Accepted
-  如果Acceptor接收到了提议后，他必须遵循：
-    - 如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(**持久化**）**当前proposal n 和内容**;
-  最后Proposer收到Quorum返回的Accept response后，形成决议
+
+  如果`Acceptor`接收到了提议后，他必须遵循：
+
+    - 如果有且仅有不违背 **Phase1b（两个承诺）**情况下（即该提议n等于之前Phase1保存的编号），记录下(**持久化**）当前proposal n 和内容(value);
+
+  最后`Proposer`收到Quorum返回的Accept response后，形成决议
 
 #### 图解在算法异常的情况下（工程下更加复杂，先占坑）：
 
@@ -189,7 +199,7 @@ Client   Leader         Acceptor     Learner
    |      |  |          |  |  |       |  |  ... and so on ...
 ```
 
-### Multi-Paxos
+## Multi-Paxos
 multi-Paxos将集群分为两种状态
 
 
@@ -272,6 +282,32 @@ electionTimeout<< MTBF 可以保证系统平稳进步？
 一些系统就会做 第一步：关闭旧的配置，第二开启新配置
 
 在raft里面，节点第一次切换到新的配置，我们称之为joint consensus（交叉共识），一旦交叉共识被commit，整个系统就都转到了新的配置上
+
+
+#### LeaderCrash
+
+leader挂了的情况:
+
+
+#### LeaderStickness
+
+Leader(或者某个服务器)被隔绝开集群
+
+- 自己就会选自己为leader，**不断增加**term，
+- 再次加入到集群中，自己的term远远大于当前集群的term，leader stepDown
+
+解决方法:
+Pre-Vote:
+
+-  新增一种Pre-Vote RPC( curTerm+1, lastLogIndex, lastLogTerm )
+- 不修改server的任何状态
+- Pre-Vote RPC多数派返回成功，本地Term++，将节点状态转换为Candidate，发出真正的Vote RPC
+- 分区后节点，Pre-Vote不会成功，term不会增加，再次加入就不会导致集群异常;
+
+缺点:???
+- 个人认为增加了一个RPC，有延迟
+
+
 
 #### Joint consensus
 交叉共识包含

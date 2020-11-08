@@ -225,7 +225,7 @@ Nagle就是解决这种问题，具体做法
 
     每个已经完成的三路握手的客户对应其中的一员，这些套接字处于ESTABLISHED状态。
 
-如图![tcpsynlog](/img/)
+如图![tcpsynlog](/img/tcpsynlogs.png)
 
 TCP在未完成队列接收SYN的request，当三次握手完成(established)后，就会将这个request移到已完成的连接队列的尾部;
 
@@ -238,8 +238,22 @@ TCP在未完成队列接收SYN的request，当三次握手完成(established)后
 
 首先这🐔是**应用层**协议！！！
 功能主要就是**把域名转换为IP地址**
-然后，主要是在**UDP**上面跑，端口**53**
-长度最多是**512Bytes**，若过多要用 ![EDNS](https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS)
+然后，主要是在**UDP**上面跑(为什么说主要，因为协议其实规定在超过512B时，应该用`TCP`进行重试)，端口**53**
+长度最多是**512Bytes**，若过多要用 [EDNS](https://en.wikipedia.org/wiki/Extension_mechanisms_for_DNS) (最多支持4096B)
+
+为什么选UDP/TCP?
+
+- UDP 协议
+
+    DNS 查询的数据包较小、机制简单；
+
+    UDP 协议的额外开销小、有着更好的性能表现；
+
+- TCP 协议
+
+    DNS 查询由于 DNSSEC 和 IPv6 的引入迅速膨胀，导致 DNS 响应经常超过 MTU 造成数据的分片和丢失，我们需要依靠更加可靠的 TCP 协议完成数据的传输；
+
+    随着 DNS 查询中包含的数据不断增加，TCP 协议头以及三次握手带来的额外开销比例逐渐降低，不再是占据总传输数据大小的主要部分；
 
 
 #### URI 和 URL 和域名

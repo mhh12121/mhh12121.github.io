@@ -38,11 +38,11 @@
 
 
 <body>
-  <header style="height: 100vh;">
+  <header style="height: 50vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
-       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
 
     <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
             data-target="#navbarSupportedContent"
@@ -145,10 +145,6 @@
           </div>
 
           
-            <div class="scroll-down-bar">
-              <i class="iconfont icon-arrowdown"></i>
-            </div>
-          
         </div>
       </div>
     </div>
@@ -158,13 +154,216 @@
     
       <div class="container nopadding-md">
         <div class="py-5" id="board"
-          style=margin-top:0>
+          >
           
           <div class="container">
             <div class="row">
               <div class="col-12 col-md-10 m-auto">
                 
 
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        <a href="/2020/10/03/Comcon/linuxCommand/">Linux Cheat sheet</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/10/03/Comcon/linuxCommand/">
+          
+          
+            
+          
+          
+ps
+From MANNUAL:
+
+EXAMPLES
+To see every process on the system using standard syntax:
+ps -e
+ps -ef
+ps -eF
+ps -ely
+   To see every process on the system using BSD syntax:
+      ps ax
+      ps axu
+
+   T
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-10-03 14:20" pubdate>
+              2020-10-03
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Linux/">Linux</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        <a href="/2020/09/30/Comcon/interviewBackend/">Interview</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/09/30/Comcon/interviewBackend/">
+          
+          
+            
+          
+          面试准备(后端)语言go1. 内存管理总体结构
+tcmalloc
+
+mspan
+
+mcache
+
+mheap
+
+
+sync.Pool
+环状列表
+
+victimCache (1.13)
+
+
+2. 同步关键字及其用法原理channelselectsync.WaitGroup思想
+名句
+
+3. 垃圾回收三色波面推进(标记整理)具体相关字段流程比较其他垃圾回收器
+引用计数
+
+
+标记回收
+
+标记回收整理
+
+
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-09-30 12:00" pubdate>
+              2020-09-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Interview/">Interview</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        <a href="/2020/09/02/Go/defer/">Defer</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/09/02/Go/defer/">
+          
+          
+            
+          
+          defer的一些东西
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-09-02 00:00" pubdate>
+              2020-09-02
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/golang/">golang</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        <a href="/2020/08/30/Comcon/kafka/">Kafka notes</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/08/30/Comcon/kafka/">
+          
+          
+            
+          
+          kafka一些名词Broker：消息中间件处理结点，一个Kafka节点就是一个broker，多个broker可以组成一个Kafka集群。
+Topic：一类消息，例如page view日志、click日志等都可以以topic的形式存在，Kafka集群能够同时负责多个topic的分发。
+Partition：topic物理上的分组，一个topic可以分为多个partition，每个partition是一
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-08-30 12:00" pubdate>
+              2020-08-30
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/kafka/">kafka</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
 
   <div class="row mx-auto index-card">
     
@@ -190,39 +389,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2020-08-18 14:46" pubdate>
               2020-08-18
-            </time>
-          </div>
-        
-        
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/08/04/Go/Practice/"></a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/08/04/Go/Practice/">
-          
-          
-            
-          
-          
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-08-04 11:16" pubdate>
-              2020-08-04
             </time>
           </div>
         
@@ -357,6 +523,50 @@
     
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
+        <a href="/2020/07/03/MySQL/log/">Notes about MySQL Log</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/07/03/MySQL/log/">
+          
+          
+            
+          
+          几种常用的logbinlog归档日志（二进制日志）在MySql Server上进行(因为主从复制mysql支持多种引擎，所以和redo log分开)
+
+作用：用于复制，在主从复制中，从库利用主库上的binlog进行重播，实现主从同步，用于数据库的基于时间点的还原。
+
+内容：逻辑格式的日志，可以简单认为就是执行过的事务中的sql语句；  但又不完全是sql语句这么简单，而是包括了执行的sql语句（增
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-07-03 14:20" pubdate>
+              2020-07-03
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/MySQL/">MySQL</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
         <a href="/2020/06/24/Go/type/">Golang type</a>
       </h1>
 
@@ -392,173 +602,11 @@
     </article>
   </div>
 
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/05/03/Go/Pointer/">
-          
-          
-            
-          
-          比较容易混淆三种值:
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-05-03 14:20" pubdate>
-              2020-05-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/golang/">golang</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/04/03/MySQL/btree/">MySQL InnoDB Ｂ+tree</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/04/03/MySQL/btree/">
-          
-          
-            
-          
-          我们都知道计算机在存储数据的时候，有最小存储单元;
-在计算机中磁盘(机械硬盘)存储数据最小单元是扇区，一个扇区的大小是512字节，而文件系统（例如XFS/EXT4）他的最小单元是块，一个块的大小是4k，而对于我们的InnoDB存储引擎也有自己的最小储存单元——页（Page），一个页的大小是16K。
-
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-04-03 14:20" pubdate>
-              2020-04-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/MySQL/">MySQL</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/03/26/Go/Reflect/">Golang Reflection</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/03/26/Go/Reflect/">
-          
-          
-            
-          
-          Reflect Package
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-03-26 20:10" pubdate>
-              2020-03-26
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/golang/">golang</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/03/24/Go/syncPool/">Golang sync.Pool</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/03/24/Go/syncPool/">
-          
-          
-            
-          
-          golang进程池
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-03-24 22:10" pubdate>
-              2020-03-24
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/golang/">golang</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
 
 
   <nav aria-label="navigation">
     <span class="pagination" id="pagination">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="iconfont icon-arrowright"></i></a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/"><i class="iconfont icon-arrowright"></i></a>
     </span>
   </nav>
   
