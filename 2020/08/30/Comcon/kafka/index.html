@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.8k 字
+      2.9k 字
     </span>
   
 
@@ -342,6 +342,9 @@ log.retention.check.interval.ms=300000</code></pre></div>
 <h4 id="线程设计">线程设计</h4>
 <p>进程方面也是一个acceptor的线程和N个processor线程，其中processor线程都会处理<strong>固定数目</strong>的connection;</p>
 <h3 id="存储">存储</h3>
+<h4 id="顺序读写">顺序读写</h4>
+<p>都是append到文件中;</p>
+<h4 id="page-cache">page cache</h4>
 <p>kafka借用了系统的page cache的来处理缓存;
 原因有几点：</p>
 <ul>
@@ -349,6 +352,12 @@ log.retention.check.interval.ms=300000</code></pre></div>
 <li>JVM会有自己的GC，过大的堆也会影响GC，降低吞吐量</li>
 <li>如果Kafka崩溃，在内存中的数据也会不见；</li>
 </ul>
+<h4 id="分区">分区</h4>
+<p>topic可以分为多个partition，每个partition又可以分为多个segment，每次操作都是对小部分操作，大量减少消耗和增加并行性;</p>
+<h3 id="数据本身处理">数据本身处理</h3>
+<h4 id="批量发送">批量发送</h4>
+<h4 id="压缩-v2">压缩</h4>
+<p>Gzip,snappy压缩数据</p>
 <h2 id="分布式">分布式</h2>
 <h3 id="同步问题">同步问题</h3>
 <p>主要由几点保证：</p>
@@ -358,7 +367,7 @@ log.retention.check.interval.ms=300000</code></pre></div>
 <p>AR: assigned Replicated</p>
 <p>ISR由leader维护,follower</p>
 <h4 id="2-hw-leo">2. HW，LEO</h4>
-<p>看几幅图!(盗图)[/img/kafkaDef.png]</p>
+<p>看几幅图<img src="/img/kafkaDef.png" srcset="/img/loading.gif" alt="盗图"></p>
 <ul>
 <li>
 <p>Base Offset: 第一条日志的offset，</p>
