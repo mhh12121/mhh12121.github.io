@@ -128,6 +128,7 @@ log.retention.check.interval.ms=300000
 
 ## 速度
 
+
 ### 网络层
 
 使用NIO server;
@@ -203,11 +204,30 @@ ps：看到上图，既然read buffer与socekt buffer之间还有一次copy，�
 
 ### 存储
 
+#### 顺序读写
+
+都是append到文件中;
+
+#### page cache
 kafka借用了系统的page cache的来处理缓存;
 原因有几点：
 - 如果自己管理cache，因为其为自定义object，jvm会将其设为object overhead，浪费空间；
 - JVM会有自己的GC，过大的堆也会影响GC，降低吞吐量
 - 如果Kafka崩溃，在内存中的数据也会不见；
+
+#### 分区
+
+topic可以分为多个partition，每个partition又可以分为多个segment，每次操作都是对小部分操作，大量减少消耗和增加并行性;
+
+### 数据本身处理
+
+#### 批量发送
+
+
+
+#### 压缩
+
+Gzip,snappy压缩数据
 
 ## 分布式
 
@@ -227,7 +247,7 @@ ISR由leader维护,follower
 
 #### 2. HW，LEO
 
-看几幅图!(盗图)[/img/kafkaDef.png]
+看几幅图![盗图](/img/kafkaDef.png)
 
 - Base Offset: 第一条日志的offset，
 

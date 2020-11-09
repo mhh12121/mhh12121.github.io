@@ -348,6 +348,9 @@ func checkdead() {
 
 
 - 计时器，获得下一个需要被触发的timer
+
+PS: timer中管理了一个`最小堆`,堆顶timer就是最小时间，`checkTimers`方法会触发一次（但是其还不够，因为可能M都在忙，所以这里还要sysmon进行处理）
+
 - netpoll，轮询获得需要处理的到期的fd
 - 抢占(retake函数)运行时间较长的或者syscall的goroutine
 - gc，符合条件时强制回收
@@ -2411,7 +2414,8 @@ func goschedImpl(gp *g) {
 
 #### sysmon
 
-
+主要对运行时间过长的，强行让出
+`p`中的`schedtick` 和 `schedwhen`与当前时间计算，运算出是否超时，要让出
 
 
 1. Channel,mutex之类同步操作发生阻塞
