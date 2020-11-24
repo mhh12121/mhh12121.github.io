@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      3k 字
+      3.1k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      36
+      37
        分钟
     </span>
   
@@ -481,7 +481,7 @@ MTBF: 前一次失败和这一次失败间隔的平均时间（某个节点）</
 <p>解决方法:
 Pre-Vote:</p>
 <ul>
-<li>新增一种Pre-Vote RPC( curTerm+1, lastLogIndex, lastLogTerm )</li>
+<li>新增一种<code>Pre-Vote</code> RPC( curTerm+1, lastLogIndex, lastLogTerm )</li>
 <li>不修改server的任何状态</li>
 <li>Pre-Vote RPC多数派返回成功，本地Term++，将节点状态转换为Candidate，发出真正的Vote RPC</li>
 <li>分区后节点，Pre-Vote不会成功，term不会增加，再次加入就不会导致集群异常;</li>
@@ -490,6 +490,8 @@ Pre-Vote:</p>
 <ul>
 <li>个人认为增加了一个RPC，有延迟</li>
 </ul>
+<h4 id="分区">分区</h4>
+<p>增加<code>preVote</code>的原因主要是在于，B被分区后每次electiontimeout后，<code>term</code>都会增加，网络分区恢复后，如果leader收到比自己大的<code>term</code>消息，leader就会认为自己已经不是leader，然后发起选举流程，但其实是没必要的。为了让B 的term不增加，所以加了个<code>preVote</code>流程。</p>
 <h4 id="joint-consensus">Joint consensus</h4>
 <p>交叉共识包含
 log entries会被复制到新旧配置中的所有server

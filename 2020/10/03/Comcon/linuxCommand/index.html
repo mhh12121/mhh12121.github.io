@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      233 字
+      370 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      4
+      5
        分钟
     </span>
   
@@ -269,8 +269,26 @@ ps -ely</p>
 </ul>
 <p>在 <code>/proc/sys/net</code>也可以观察到;</p>
 <ul>
-<li>tcpdump</li>
+<li>
+<p>tcpdump
+实时抓取当前连接，同wireshark相似</p>
+</li>
+<li>
+<p>tcp连接状态</p>
+</li>
 </ul>
+<div class="hljs"><pre><code class="hljs s">netstat -na | awk &apos;/^tcp/ &#123;++S[$NF]&#125; END &#123;for(a in S) print a, S[a]&#125;&apos;</code></pre></div>
+<ul>
+<li>chmod
+改变权限
+权限组分为<code>拥有者</code>，<code>群组</code>，<code>其他用户</code>三种级别,分别为<code>RWS</code>，对应读、写、执行；</li>
+</ul>
+<p>组成的权限为二进制的bit array，如下所示:</p>
+<div class="hljs"><pre><code class="hljs s">r-- = 100
+-w- = 010
+--x = 001
+--- = 000</code></pre></div>
+<p>注意：对于文件夹来说，<code>s</code>执行,是其读取<code>r</code>(ls),<code>w</code>写入(在里面进行创建删除更改等操作)的前提，没有<code>s</code>权限，</p>
 
             </div>
             <hr>
@@ -294,9 +312,9 @@ ps -ely</p>
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2020/11/09/Go/debug/">
+                      <a href="/2020/11/09/Comcon/seckillDesign/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile"></span>
+                        <span class="hidden-mobile">Something about Seckill</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
@@ -304,8 +322,8 @@ ps -ely</p>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2020/09/30/Comcon/interviewBackend/">
-                        <span class="hidden-mobile">Interview</span>
+                      <a href="/2020/10/02/Go/sync/">
+                        <span class="hidden-mobile">Golang Sync Package</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

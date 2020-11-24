@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.2k 字
+      2.8k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      33
+      42
        分钟
     </span>
   
@@ -390,8 +390,11 @@ fmt.Println(y)<span class="hljs-comment">//&#123;1,1,1&#125;  ///wtf？？？？
     <span class="hljs-keyword">var</span> lenmem, newlenmem, capmem <span class="hljs-keyword">uintptr</span>
     <span class="hljs-comment">// Specialize for common values of et.size.</span>
     <span class="hljs-comment">// For 1 we don't need any division/multiplication.</span>
-    <span class="hljs-comment">// For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.//这里就说到会优化</span>
+    <span class="hljs-comment">// For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.</span>
     <span class="hljs-comment">// For powers of 2, use a variable shift.</span>
+    <span class="hljs-comment">//1 不用做任何处理</span>
+    <span class="hljs-comment">//2 是指针大小会，进行roundup</span>
+    <span class="hljs-comment">//3 2的幂次方，会使用移位来进行计算</span>
     <span class="hljs-keyword">switch</span> &#123;
     <span class="hljs-keyword">case</span> et.size == <span class="hljs-number">1</span>:
         lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>)
@@ -402,10 +405,11 @@ fmt.Println(y)<span class="hljs-comment">//&#123;1,1,1&#125;  ///wtf？？？？
     <span class="hljs-keyword">case</span> et.size == sys.PtrSize:<span class="hljs-comment">//是一个指针大小</span>
         lenmem = <span class="hljs-keyword">uintptr</span>(old.<span class="hljs-built_in">len</span>) * sys.PtrSize
         newlenmem = <span class="hljs-keyword">uintptr</span>(<span class="hljs-built_in">cap</span>) * sys.PtrSize
+        <span class="hljs-comment">//这里注意要roundup以下，对应sizetoclass表</span>
         capmem = roundupsize(<span class="hljs-keyword">uintptr</span>(newcap) * sys.PtrSize)
         overflow = <span class="hljs-keyword">uintptr</span>(newcap) &gt; maxAlloc/sys.PtrSize
         newcap = <span class="hljs-keyword">int</span>(capmem / sys.PtrSize)<span class="hljs-comment">//sys.PtrSize指的是一个指针的size，64位的机器就是8</span>
-    <span class="hljs-keyword">case</span> isPowerOfTwo(et.size):<span class="hljs-comment">//2次幂会用variable shift</span>
+    <span class="hljs-keyword">case</span> isPowerOfTwo(et.size):<span class="hljs-comment">//类型为2次幂会用variable shift，比如</span>
         <span class="hljs-keyword">var</span> shift <span class="hljs-keyword">uintptr</span>
         <span class="hljs-keyword">if</span> sys.PtrSize == <span class="hljs-number">8</span> &#123;
             <span class="hljs-comment">// Mask shift for better code generation.</span>
@@ -468,7 +472,7 @@ fmt.Println(y)<span class="hljs-comment">//&#123;1,1,1&#125;  ///wtf？？？？
 &#125;</code></pre></div>
 <p>这里可以参照<a href="./memManage.md">之前写的日志memManger</a>里面有关go的内存管理中</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">roundupsize</span><span class="hljs-params">(size <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">uintptr</span></span>&#123;&#125;</code></pre></div>
-<p>即会对传入类型进行内存对齐,这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！</p>
+<p>即会对传入类型进行内存对齐(并roundup),这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！</p>
 <p>我们做一个实验:</p>
 <div class="hljs"><pre><code class="hljs go">
 t := <span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>, <span class="hljs-number">1000</span>, <span class="hljs-number">1000</span>)
@@ -486,9 +490,98 @@ log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">c
 t = <span class="hljs-built_in">append</span>(t, <span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>)
 log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">cap</span>(t))</code></pre></div>
 <p>1025,1360 ,符合</p>
-<h2 id="4-回收">4. 回收</h2>
-<p>//todo</p>
+<p>扩容不符合</p>
+<div class="hljs"><pre><code class="hljs go">b := []<span class="hljs-keyword">int</span>&#123;<span class="hljs-number">23</span>, <span class="hljs-number">51</span>&#125;
+b = <span class="hljs-built_in">append</span>(b, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>)
+fmt.Println(<span class="hljs-string">"cap of b is "</span>,<span class="hljs-built_in">cap</span>(b))</code></pre></div>
+<p>上面输出</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-built_in">cap</span> of b is <span class="hljs-number">6</span></code></pre></div>
+<p>因为，size=int,即是8Bytes，里面计算cap是
+<code>capmem = roundupsize(uintptr(newcap) * sys.PtrSize)</code>计算出来的，其中newcap=5(比oldcap<em>2=2</em>2=4要大)
+uintptr(newcap)<em>sys.PtrSize=5</em>8=40,但是roundup会使用<code>sizetoclass</code>表，所以会变成48;</p>
+<h2 id="4-复制切片">4. 复制切片</h2>
+<h3 id="使用函数">使用函数</h3>
+<p>当使用<code>copy</code>关键字进行slice的复制时，<code>cmd/compile/internal/gc.copyany</code>函数会有两种情况:</p>
+<ul>
+<li>如果当前<code>copy</code>不是在runtime调用,<code>copy</code>会直接转换成以下代码:</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go">n := <span class="hljs-built_in">len</span>(a)
+<span class="hljs-keyword">if</span> n &gt; <span class="hljs-built_in">len</span>(b) &#123;
+    n = <span class="hljs-built_in">len</span>(b)
+&#125;
+<span class="hljs-keyword">if</span> a.ptr != b.ptr &#123;
+    memmove(a.ptr, b.ptr, n*sizeof(elem(a))) 
+&#125;</code></pre></div>
+<ul>
+<li>如果是在runtime下调用，则会使用<code>runtime.slicecopy</code>函数替换运行期间调用的<code>copy</code>:</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">slicecopy</span><span class="hljs-params">(to, fm slice, width <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">int</span></span> &#123;
+	<span class="hljs-keyword">if</span> fm.<span class="hljs-built_in">len</span> == <span class="hljs-number">0</span> || to.<span class="hljs-built_in">len</span> == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+	&#125;
 
+	n := fm.<span class="hljs-built_in">len</span>
+	<span class="hljs-keyword">if</span> to.<span class="hljs-built_in">len</span> &lt; n &#123;
+		n = to.<span class="hljs-built_in">len</span>
+	&#125;
+
+	<span class="hljs-keyword">if</span> width == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">return</span> n
+	&#125;
+    <span class="hljs-comment">//race代码</span>
+	...
+
+	size := <span class="hljs-keyword">uintptr</span>(n) * width
+	<span class="hljs-keyword">if</span> size == <span class="hljs-number">1</span> &#123; <span class="hljs-comment">// common case worth about 2x to do here</span>
+		<span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> is this still worth it with new memmove impl?</span>
+		*(*<span class="hljs-keyword">byte</span>)(to.array) = *(*<span class="hljs-keyword">byte</span>)(fm.array) <span class="hljs-comment">// known to be a byte pointer</span>
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		memmove(to.array, fm.array, size)
+	&#125;
+	<span class="hljs-keyword">return</span> n
+&#125;</code></pre></div>
+<h3 id="现象">现象</h3>
+<p>第一个，切片:</p>
+<div class="hljs"><pre><code class="hljs go">   a := []<span class="hljs-keyword">int</span>&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;
+<span class="hljs-keyword">for</span> k, v := <span class="hljs-keyword">range</span> a &#123;
+	<span class="hljs-keyword">if</span> k == <span class="hljs-number">0</span> &#123;
+		a[<span class="hljs-number">0</span>], a[<span class="hljs-number">1</span>] = <span class="hljs-number">100</span>, <span class="hljs-number">200</span>
+		fmt.Print(a)
+	&#125;
+	a[k] = <span class="hljs-number">100</span> + v
+&#125;
+fmt.Print(a)</code></pre></div>
+<div class="hljs"><pre><code class="hljs go">[<span class="hljs-number">100</span>,<span class="hljs-number">200</span>,<span class="hljs-number">3</span>]
+[<span class="hljs-number">101</span>,<span class="hljs-number">300</span>,<span class="hljs-number">103</span>]</code></pre></div>
+<p>第二个，传入是数组:</p>
+<div class="hljs"><pre><code class="hljs go">   a := [<span class="hljs-number">3</span>]<span class="hljs-keyword">int</span>&#123;<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>&#125;
+<span class="hljs-keyword">for</span> k, v := <span class="hljs-keyword">range</span> a &#123;
+	<span class="hljs-keyword">if</span> k == <span class="hljs-number">0</span> &#123;
+		a[<span class="hljs-number">0</span>], a[<span class="hljs-number">1</span>] = <span class="hljs-number">100</span>, <span class="hljs-number">200</span>
+		fmt.Print(a)
+	&#125;
+	a[k] = <span class="hljs-number">100</span> + v
+&#125;
+fmt.Print(a)</code></pre></div>
+<div class="hljs"><pre><code class="hljs go">[<span class="hljs-number">100</span>,<span class="hljs-number">200</span>,<span class="hljs-number">3</span>]
+[<span class="hljs-number">101</span>,<span class="hljs-number">102</span>,<span class="hljs-number">103</span>]</code></pre></div>
+<p>原因是针对数组而言,在loop内修改其元素数据不会第一时间反应在数据源中，这就是为什么<code>a[k]=100+v</code>覆盖了<code>k==0</code>时<code>a[1]=200</code>的条件;
+而针对slice，修改元素会真正修改数据源，因为slice实际是一个<code>struct</code>,其header保存着底层数组的数据;</p>
+<h2 id="5-回收">5. 回收</h2>
+<p>//todo</p>
+<h2 id="再看现象">再看现象</h2>
+<p>将一个slice y等于另外一个slice x(x已经到达其最大的capacity)的截断片，再append</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+	x:=<span class="hljs-built_in">make</span>([]<span class="hljs-keyword">int</span>,<span class="hljs-number">5</span>,<span class="hljs-number">5</span>)
+	x[<span class="hljs-number">0</span>]=<span class="hljs-number">1</span>
+	x[<span class="hljs-number">1</span>]=<span class="hljs-number">2</span>
+	x[<span class="hljs-number">2</span>]=<span class="hljs-number">3</span>
+	x[<span class="hljs-number">3</span>]=<span class="hljs-number">4</span>
+	x[<span class="hljs-number">4</span>]=<span class="hljs-number">5</span>
+	y:=x[<span class="hljs-number">2</span>:<span class="hljs-number">4</span>]
+	y=<span class="hljs-built_in">append</span>(y,<span class="hljs-number">9</span>)
+    log.Printf(<span class="hljs-string">"%+v"</span>,y)
+&#125;</code></pre></div>
             </div>
             <hr>
             <div>
@@ -513,7 +606,7 @@ log.Printf(<span class="hljs-string">"%+v"</span>, <span class="hljs-built_in">c
                     
                       <a href="/2019/06/05/Go/Concurrency/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Concurrency Problem</span>
+                        <span class="hidden-mobile">Channel</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     

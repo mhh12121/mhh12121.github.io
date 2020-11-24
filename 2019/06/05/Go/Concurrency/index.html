@@ -16,7 +16,7 @@
   <meta name="description" content>
   <meta name="author" content="Doujohner">
   <meta name="keywords" content>
-  <title>Concurrency Problem - 兜的破烂</title>
+  <title>Channel - 兜的破烂</title>
 
   <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
 
@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.8k 字
+      5.8k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      28
+      89
        分钟
     </span>
   
@@ -206,13 +206,13 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto" id="post">
             <!-- SEO header -->
-            <h1 style="display: none">Concurrency Problem</h1>
+            <h1 style="display: none">Channel</h1>
             
             <div class="markdown-body" id="post-body">
-              <p>其实里面只涉及部分concurrency问题，一些<strong>实用例子</strong>，比较浅显，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
+              <p>其实里面只涉及部分Channel重点问题，只是暂时做个笔记，仍然有大部分问题需要继续深入，保持持续更新</p>
 <a id="more"></a>
 <h2 id="1-channel">1. Channel</h2>
-<p>1.1 互斥</p>
+<h3 id="互斥性">互斥性</h3>
 <p>要先明白一句话</p>
 <blockquote>
 <blockquote>
@@ -221,33 +221,9 @@
 </blockquote>
 </blockquote>
 <p>这句话应该见过无数遍了，但这就是golang channel的核心思想</p>
-<p>作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从而可以控制多个协程间的协作，达到互斥，同步等目的</p>
-<p>1.2 当把channel当作传入参数的时候要先确定一下箭头方向</p>
-<p>chan&lt;-string：指的是可以入可以出的channel</p>
-<p>&lt;-chan string：指的是receive-only channnel</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//gobyexample 例子</span>
-<span class="hljs-comment">// This `ping` function only accepts a channel for sending</span>
-<span class="hljs-comment">// values. It would be a compile-time error to try to</span>
-<span class="hljs-comment">// receive on this channel.</span>
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">ping</span><span class="hljs-params">(pings <span class="hljs-keyword">chan</span>&lt;- <span class="hljs-keyword">string</span>, msg <span class="hljs-keyword">string</span>)</span></span> &#123;
-    pings &lt;- msg
-&#125;
-
-<span class="hljs-comment">// The `pong` function accepts one channel for receives</span>
-<span class="hljs-comment">// (`pings`) and a second for sends (`pongs`).</span>
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">pong</span><span class="hljs-params">(pings &lt;-<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, pongs <span class="hljs-keyword">chan</span>&lt;- <span class="hljs-keyword">string</span>)</span></span> &#123;
-    msg := &lt;-pings
-    pongs &lt;- msg
-&#125;
-
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;
-    pings := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, <span class="hljs-number">1</span>)
-    pongs := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, <span class="hljs-number">1</span>)
-    ping(pings, <span class="hljs-string">"passed message"</span>)
-    pong(pings, pongs)
-    fmt.Println(&lt;-pongs)
-&#125;</code></pre></div>
-<h3 id="channel部分源码解析：">Channel部分源码解析：</h3>
+<p>作为channel，顾名思义，就像一个管道一样，主要就是控制数据流向（DataFlow），从而可以控制多个协程间的协作，达到互斥，同步等目的
+其实际就是一个用于同步和通信的<code>有锁队列</code>（现在版本<code>部分路径</code>无锁的，用环型缓存，有人提出了这个无锁实现，但是因为无法达到FIFO特性，所以被搁置）</p>
+<h3 id="channel部分源码解析">Channel部分源码解析</h3>
 <p>应用上，我们经常用作两个goroutine通信，一个写入，一个读出</p>
 <p>这里可以有无缓冲的channel，和有缓冲的channel，</p>
 <p>无缓冲的写入就<strong>必须</strong>要(立即!!!通常写入会放入到一个goroutine中，且该goroutine要在这之前就入队列)读出，否则立即阻塞（阻塞在写入的地方），读出后也会阻塞（阻塞读出）</p>
@@ -256,10 +232,20 @@
 <p>如果里面仍然有值，可以读出，但是写入会引发panic</p>
 <div class="hljs"><pre><code class="hljs go">x,ok:=&lt;-channel1
 <span class="hljs-keyword">if</span> !ok&#123;
-	<span class="hljs-comment">//channel1已经被关掉</span>
+	<span class="hljs-comment">//channel1已经被关掉且里面没有数据!!!</span>
 
 &#125;</code></pre></div>
-<p>基本数据结构:</p>
+<h4 id="基本数据结构">基本数据结构</h4>
+<ul>
+<li><code>qcount</code>为queue内的所有数据总数</li>
+<li><code>dataqsiz</code>为循环队列的长度</li>
+<li><code>buf</code>为缓冲区数据(循环队列内)的指针</li>
+<li><code>sendx</code>为channel发送操作处理到的位置</li>
+<li><code>recvx</code>为channel接收操作处理到的位置</li>
+<li><code>elementsize</code>和<code>elementtype</code>表示当前channel能够收发的数据大小和类型</li>
+<li><code>sendq</code>和<code>recvq</code>存储了当前channel由于缓冲区不足而阻塞的goroutine list，这些等待列表用双向链表<code>runtime.waitq</code>表示，其中每个元素都是<code>runtime.sudog</code>类别</li>
+<li><code>lock</code>会block住所有字段，包括<code>sudog</code>，当这个lock在被使用时，不能改变其他G的状态!!!否则可能在栈的缩容时会导致死锁？？？</li>
+</ul>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> hchan <span class="hljs-keyword">struct</span> &#123;
 	qcount   <span class="hljs-keyword">uint</span>           <span class="hljs-comment">// total data in the queue</span>
 	dataqsiz <span class="hljs-keyword">uint</span>           <span class="hljs-comment">// size of the circular queue</span>
@@ -279,6 +265,10 @@
 	<span class="hljs-comment">// (in particular, do not ready a G), as this can deadlock</span>
 	<span class="hljs-comment">// with stack shrinking.</span>
 	lock mutex
+&#125;
+<span class="hljs-keyword">type</span> waitq <span class="hljs-keyword">struct</span> &#123;
+	first *sudog
+	last  *sudog
 &#125;</code></pre></div>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// sudog represents a g in a wait list, such as for sending/receiving</span>
 <span class="hljs-comment">// on a channel.</span>
@@ -316,6 +306,598 @@
 	waitlink    *sudog <span class="hljs-comment">// g.waiting list or semaRoot</span>
 	waittail    *sudog <span class="hljs-comment">// semaRoot</span>
 	c           *hchan <span class="hljs-comment">// channel</span>
+&#125;</code></pre></div>
+<h4 id="channel的创建">channel的创建</h4>
+<p>开始,<code>make</code>关键字会进入类型检查，将当前<code>OMAKE</code>节点变成<code>OMAKECHAN</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">typecheck1</span><span class="hljs-params">(n *Node, top <span class="hljs-keyword">int</span>)</span> <span class="hljs-params">(res *Node)</span></span> &#123;
+	<span class="hljs-keyword">switch</span> n.Op &#123;
+	<span class="hljs-keyword">case</span> OMAKE:
+		...
+		<span class="hljs-keyword">switch</span> t.Etype &#123;
+		<span class="hljs-keyword">case</span> TCHAN:
+			l = <span class="hljs-literal">nil</span>
+			<span class="hljs-keyword">if</span> i &lt; <span class="hljs-built_in">len</span>(args) &#123; <span class="hljs-comment">// 带缓冲区的异步 Channel</span>
+				...
+				n.Left = l
+			&#125; <span class="hljs-keyword">else</span> &#123; <span class="hljs-comment">// 不带缓冲区的同步 Channel</span>
+				n.Left = nodintconst(<span class="hljs-number">0</span>)
+			&#125;
+			n.Op = OMAKECHAN<span class="hljs-comment">//变成OMAKECHAN</span>
+		&#125;
+	&#125;
+&#125;</code></pre></div>
+<p>最终这些<code>OMAKECHAN</code>在SSA中间代码生成之前 变成 <code>runtime.makechan</code>或<code>runtime.makechan64</code>,如下:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">walkexpr</span><span class="hljs-params">(n *Node, init *Nodes)</span> *<span class="hljs-title">Node</span></span> &#123;
+	<span class="hljs-keyword">switch</span> n.Op &#123;
+	<span class="hljs-keyword">case</span> OMAKECHAN:
+		size := n.Left
+		fnname := <span class="hljs-string">"makechan64"</span>
+		argtype := types.Types[TINT64]
+
+		<span class="hljs-keyword">if</span> size.Type.IsKind(TIDEAL) || maxintval[size.Type.Etype].Cmp(maxintval[TUINT]) &lt;= <span class="hljs-number">0</span> &#123;
+			fnname = <span class="hljs-string">"makechan"</span>
+			argtype = types.Types[TINT]
+		&#125;
+		n = mkcall1(chanfn(fnname, <span class="hljs-number">1</span>, n.Type), n.Type, init, typename(n.Type), conv(size, argtype))
+	&#125;
+&#125;</code></pre></div>
+<p>其中<code>runtime.makechan64</code>用于构建缓冲区大于2^32的情况，我们只看<code>makechan</code>先:</p>
+<ul>
+<li>先检查元素大小是否 &gt;=2^16 ,如果是就panic,再检查内存对齐情况;</li>
+<li>如果channel不存在缓冲区,只会为<code>runtime.hchan</code>分配一段内存空间;</li>
+<li>如果channel不存在指针，就会为当前channel和底层的数组分配一块连续的内存空间;</li>
+<li>默认情况会为<code>runtime.hchan</code>和缓冲区分配内存;</li>
+<li>最后更新<code>elementsize</code>,<code>elemtype</code>等字段</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">makechan</span><span class="hljs-params">(t *chantype, size <span class="hljs-keyword">int</span>)</span> *<span class="hljs-title">hchan</span></span> &#123;
+	elem := t.elem
+
+	<span class="hljs-comment">// compiler checks this but be safe.</span>
+	<span class="hljs-keyword">if</span> elem.size &gt;= <span class="hljs-number">1</span>&lt;&lt;<span class="hljs-number">16</span> &#123;
+		throw(<span class="hljs-string">"makechan: invalid channel element type"</span>)
+	&#125;
+	<span class="hljs-keyword">if</span> hchanSize%maxAlign != <span class="hljs-number">0</span> || elem.align &gt; maxAlign &#123;
+		throw(<span class="hljs-string">"makechan: bad alignment"</span>)
+	&#125;
+
+	mem, overflow := math.MulUintptr(elem.size, <span class="hljs-keyword">uintptr</span>(size))
+	<span class="hljs-keyword">if</span> overflow || mem &gt; maxAlloc-hchanSize || size &lt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-built_in">panic</span>(plainError(<span class="hljs-string">"makechan: size out of range"</span>))
+	&#125;
+
+	<span class="hljs-comment">// Hchan does not contain pointers interesting for GC when elements stored in buf do not contain pointers.</span>
+	<span class="hljs-comment">// buf points into the same allocation, elemtype is persistent.</span>
+	<span class="hljs-comment">// SudoG's are referenced from their owning thread so they can't be collected.</span>
+	<span class="hljs-comment">// TODO(dvyukov,rlh): Rethink when collector can move allocated objects.</span>
+	<span class="hljs-keyword">var</span> c *hchan
+	<span class="hljs-keyword">switch</span> &#123;
+		<span class="hljs-comment">//不存在缓冲区</span>
+	<span class="hljs-keyword">case</span> mem == <span class="hljs-number">0</span>:
+		<span class="hljs-comment">// Queue or element size is zero.</span>
+		c = (*hchan)(mallocgc(hchanSize, <span class="hljs-literal">nil</span>, <span class="hljs-literal">true</span>))
+		<span class="hljs-comment">// Race detector uses this location for synchronization.</span>
+		c.buf = c.raceaddr()
+		<span class="hljs-comment">//不存在指针</span>
+	<span class="hljs-keyword">case</span> elem.ptrdata == <span class="hljs-number">0</span>:
+		<span class="hljs-comment">// Elements do not contain pointers.</span>
+		<span class="hljs-comment">// Allocate hchan and buf in one call.</span>
+		c = (*hchan)(mallocgc(hchanSize+mem, <span class="hljs-literal">nil</span>, <span class="hljs-literal">true</span>))
+		c.buf = add(unsafe.Pointer(c), hchanSize)
+	<span class="hljs-keyword">default</span>:
+		<span class="hljs-comment">// Elements contain pointers.</span>
+		c = <span class="hljs-built_in">new</span>(hchan)
+		c.buf = mallocgc(mem, elem, <span class="hljs-literal">true</span>)
+	&#125;
+
+	c.elemsize = <span class="hljs-keyword">uint16</span>(elem.size)
+	c.elemtype = elem
+	c.dataqsiz = <span class="hljs-keyword">uint</span>(size)
+
+	<span class="hljs-keyword">if</span> debugChan &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"makechan: chan="</span>, c, <span class="hljs-string">"; elemsize="</span>, elem.size, <span class="hljs-string">"; dataqsiz="</span>, size, <span class="hljs-string">"\n"</span>)
+	&#125;
+	<span class="hljs-keyword">return</span> c
+&#125;</code></pre></div>
+<h4 id="数据发送">数据发送</h4>
+<p>发送数据时，会将<code>ch&lt;-i</code>这类语句解析为<code>OSEND</code>节点，并<code>cmd/compile/internal/gc.walkexpr</code>转换成<code>runtime.chansend1</code>:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">walkexpr</span><span class="hljs-params">(n *Node, init *Nodes)</span> *<span class="hljs-title">Node</span></span> &#123;
+	<span class="hljs-keyword">switch</span> n.Op &#123;
+	<span class="hljs-keyword">case</span> OSEND:
+		n1 := n.Right
+		n1 = assignconv(n1, n.Left.Type.Elem(), <span class="hljs-string">"chan send"</span>)
+		n1 = walkexpr(n1, init)
+		n1 = nod(OADDR, n1, <span class="hljs-literal">nil</span>)
+		n = mkcall1(chanfn(<span class="hljs-string">"chansend1"</span>, <span class="hljs-number">2</span>, n.Left.Type), <span class="hljs-literal">nil</span>, init, n.Left, n1)
+	&#125;
+&#125;</code></pre></div>
+<p>然后<code>chansend1</code>实际调用<code>runtime.chansend</code>，大致分为几步</p>
+<ul>
+<li>先锁住整个channel</li>
+<li>如果目标channel没有关闭并且已经有读等待中的goroutine<code>recvq</code>,直接call<code>runtime.send</code>将数据发送</li>
+<li>如果缓冲区有空闲空间，将发送的数据写入缓冲区<code>buffer</code>中</li>
+<li>当不存在缓冲区或者缓冲区已满时，等待其他 Goroutine 从 Channel 接收数据</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">/*
+ * generic single channel send/recv
+ * If block is not nil,
+ * then the protocol will not
+ * sleep but return if it could
+ * not complete.
+ *
+ * sleep can wake up with g.param == nil
+ * when a channel involved in the sleep has
+ * been closed.  it is easiest to loop and re-run
+ * the operation; we'll see that it's now closed.
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">chansend</span><span class="hljs-params">(c *hchan, ep unsafe.Pointer, block <span class="hljs-keyword">bool</span>, callerpc <span class="hljs-keyword">uintptr</span>)</span> <span class="hljs-title">bool</span></span> &#123;
+	<span class="hljs-comment">//一些检查，是否已经关闭等等</span>
+	...
+	
+	lock(&amp;c.lock)
+
+	<span class="hljs-keyword">if</span> c.closed != <span class="hljs-number">0</span> &#123;
+		unlock(&amp;c.lock)
+		<span class="hljs-built_in">panic</span>(plainError(<span class="hljs-string">"send on closed channel"</span>))
+	&#125;
+&#125;</code></pre></div>
+<h5 id="直接发送">直接发送</h5>
+<p>有等待goroutine，</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//接上面</span>
+	<span class="hljs-keyword">if</span> sg := c.recvq.dequeue(); sg != <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-comment">// Found a waiting receiver. We pass the value we want to send</span>
+		<span class="hljs-comment">// directly to the receiver, bypassing the channel buffer (if any).</span>
+		send(c, sg, ep, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="hljs-number">3</span>)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+	&#125;</code></pre></div>
+<p>send函数详细:</p>
+<ul>
+<li>数据非空，直接调用<code>sendDirect</code>，copy到类似<code>x=&lt;-c</code>表达式中的变量x上</li>
+<li>然后解锁当前channel，再调用<code>runtime.goready</code>将等待接收数据的goroutine，
+标记成<code>Grunnable</code>并将其放到<strong>发送方</strong>的P的<code>p.runnext</code>字段上等待执行(注意这里只是把其放在<code>runnext</code>上，并没有立即执行)
+该P在下一次调度的时候就会立即唤醒数据的接收方;</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// send processes a send operation on an empty channel c.</span>
+<span class="hljs-comment">// The value ep sent by the sender is copied to the receiver sg.</span>
+<span class="hljs-comment">// The receiver is then woken up to go on its merry way.</span>
+<span class="hljs-comment">// Channel c must be empty and locked.  send unlocks c with unlockf.</span>
+<span class="hljs-comment">// sg must already be dequeued from c.</span>
+<span class="hljs-comment">// ep must be non-nil and point to the heap or the caller's stack.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">send</span><span class="hljs-params">(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf <span class="hljs-keyword">func</span>()</span>, <span class="hljs-title">skip</span> <span class="hljs-title">int</span>)</span> &#123;
+	<span class="hljs-comment">//race 的判断</span>
+	...
+	<span class="hljs-keyword">if</span> sg.elem != <span class="hljs-literal">nil</span> &#123;
+		sendDirect(c.elemtype, sg, ep)
+		sg.elem = <span class="hljs-literal">nil</span>
+	&#125;
+	gp := sg.g
+	unlockf()
+	gp.param = unsafe.Pointer(sg)
+	<span class="hljs-keyword">if</span> sg.releasetime != <span class="hljs-number">0</span> &#123;
+		sg.releasetime = cputicks()
+	&#125;
+	goready(gp, skip+<span class="hljs-number">1</span>)
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Sends and receives on unbuffered or empty-buffered channels are the</span>
+<span class="hljs-comment">// only operations where one running goroutine writes to the stack of</span>
+<span class="hljs-comment">// another running goroutine. The GC assumes that stack writes only</span>
+<span class="hljs-comment">// happen when the goroutine is running and are only done by that</span>
+<span class="hljs-comment">// goroutine. Using a write barrier is sufficient to make up for</span>
+<span class="hljs-comment">// violating that assumption, but the write barrier has to work.</span>
+<span class="hljs-comment">// typedmemmove will call bulkBarrierPreWrite, but the target bytes</span>
+<span class="hljs-comment">// are not in the heap, so that will not help. We arrange to call</span>
+<span class="hljs-comment">// memmove and typeBitsBulkBarrier instead.</span>
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">sendDirect</span><span class="hljs-params">(t *_type, sg *sudog, src unsafe.Pointer)</span></span> &#123;
+	<span class="hljs-comment">// src is on our stack, dst is a slot on another stack.</span>
+
+	<span class="hljs-comment">// Once we read sg.elem out of sg, it will no longer</span>
+	<span class="hljs-comment">// be updated if the destination's stack gets copied (shrunk).</span>
+	<span class="hljs-comment">// So make sure that no preemption points can happen between read &amp; use.</span>
+	dst := sg.elem
+	typeBitsBulkBarrier(t, <span class="hljs-keyword">uintptr</span>(dst), <span class="hljs-keyword">uintptr</span>(src), t.size)
+	<span class="hljs-comment">// No need for cgo write barrier checks because dst is always</span>
+	<span class="hljs-comment">// Go memory.</span>
+	memmove(dst, src, t.size)
+&#125;</code></pre></div>
+<h5 id="有缓冲区的发送">有缓冲区的发送</h5>
+<p>如果有缓冲区:</p>
+<ul>
+<li><code>chanbuf</code>计算下一个可以存储数据的位置</li>
+<li>用<code>typedmemmove</code>将发送的数据copy到buffer中，并增加<code>sendx</code>和<code>qcount</code>计数器</li>
+<li>如果当前缓冲区未满，向channel发送的数据会存在channel中的<code>sendx</code>索引中，并将<code>sendx++</code></li>
+<li>由于缓冲区是一个环形数组，<code>c.sendx==c.dataqsiz</code>的时候, c.sendx=0</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//接上面</span>
+	<span class="hljs-keyword">if</span> c.qcount &lt; c.dataqsiz &#123;
+		<span class="hljs-comment">// Space is available in the channel buffer. Enqueue the element to send.</span>
+		qp := chanbuf(c, c.sendx)
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			raceacquire(qp)
+			racerelease(qp)
+		&#125;
+		typedmemmove(c.elemtype, qp, ep)
+		c.sendx++
+		<span class="hljs-keyword">if</span> c.sendx == c.dataqsiz &#123;
+			c.sendx = <span class="hljs-number">0</span>
+		&#125;
+		c.qcount++
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+	&#125;</code></pre></div>
+<h5 id="阻塞发送">阻塞发送</h5>
+<p>当channel无接收者可以接收数据时，向channel发数据就会被阻塞:</p>
+<ul>
+<li>
+<p>首先<code>getg()</code>获得当前发送的goroutine</p>
+</li>
+<li>
+<p><code>acquireSudo()</code>获得<code>runtime.sudog</code>结构体并设置这一次的阻塞信号，比如待发送的数据内存地址<code>mysg.elem</code>, 发送的channel <code>mysg.c</code>, 是否在select内<code>mysg.isSelect</code>(在select内可以不阻塞)等等;</p>
+</li>
+<li>
+<p>然后入队，进入<code>sendq</code>等待发送队列，并设置到当前的goroutine的等待字段上面<code>gp.wating=mysg</code>，表示当前goroutine在等待这个sudog完成;</p>
+</li>
+<li>
+<p>用<code>runtime.gopark()</code>将当前gorotuine睡眠；</p>
+</li>
+<li>
+<p>然后是一些初始化工作，主要归零一些属性，并释放<code>runtime.sudog</code>结构体,最后返回true;</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//接上面</span>
+	<span class="hljs-keyword">if</span> !block &#123;
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+	&#125;
+
+	<span class="hljs-comment">// Block on the channel. Some receiver will complete our operation for us.</span>
+	gp := getg()
+	mysg := acquireSudog()
+	mysg.releasetime = <span class="hljs-number">0</span>
+	<span class="hljs-keyword">if</span> t0 != <span class="hljs-number">0</span> &#123;
+		mysg.releasetime = <span class="hljs-number">-1</span>
+	&#125;
+	<span class="hljs-comment">// No stack splits between assigning elem and enqueuing mysg</span>
+	<span class="hljs-comment">// on gp.waiting where copystack can find it.</span>
+	mysg.elem = ep
+	mysg.waitlink = <span class="hljs-literal">nil</span>
+	mysg.g = gp
+	mysg.isSelect = <span class="hljs-literal">false</span>
+	mysg.c = c
+	gp.waiting = mysg
+	gp.param = <span class="hljs-literal">nil</span>
+	c.sendq.enqueue(mysg)
+	gopark(chanparkcommit, unsafe.Pointer(&amp;c.lock), waitReasonChanSend, traceEvGoBlockSend, <span class="hljs-number">2</span>)
+	<span class="hljs-comment">// Ensure the value being sent is kept alive until the</span>
+	<span class="hljs-comment">// receiver copies it out. The sudog has a pointer to the</span>
+	<span class="hljs-comment">// stack object, but sudogs aren't considered as roots of the</span>
+	<span class="hljs-comment">// stack tracer.</span>
+	KeepAlive(ep)
+
+	<span class="hljs-comment">// someone woke us up.</span>
+	<span class="hljs-keyword">if</span> mysg != gp.waiting &#123;
+		throw(<span class="hljs-string">"G waiting list is corrupted"</span>)
+	&#125;
+	gp.waiting = <span class="hljs-literal">nil</span>
+	gp.activeStackChans = <span class="hljs-literal">false</span>
+	<span class="hljs-keyword">if</span> gp.param == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">if</span> c.closed == <span class="hljs-number">0</span> &#123;
+			throw(<span class="hljs-string">"chansend: spurious wakeup"</span>)
+		&#125;
+		<span class="hljs-built_in">panic</span>(plainError(<span class="hljs-string">"send on closed channel"</span>))
+	&#125;
+	gp.param = <span class="hljs-literal">nil</span>
+	<span class="hljs-keyword">if</span> mysg.releasetime &gt; <span class="hljs-number">0</span> &#123;
+		blockevent(mysg.releasetime-t0, <span class="hljs-number">2</span>)
+	&#125;
+	mysg.c = <span class="hljs-literal">nil</span>
+	releaseSudog(mysg)
+	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span></code></pre></div>
+<h4 id="数据接收">数据接收</h4>
+<p>与上面的发送一一对应</p>
+<h5 id="直接接收">直接接收</h5>
+<p>最终都是从<code>chanrecv</code>函数开始:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">chanrecv</span><span class="hljs-params">(c *hchan, ep unsafe.Pointer, block <span class="hljs-keyword">bool</span>)</span> <span class="hljs-params">(selected, received <span class="hljs-keyword">bool</span>)</span></span> &#123;
+	<span class="hljs-comment">//一些race操作等</span>
+	...
+	lock(&amp;c.lock)
+	<span class="hljs-keyword">if</span> c.closed != <span class="hljs-number">0</span> &amp;&amp; c.qcount == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			raceacquire(c.raceaddr())
+		&#125;
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">if</span> ep != <span class="hljs-literal">nil</span> &#123;
+			typedmemclr(c.elemtype, ep)
+		&#125;
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, <span class="hljs-literal">false</span>
+	&#125;
+	<span class="hljs-keyword">if</span> sg := c.sendq.dequeue(); sg != <span class="hljs-literal">nil</span> &#123;
+		recv(c, sg, ep, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="hljs-number">3</span>)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, <span class="hljs-literal">true</span>
+	&#125;
+	...
+&#125;</code></pre></div>
+<p>其中检查待发送goroutine<code>sendq</code>队列中出队，然后调用<code>recv</code>方法;
+该<code>recv</code>函数会根据缓冲区大小分为不同情况:</p>
+<ol>
+<li>存在缓冲区</li>
+</ol>
+<ul>
+<li>将队列数据copy到接收方的内存地址；</li>
+<li>将发送队列头的数据copy到缓冲区，释放一个阻塞的发送方;</li>
+</ul>
+<ol start="2">
+<li>不存在缓冲区</li>
+</ol>
+<ul>
+<li>直接调用<code>runtime.recvDirect</code>将channel发送队列中Goroutine存储的<code>elem</code>数据copy到目标内存地址中;</li>
+</ul>
+<p>但是到最后都会调用<code>runtime.goready</code>将当前P的runnext设置为发送数据的goroutine，等待下一次调度唤醒;</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// recv processes a receive operation on a full channel c.</span>
+<span class="hljs-comment">// There are 2 parts:</span>
+<span class="hljs-comment">// 1) The value sent by the sender sg is put into the channel</span>
+<span class="hljs-comment">//    and the sender is woken up to go on its merry way.</span>
+<span class="hljs-comment">// 2) The value received by the receiver (the current G) is</span>
+<span class="hljs-comment">//    written to ep.</span>
+<span class="hljs-comment">// For synchronous channels, both values are the same.</span>
+<span class="hljs-comment">// For asynchronous channels, the receiver gets its data from</span>
+<span class="hljs-comment">// the channel buffer and the sender's data is put in the</span>
+<span class="hljs-comment">// channel buffer.</span>
+<span class="hljs-comment">// Channel c must be full and locked. recv unlocks c with unlockf.</span>
+<span class="hljs-comment">// sg must already be dequeued from c.</span>
+<span class="hljs-comment">// A non-nil ep must point to the heap or the caller's stack.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">recv</span><span class="hljs-params">(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf <span class="hljs-keyword">func</span>()</span>, <span class="hljs-title">skip</span> <span class="hljs-title">int</span>)</span> &#123;
+	<span class="hljs-comment">//1. 不存在缓冲区</span>
+	<span class="hljs-keyword">if</span> c.dataqsiz == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			racesync(c, sg)
+		&#125;
+		<span class="hljs-keyword">if</span> ep != <span class="hljs-literal">nil</span> &#123;
+			<span class="hljs-comment">// copy data from sender</span>
+			recvDirect(c.elemtype, sg, ep)
+		&#125;
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">// Queue is full. Take the item at the</span>
+		<span class="hljs-comment">// head of the queue. Make the sender enqueue</span>
+		<span class="hljs-comment">// its item at the tail of the queue. Since the</span>
+		<span class="hljs-comment">// queue is full, those are both the same slot.</span>
+		qp := chanbuf(c, c.recvx)
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			raceacquire(qp)
+			racerelease(qp)
+			raceacquireg(sg.g, qp)
+			racereleaseg(sg.g, qp)
+		&#125;
+		<span class="hljs-comment">// copy data from queue to receiver</span>
+		<span class="hljs-keyword">if</span> ep != <span class="hljs-literal">nil</span> &#123;
+			typedmemmove(c.elemtype, ep, qp)
+		&#125;
+		<span class="hljs-comment">// copy data from sender to queue</span>
+		typedmemmove(c.elemtype, qp, sg.elem)
+		c.recvx++
+		<span class="hljs-keyword">if</span> c.recvx == c.dataqsiz &#123;
+			c.recvx = <span class="hljs-number">0</span>
+		&#125;
+		c.sendx = c.recvx <span class="hljs-comment">// c.sendx = (c.sendx+1) % c.dataqsiz</span>
+	&#125;
+	sg.elem = <span class="hljs-literal">nil</span>
+	gp := sg.g
+	unlockf()
+	gp.param = unsafe.Pointer(sg)
+	<span class="hljs-keyword">if</span> sg.releasetime != <span class="hljs-number">0</span> &#123;
+		sg.releasetime = cputicks()
+	&#125;
+	goready(gp, skip+<span class="hljs-number">1</span>)
+
+&#125;</code></pre></div>
+<h5 id="有缓存的接收">有缓存的接收</h5>
+<p>整个过程比较镜像:</p>
+<ul>
+<li>先锁住channel</li>
+<li>如果有数据，直接从<code>recvx</code>的索引处拿出数据</li>
+<li>如果接收数据的地址不为空，则直接使用<code>runtime.typedmemmove</code>将缓冲区的数据copy到内存中，清空队列中的数据;</li>
+<li>最后也是初始化清空，递增<code>recvx</code>索引，如果其超过了channel容量，还要归零，减少<code>qcount</code>计数器并释放channel锁;</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// chanrecv receives on channel c and writes the received data to ep.</span>
+<span class="hljs-comment">// ep may be nil, in which case received data is ignored.</span>
+<span class="hljs-comment">// If block == false and no elements are available, returns (false, false).</span>
+<span class="hljs-comment">// Otherwise, if c is closed, zeros *ep and returns (true, false).</span>
+<span class="hljs-comment">// Otherwise, fills in *ep with an element and returns (true, true).</span>
+<span class="hljs-comment">// A non-nil ep must point to the heap or the caller's stack.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">chanrecv</span><span class="hljs-params">(c *hchan, ep unsafe.Pointer, block <span class="hljs-keyword">bool</span>)</span> <span class="hljs-params">(selected, received <span class="hljs-keyword">bool</span>)</span></span> &#123;
+	<span class="hljs-comment">//</span>
+	...
+	lock(&amp;c.lock)
+
+	<span class="hljs-keyword">if</span> c.closed != <span class="hljs-number">0</span> &amp;&amp; c.qcount == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			raceacquire(c.raceaddr())
+		&#125;
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">if</span> ep != <span class="hljs-literal">nil</span> &#123;
+			typedmemclr(c.elemtype, ep)
+		&#125;
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, <span class="hljs-literal">false</span>
+	&#125;
+
+	<span class="hljs-keyword">if</span> sg := c.sendq.dequeue(); sg != <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-comment">// Found a waiting sender. If buffer is size 0, receive value</span>
+		<span class="hljs-comment">// directly from sender. Otherwise, receive from head of queue</span>
+		<span class="hljs-comment">// and add sender's value to the tail of the queue (both map to</span>
+		<span class="hljs-comment">// the same buffer slot because the queue is full).</span>
+		recv(c, sg, ep, <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="hljs-number">3</span>)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, <span class="hljs-literal">true</span>
+	&#125;
+	<span class="hljs-keyword">if</span> c.qcount &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// Receive directly from queue</span>
+		qp := chanbuf(c, c.recvx)
+		<span class="hljs-keyword">if</span> raceenabled &#123;
+			raceacquire(qp)
+			racerelease(qp)
+		&#125;
+		<span class="hljs-keyword">if</span> ep != <span class="hljs-literal">nil</span> &#123;
+			typedmemmove(c.elemtype, ep, qp)
+		&#125;
+		typedmemclr(c.elemtype, qp)
+		c.recvx++
+		<span class="hljs-keyword">if</span> c.recvx == c.dataqsiz &#123;
+			c.recvx = <span class="hljs-number">0</span>
+		&#125;
+		c.qcount--
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, <span class="hljs-literal">true</span>
+	&#125;
+	...
+&#125;</code></pre></div>
+<h5 id="阻塞接收">阻塞接收</h5>
+<p>同样比较镜像:</p>
+<ul>
+<li>
+<p>当Channel的发送队列中不存在等待的goroutine并且缓冲区中也不存在任何数据时，从管道中接收会阻塞（当然与select一起的就不一定阻塞）</p>
+</li>
+<li>
+<p>如果接收到，会将任务包装成<code>sudog</code>结构体，进入<code>recvq</code>队列</p>
+</li>
+<li>
+<p>入队后，立即call <code>gopark</code>将当前goroutine状态变成<code>Gwaiting</code></p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//接上面</span>
+	<span class="hljs-keyword">if</span> !block &#123;
+		unlock(&amp;c.lock)
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>, <span class="hljs-literal">false</span>
+	&#125;
+
+	<span class="hljs-comment">// no sender available: block on this channel.</span>
+	gp := getg()
+	mysg := acquireSudog()
+	mysg.releasetime = <span class="hljs-number">0</span>
+	<span class="hljs-keyword">if</span> t0 != <span class="hljs-number">0</span> &#123;
+		mysg.releasetime = <span class="hljs-number">-1</span>
+	&#125;
+	<span class="hljs-comment">// No stack splits between assigning elem and enqueuing mysg</span>
+	<span class="hljs-comment">// on gp.waiting where copystack can find it.</span>
+	mysg.elem = ep
+	mysg.waitlink = <span class="hljs-literal">nil</span>
+	gp.waiting = mysg
+	mysg.g = gp
+	mysg.isSelect = <span class="hljs-literal">false</span>
+	mysg.c = c
+	gp.param = <span class="hljs-literal">nil</span>
+	c.recvq.enqueue(mysg)
+	gopark(chanparkcommit, unsafe.Pointer(&amp;c.lock), waitReasonChanReceive, traceEvGoBlockRecv, <span class="hljs-number">2</span>)
+
+	<span class="hljs-comment">// someone woke us up</span>
+	<span class="hljs-keyword">if</span> mysg != gp.waiting &#123;
+		throw(<span class="hljs-string">"G waiting list is corrupted"</span>)
+	&#125;
+	gp.waiting = <span class="hljs-literal">nil</span>
+	gp.activeStackChans = <span class="hljs-literal">false</span>
+	<span class="hljs-keyword">if</span> mysg.releasetime &gt; <span class="hljs-number">0</span> &#123;
+		blockevent(mysg.releasetime-t0, <span class="hljs-number">2</span>)
+	&#125;
+	closed := gp.param == <span class="hljs-literal">nil</span>
+	gp.param = <span class="hljs-literal">nil</span>
+	mysg.c = <span class="hljs-literal">nil</span>
+	releaseSudog(mysg)
+	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>, !closed</code></pre></div>
+<h5 id="触发调度时机">触发调度时机</h5>
+<p>从channel<strong>接收</strong>数据时会触发调度:</p>
+<ul>
+<li>channel为空的时候</li>
+<li>缓冲区不存在数据并且也不存在数据的发送者时</li>
+</ul>
+<h4 id="接收后的关闭">接收后的关闭</h4>
+<h3 id="slowpath和fastpath">SlowPath和fastPath</h3>
+<p>在<code>chansend</code>和<code>chanrecv</code>上有两种路径，一个是fastPath，一个是slowPath(要加上<code>atomic</code>):</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//chansend()</span>
+<span class="hljs-comment">// Fast path: check for failed non-blocking operation without acquiring the lock.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// After observing that the channel is not closed, we observe that the channel is</span>
+	<span class="hljs-comment">// not ready for sending. Each of these observations is a single word-sized read</span>
+	<span class="hljs-comment">// (first c.closed and second c.recvq.first or c.qcount depending on kind of channel).</span>
+	<span class="hljs-comment">// Because a closed channel cannot transition from 'ready for sending' to</span>
+	<span class="hljs-comment">// 'not ready for sending', even if the channel is closed between the two observations,</span>
+	<span class="hljs-comment">// they imply a moment between the two when the channel was both not yet closed</span>
+	<span class="hljs-comment">// and not ready for sending. We behave as if we observed the channel at that moment,</span>
+	<span class="hljs-comment">// and report that the send cannot proceed.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// It is okay if the reads are reordered here: if we observe that the channel is not</span>
+	<span class="hljs-comment">// ready for sending and then observe that it is not closed, that implies that the</span>
+	<span class="hljs-comment">// channel wasn't closed during the first observation.</span>
+	<span class="hljs-keyword">if</span> !block &amp;&amp; c.closed == <span class="hljs-number">0</span> &amp;&amp; ((c.dataqsiz == <span class="hljs-number">0</span> &amp;&amp; c.recvq.first == <span class="hljs-literal">nil</span>) ||
+		(c.dataqsiz &gt; <span class="hljs-number">0</span> &amp;&amp; c.qcount == c.dataqsiz)) &#123;
+		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+	&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//chanrecv</span>
+	<span class="hljs-comment">// Fast path: check for failed non-blocking operation without acquiring the lock.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// After observing that the channel is not ready for receiving, we observe that the</span>
+	<span class="hljs-comment">// channel is not closed. Each of these observations is a single word-sized read</span>
+	<span class="hljs-comment">// (first c.sendq.first or c.qcount, and second c.closed).</span>
+	<span class="hljs-comment">// Because a channel cannot be reopened, the later observation of the channel</span>
+	<span class="hljs-comment">// being not closed implies that it was also not closed at the moment of the</span>
+	<span class="hljs-comment">// first observation. We behave as if we observed the channel at that moment</span>
+	<span class="hljs-comment">// and report that the receive cannot proceed.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// The order of operations is important here: reversing the operations can lead to</span>
+	<span class="hljs-comment">// incorrect behavior when racing with a close.</span>
+	<span class="hljs-keyword">if</span> !block &amp;&amp; (c.dataqsiz == <span class="hljs-number">0</span> &amp;&amp; c.sendq.first == <span class="hljs-literal">nil</span> ||
+		c.dataqsiz &gt; <span class="hljs-number">0</span> &amp;&amp; atomic.Loaduint(&amp;c.qcount) == <span class="hljs-number">0</span>) &amp;&amp;
+		atomic.Load(&amp;c.closed) == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;</code></pre></div>
+<p>A: 这个这两个 fast path 其实炫技的成分太高了，我们需要先理解这两个 fast path 才能理解为什么这里一个需要<code>atomic</code>操作而另一个不需要。</p>
+<ul>
+<li>
+<p>首先，他们是针对<code>select</code>语句中<strong>非阻塞 channel</strong>操作的的一种优化，也就是说要求不在channel上发生阻塞（能失败则立刻失败）;</p>
+<p>这时候我们要考虑关于<code>channel</code>的这样两个事实，</p>
+<ol>
+<li>
+<p>如果<code>channel</code>没有被 close，那么不能进行<strong>发送</strong>的条件只可能是：</p>
+<p>unbuffered channel 没有接收方（ <code>dataqsiz</code>为空且接受队列为空时），
+要么 buffered channel 缓存已满（<code>dataqsiz != 0 &amp;&amp; qcount == dataqsize</code>）</p>
+</li>
+<li>
+<p>那么不能进行<strong>接收</strong>的条件只可能是：</p>
+<p><code>unbuffered channel</code>没有发送方（ <code>dataqsiz</code> 为空且发送队列为空），
+要么<code>buffered channel</code>缓存为空（<code>dataqsiz != 0 &amp;&amp; qcount == 0</code>）</p>
+</li>
+</ol>
+</li>
+<li>
+<p>理解是否需要 atomic 操作的关键在于：<code>atomic 操作保证了代码的内存顺序</code>，是否发生指令重排！！！！！</p>
+</li>
+</ul>
+<p>由于 channel 只能由未关闭状态转换为关闭状态，因此在<code>!block</code> 的异步操作中，</p>
+<p>第一种情况下，channel 未关闭和 channel 不能进行发送之间的指令重排是能够保证代码的正确性的，因为：在不发生重排时，「不能进行发送」同样适用于 channel 已经 close。如果 closed 的操作被重排到不能进行发送之后，依然隐含着在判断「不能进行发送」这个条件时候 channel 仍然是未 closed 的。</p>
+<p>但第二种情况中，如果「不能进行接收」和 channel 未关闭发生重排，我们无法保证在观察 channel 未关闭之后，得到的 「不能进行接收」是 channel 尚未关闭得到的结果，这时原本应该得到「已关闭且 buf 空」的结论（chanrecv 应该返回 true, false），却得到了「未关闭且 buf 空」（返回值 false, false），从而报告错误的状态。因此必须使此处的 qcount 和 closed 的读取操作的顺序通过原子操作得到顺序保障。</p>
+<h3 id="使用注意">使用注意</h3>
+<p>在Linux下，<code>channel</code>是用<code>futex</code>实现的，不会导致上下文切换；
+可以与<code>Sync.Mutex</code>进行比较，mutex是用信号量进行处理，其中涉及了<code>gopark</code></p>
+<p>当把channel当作传入参数的时候要先确定一下箭头方向</p>
+<p>chan&lt;-string：指的是可以入可以出的channel</p>
+<p>&lt;-chan string：指的是receive-only channnel</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//gobyexample 例子</span>
+<span class="hljs-comment">// This `ping` function only accepts a channel for sending</span>
+<span class="hljs-comment">// values. It would be a compile-time error to try to</span>
+<span class="hljs-comment">// receive on this channel.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">ping</span><span class="hljs-params">(pings <span class="hljs-keyword">chan</span>&lt;- <span class="hljs-keyword">string</span>, msg <span class="hljs-keyword">string</span>)</span></span> &#123;
+    pings &lt;- msg
+&#125;
+
+<span class="hljs-comment">// The `pong` function accepts one channel for receives</span>
+<span class="hljs-comment">// (`pings`) and a second for sends (`pongs`).</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">pong</span><span class="hljs-params">(pings &lt;-<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, pongs <span class="hljs-keyword">chan</span>&lt;- <span class="hljs-keyword">string</span>)</span></span> &#123;
+    msg := &lt;-pings
+    pongs &lt;- msg
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;
+    pings := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, <span class="hljs-number">1</span>)
+    pongs := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">string</span>, <span class="hljs-number">1</span>)
+    ping(pings, <span class="hljs-string">"passed message"</span>)
+    pong(pings, pongs)
+    fmt.Println(&lt;-pongs)
 &#125;</code></pre></div>
 <h3 id="happens-before问题">Happens-before问题</h3>
 <p>在<a href="https://golang.org/ref/mem" target="_blank" rel="noopener">goMemory</a>里面有提到这个happens-before问题,其实就是指令重排(特么终于解决我的疑问了)
@@ -374,7 +956,37 @@ channel的一些问题：</p>
 	&#125;
 	<span class="hljs-keyword">select</span>&#123;&#125;
 &#125;</code></pre></div>
-<h2 id="2-mutex互斥量">2. Mutex互斥量</h2>
+<h2 id="2-sync-waitgroup">2.Sync.WaitGroup</h2>
+<p>见<a href="../sync.md">sync文章</a></p>
+<h3 id="普通使用">普通使用</h3>
+<p>Sync.WaitGroup
+有三个methods:</p>
+<ol>
+<li>Add(delta int):将你要等待的协程加入，delta即加入的数量</li>
+<li>Done() : 代表当前协程完成</li>
+<li>Wait() : 等待所有协程完成(调用Done())，完成后即返回，否则一直阻塞</li>
+</ol>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//举个例子：</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">(number <span class="hljs-keyword">int</span>)</span></span>&#123;
+    <span class="hljs-keyword">var</span> wg Sync.WaitGroup
+    wg.Add(number)<span class="hljs-comment">//要同步的协程数</span>
+    <span class="hljs-keyword">for</span> i:=<span class="hljs-number">0</span>;i&lt;number;i++&#123;
+        <span class="hljs-keyword">go</span> doSth(&amp;wg,i)
+    &#125;
+    begin:=Time.Now()
+    wg.Wait()<span class="hljs-comment">//完成后继续往下跑</span>
+    end:=Time.Now()<span class="hljs-comment">//这里还可以这样进行批量测试</span>
+    dur:=Time.Duration(end-begin)
+
+
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">doSth</span><span class="hljs-params">(wg *Sync.WaitGroup,num <span class="hljs-keyword">int</span>)</span></span>&#123;
+    fmt.Println(num)
+    wg.Done()<span class="hljs-comment">//完成就Done</span>
+&#125;</code></pre></div>
+<h2 id="3-sync-once-单例">3. Sync.Once 单例</h2>
+<p>见<a href="../sync.md">sync文章</a></p>
+<h2 id="4-mutex互斥量">4. Mutex互斥量</h2>
 <h3 id="01互斥量">01互斥量</h3>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">var</span> sema=<span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125;,<span class="hljs-number">1</span>)</code></pre></div>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//每次使用前</span>
@@ -429,76 +1041,7 @@ channel的一些问题：</p>
     b:=balance
     <span class="hljs-keyword">return</span> b
 &#125;</code></pre></div>
-<h2 id="3-sync-waitgroup-等待组-java-countdownlatch">3.Sync.WaitGroup 等待组 (Java CountDownLatch)</h2>
-<h3 id="普通使用">普通使用</h3>
-<p>Sync.WaitGroup
-有三个methods:</p>
-<ol>
-<li>Add(delta int):将你要等待的协程加入，delta即加入的数量</li>
-<li>Done() : 代表当前协程完成</li>
-<li>Wait() : 等待所有协程完成(调用Done())，完成后即返回，否则一直阻塞</li>
-</ol>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//举个例子：</span>
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">(number <span class="hljs-keyword">int</span>)</span></span>&#123;
-    <span class="hljs-keyword">var</span> wg Sync.WaitGroup
-    wg.Add(number)<span class="hljs-comment">//要同步的协程数</span>
-    <span class="hljs-keyword">for</span> i:=<span class="hljs-number">0</span>;i&lt;number;i++&#123;
-        <span class="hljs-keyword">go</span> doSth(&amp;wg,i)
-    &#125;
-    begin:=Time.Now()
-    wg.Wait()<span class="hljs-comment">//完成后继续往下跑</span>
-    end:=Time.Now()<span class="hljs-comment">//这里还可以这样进行批量测试</span>
-    dur:=Time.Duration(end-begin)
 
-
-&#125;
-<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">doSth</span><span class="hljs-params">(wg *Sync.WaitGroup,num <span class="hljs-keyword">int</span>)</span></span>&#123;
-    fmt.Println(num)
-    wg.Done()<span class="hljs-comment">//完成就Done</span>
-&#125;</code></pre></div>
-<h3 id="分析">分析</h3>
-<p>首先看下其结构：</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A WaitGroup waits for a collection of goroutines to finish.</span>
-<span class="hljs-comment">// The main goroutine calls Add to set the number of</span>
-<span class="hljs-comment">// goroutines to wait for. Then each of the goroutines</span>
-<span class="hljs-comment">// runs and calls Done when finished. At the same time,</span>
-<span class="hljs-comment">// Wait can be used to block until all goroutines have finished.</span>
-<span class="hljs-comment">//</span>
-<span class="hljs-comment">// A WaitGroup must not be copied after first use.</span>
-<span class="hljs-keyword">type</span> WaitGroup <span class="hljs-keyword">struct</span> &#123;
-	noCopy noCopy
-
-	<span class="hljs-comment">// 64-bit value: high 32 bits are counter, low 32 bits are waiter count.</span>
-	<span class="hljs-comment">// 64-bit atomic operations require 64-bit alignment, but 32-bit</span>
-	<span class="hljs-comment">// compilers do not ensure it. So we allocate 12 bytes and then use</span>
-	<span class="hljs-comment">// the aligned 8 bytes in them as state, and the other 4 as storage</span>
-	<span class="hljs-comment">// for the sema.</span>
-	state1 [<span class="hljs-number">3</span>]<span class="hljs-keyword">uint32</span>
-&#125;</code></pre></div>
-<ul>
-<li>带有nocopy，即使用时只可以传指针</li>
-<li>state1是一个3个uint32元素的数组，高32位</li>
-</ul>
-<h2 id="4-sync-once-单例-不知道怎么翻译">4. Sync.Once 单例（不知道怎么翻译。。。）</h2>
-<p>顾名思义，就是只运行一次的意思，很显然适合单例模式
-需要注意的是，Once只有一个Method
-Do（func(){}）: Do方法只接受 *** 无参无返回值的函数 ***</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
-    <span class="hljs-keyword">var</span> once Sync.Once
-    doOnce:=<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>&#123;
-        fmt.Println(<span class="hljs-string">"do ONCE!"</span>)
-    &#125;
-    done:=<span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> <span class="hljs-keyword">bool</span>)
-    <span class="hljs-keyword">for</span> i:=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">10</span>;i++&#123;
-        <span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span>&#123;
-            once.Do(doOnce)<span class="hljs-comment">//最终只输出一行 do ONCE！</span>
-            done&lt;-<span class="hljs-literal">true</span>
-        &#125;()
-    &#125;
-    <span class="hljs-keyword">for</span> i:=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">10</span>;i++&#123;
-        &lt;-done
-    &#125;
-&#125;</code></pre></div>
             </div>
             <hr>
             <div>
@@ -671,7 +1214,7 @@ Do（func(){}）: Do方法只接受 *** 无参无返回值的函数 ***</p>
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "Concurrency Problem&nbsp;",
+        "Channel&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,

@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      235 字
+      719 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      3
+      9
        分钟
     </span>
   
@@ -209,11 +209,75 @@
             <h1 style="display: none">Something in gRPC</h1>
             
             <div class="markdown-body" id="post-body">
-              <p>常用的rpc框架，我们先从它的proto开始了解吧//todo</p>
+              <p>常用的rpc框架</p>
 <a id="more"></a>
-<p>我们这里只讨论go语法，语言方面其他都是大同小异</p>
+<h2 id="服务发现和服务注册">服务发现和服务注册</h2>
+<p>很遗憾，grpc只提供了接口,这些是要自己用其他服务发现的中间件来实现</p>
+<h3 id="一般的设计">一般的设计</h3>
+<h4 id="集中式lb">集中式LB</h4>
+<p>就是在server和client端中间加一个proxy来记录注册的服务（一些地址映射表）；</p>
+<ul>
+<li>单点问题(proxy改成分布式组件即可)</li>
+<li>增加了额外中间件，复杂度提高</li>
+</ul>
+<h4 id="进程内lb-balancing-aware-client">进程内LB(Balancing-aware client)</h4>
+<p>因为第一个问题，那么我们把这个proxy放到消费方进程里，这个可以叫软负载或者客户端负载；
+定期用心跳来同步服务注册表来表明服务存活状态</p>
+<ul>
+<li>
+<p>LB和服务发现分散到每一个服务消费者进程内部</p>
+</li>
+<li>
+<p>同时，消费方和提供方是直接连接，无消耗</p>
+</li>
+<li>
+<p>开发成本高，不同语言的调用方要有不同语言版本的LB</p>
+</li>
+<li>
+<p>升级后，每个都要重新发布</p>
+</li>
+</ul>
+<h4 id="独立进程lb">独立进程LB</h4>
+<p>同进程内LB差不多，都是在消费方进程中，只不过这个进程是独立出来专门负责服务发现和LB的</p>
+<ul>
+<li>因为不同进程，简化服务调用方，不需要重新开发不同语言客户端</li>
+<li>升级不用服务调用方改代码</li>
+</ul>
+<h2 id="http2">http2</h2>
+<p>见我自己的http2的文章，随便记了一点;</p>
+<h3 id="server端针对不同的帧进行处理">server端针对不同的帧进行处理</h3>
+<h3 id="超时问题">超时问题</h3>
+<p>在grpc中，<code>header frame</code>会带上不少信息，比如<code>grpc-status</code>状态等等,
+server端的处理可以看到<code>processHeaderField</code>方法中解析的多种header：
+比较重要的有:</p>
+<ul>
+<li><code>grpc-timeout</code>:长连接超时控制</li>
+<li></li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(d *decodeState)</span> <span class="hljs-title">processHeaderField</span><span class="hljs-params">(f hpack.HeaderField)</span></span> &#123;
+	<span class="hljs-keyword">switch</span> f.Name &#123;
+		...
+		<span class="hljs-keyword">case</span> <span class="hljs-string">"grpc-timeout"</span>:
+			d.data.timeoutSet = <span class="hljs-literal">true</span>
+			<span class="hljs-keyword">var</span> err error
+			<span class="hljs-keyword">if</span> d.data.timeout, err = decodeTimeout(f.Value); err != <span class="hljs-literal">nil</span> &#123;
+				d.data.grpcErr = status.Errorf(codes.Internal, <span class="hljs-string">"transport: malformed time-out: %v"</span>, err)
+			&#125;
+		<span class="hljs-keyword">case</span> <span class="hljs-string">":path"</span>:
+			d.data.method = f.Value
+		<span class="hljs-keyword">case</span> <span class="hljs-string">":status"</span>:
+			code, err := strconv.Atoi(f.Value)
+			<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> &#123;
+				d.data.httpErr = status.Errorf(codes.Internal, <span class="hljs-string">"transport: malformed http-status: %v"</span>, err)
+				<span class="hljs-keyword">return</span>
+			&#125;
+			d.data.httpStatus = &amp;code
+		<span class="hljs-keyword">case</span> ....
+	&#125;
+&#125;</code></pre></div>
 <h2 id="proto">proto</h2>
-<p>创建proto文件 <strong>data.proto</strong></p>
+<p>我们这里只讨论go语法，语言方面其他都是大同小异
+创建proto文件 <strong>data.proto</strong></p>
 <div class="hljs"><pre><code class="hljs go">syntax = <span class="hljs-string">"proto2"</span>;
 
 service Authenticate&#123;
@@ -233,7 +297,7 @@ message ResponseFromServer &#123;
 	<span class="hljs-comment">// Errcode int</span>
 &#125;</code></pre></div>
 <p>用安装的protoc插件生成</p>
-<div class="hljs"><pre><code class="hljs shell">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</code></pre></div>
+<div class="hljs"><pre><code class="hljs s">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</code></pre></div>
 <p>生成 <strong>data.pb.proto</strong></p>
 <p>-----------这些就直接参照手册理解吧-----------------<br>
 这里还是记录下这厮的解码方式吧，参考</p>
@@ -244,10 +308,10 @@ message ResponseFromServer &#123;
 </blockquote>
 <p>protobuf的的编码其实跟 thrift的BinaryCompact编码有点相似
 就拿上面那个例子:</p>
-<div class="hljs"><pre><code class="hljs undefined"><span class="hljs-class"><span class="hljs-keyword">message</span> <span class="hljs-title">toServerData</span></span>&#123;
-	<span class="hljs-keyword">required</span> <span class="hljs-built_in">int32</span> ctype = <span class="hljs-number">1</span>;
-	<span class="hljs-keyword">required</span> <span class="hljs-built_in">string</span> name =<span class="hljs-number">2</span>;
-    <span class="hljs-keyword">optional</span> <span class="hljs-built_in">bytes</span> httpdata=<span class="hljs-number">3</span>;
+<div class="hljs"><pre><code class="hljs pb">message toServerData&#123;
+	required int32 ctype = 1<span class="hljs-comment">;</span>
+	required string name =2<span class="hljs-comment">;</span>
+    optional bytes httpdata=3<span class="hljs-comment">;</span>
 &#125;</code></pre></div>
 <h2 id="提供的一些连接方式">提供的一些连接方式</h2>
 <p>单向stream

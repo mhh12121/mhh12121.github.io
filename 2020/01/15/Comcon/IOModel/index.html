@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      230 字
+      642 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      2
+      6
        分钟
     </span>
   
@@ -226,6 +226,54 @@
 <p>所以，数据从网卡接收到，会立即发送一个信号到CPU，网卡的中断程序就会被调用去处理数据；</p>
 <h4 id="操作系统调度">操作系统调度</h4>
 <h3 id="2-模型选择">2. 模型选择</h3>
+<h4 id="同步">同步</h4>
+<ol>
+<li>阻塞:</li>
+</ol>
+<p>只能有一个I/O操作；</p>
+<ol start="2">
+<li>非阻塞:</li>
+</ol>
+<p>指的是 可以同时阻塞多个I/O操作，所以看做是非阻塞的</p>
+<h5 id="select">select:</h5>
+<ul>
+<li>
+<p>优点：实现简单，只用单线程执行，占用资源少，不消耗过多CPU，也可以为多客户端提供服务;</p>
+</li>
+<li>
+<p>缺点：每次调用都都要将fd_set从用户态copy到内核态，消耗过大;
+每次调用select都要进行多次轮询;
+可以检测到fd数量有限，默认是1024;
+因为是<code>水平触发</code>，如果没有完成对一个就绪fd进行IO，下次select也会将这些fd通知到进程(只能算的是特点吧);</p>
+</li>
+<li>
+<p>可以看到select就是将事件的探测和响应放在一起，一旦响应过大，就会造成问题;</p>
+</li>
+</ul>
+<h5 id="poll">poll</h5>
+<p>与select区别不大，相同的是</p>
+<ol>
+<li>创建fd_set,设置关注事件</li>
+<li>调用poll()，等待事件发生;</li>
+</ol>
+<p>区别:</p>
+<ol>
+<li>select要为读、写、异常都分别设置fd_set, poll只需要为fd设置一个即可</li>
+<li>poll由链表实现，所以无最大值</li>
+</ol>
+<p>缺点:
+同select一样，用户态到内核态的copy;
+水平触发;</p>
+<h5 id="epoll">epoll</h5>
+<p>将fd交给了内核，一旦事件发生，内核负责通知;
+其支持<code>水平触发</code>和<code>边缘触发</code>，还有多个函数<code>epoll_create</code>,<code>epoll_wait</code>,<code>epoll_ctl</code>
+分别为创建epoll句柄，等待事件发生，注册要监听的事件;</p>
+<p>优点:</p>
+<ul>
+<li>无最大并发连接数目限制</li>
+<li>效率提升，只有活跃的fd才会callback</li>
+<li>内存是由一块用户态和内核态通过<code>mmap()</code>共享内存，避免频繁copy，保证了整个过程只会copy一次;</li>
+</ul>
 
             </div>
             <hr>

@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      269 字
+      1.5k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      3
+      23
        分钟
     </span>
   
@@ -209,12 +209,175 @@
             <h1 style="display: none">Golang Reflection</h1>
             
             <div class="markdown-body" id="post-body">
-              <h2 id="reflect-package">Reflect Package</h2>
+              <h1>Reflect Package</h1>
+<p>很多类型在<code>runtime</code>里是未导出的，比如<code>_type</code>,<code>typeAlg</code>,<code>interfaceType</code>,<code>eface</code>,<code>iface</code>等等，reflect包就是用于对应导出这些类型;
+所以他们的结果在两个包中其实是一样的;</p>
 <a id="more"></a>
+<p>空接口:
+reflect包下:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// emptyInterface is the header for an interface&#123;&#125; value.</span>
+<span class="hljs-keyword">type</span> emptyInterface <span class="hljs-keyword">struct</span> &#123;
+	typ  *rtype<span class="hljs-comment">//指的是动态类型</span>
+	word unsafe.Pointer
+&#125;
+<span class="hljs-comment">// rtype is the common implementation of most values.</span>
+<span class="hljs-comment">// It is embedded in other struct types.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// rtype must be kept in sync with ../runtime/type.go:/^type._type.</span>
+<span class="hljs-keyword">type</span> rtype <span class="hljs-keyword">struct</span> &#123;
+	size       <span class="hljs-keyword">uintptr</span>
+	ptrdata    <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// number of bytes in the type that can contain pointers</span>
+	hash       <span class="hljs-keyword">uint32</span>  <span class="hljs-comment">// hash of type; avoids computation in hash tables</span>
+	tflag      tflag   <span class="hljs-comment">// extra type information flags</span>
+	align      <span class="hljs-keyword">uint8</span>   <span class="hljs-comment">// alignment of variable with this type</span>
+	fieldAlign <span class="hljs-keyword">uint8</span>   <span class="hljs-comment">// alignment of struct field with this type</span>
+	kind       <span class="hljs-keyword">uint8</span>   <span class="hljs-comment">// enumeration for C</span>
+	<span class="hljs-comment">// function for comparing objects of this type</span>
+	<span class="hljs-comment">// (ptr to object A, ptr to object B) -&gt; ==?</span>
+	equal     <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(unsafe.Pointer, unsafe.Pointer)</span> <span class="hljs-title">bool</span>
+	<span class="hljs-title">gcdata</span>    *<span class="hljs-title">byte</span>   // <span class="hljs-title">garbage</span> <span class="hljs-title">collection</span> <span class="hljs-title">data</span>
+	<span class="hljs-title">str</span>       <span class="hljs-title">nameOff</span> // <span class="hljs-title">string</span> <span class="hljs-title">form</span>
+	<span class="hljs-title">ptrToThis</span> <span class="hljs-title">typeOff</span> // <span class="hljs-title">type</span> <span class="hljs-title">for</span> <span class="hljs-title">pointer</span> <span class="hljs-title">to</span> <span class="hljs-title">this</span> <span class="hljs-title">type</span>, <span class="hljs-title">may</span> <span class="hljs-title">be</span> <span class="hljs-title">zero</span>
+&#125;</span></code></pre></div>
+<p>runtime包下:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> eface <span class="hljs-keyword">struct</span> &#123;
+	_type *_type
+	data  unsafe.Pointer
+&#125;</code></pre></div>
+<p>非空接口:
+reflect包下:</p>
+<div class="hljs"><pre><code class="hljs go">
+<span class="hljs-comment">// nonEmptyInterface is the header for an interface value with methods.</span>
+<span class="hljs-keyword">type</span> nonEmptyInterface <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">// see ../runtime/iface.go:/Itab</span>
+	itab *<span class="hljs-keyword">struct</span> &#123;
+		ityp *rtype <span class="hljs-comment">// static interface type</span>
+		typ  *rtype <span class="hljs-comment">// dynamic concrete type</span>
+		hash <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// copy of typ.hash</span>
+		_    [<span class="hljs-number">4</span>]<span class="hljs-keyword">byte</span>
+		fun  [<span class="hljs-number">100000</span>]unsafe.Pointer <span class="hljs-comment">// method table</span>
+	&#125;
+	word unsafe.Pointer
+&#125;</code></pre></div>
+<p>runtime包下:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> iface <span class="hljs-keyword">struct</span> &#123;
+	tab  *itab
+	data unsafe.Pointer
+&#125;
+<span class="hljs-keyword">type</span> itab <span class="hljs-keyword">struct</span> &#123;
+	inter *interfacetype
+	_type *_type
+	hash  <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// copy of _type.hash. Used for type switches.</span>
+	_     [<span class="hljs-number">4</span>]<span class="hljs-keyword">byte</span>
+	fun   [<span class="hljs-number">1</span>]<span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// variable sized. fun[0]==0 means _type does not implement inter.</span>
+&#125;</code></pre></div>
 <h3 id="1-reflect-type">1. reflect.Type</h3>
+<p><code>TypeOf</code>方法:</p>
+<ul>
+<li>将控接口i变成<code>emptyInterface</code>类型,然后将其赋值给eface</li>
+</ul>
+<p>注意<code>eface</code>在runtime包中</p>
 <div class="hljs"><pre><code class="hljs go">
 </code></pre></div>
-<h3 id="2-reflect-kind">2. reflect.Kind</h3>
+<p><code>reflect</code>包中<code>emptyInterface</code>和<code>runtime.eface</code>是一样的</p>
+<div class="hljs"><pre><code class="hljs go">
+<span class="hljs-comment">// TypeOf returns the reflection Type that represents the dynamic type of i.</span>
+<span class="hljs-comment">// If i is a nil interface value, TypeOf returns nil.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">TypeOf</span><span class="hljs-params">(i <span class="hljs-keyword">interface</span>&#123;&#125;)</span> <span class="hljs-title">Type</span></span> &#123;
+	eface := *(*emptyInterface)(unsafe.Pointer(&amp;i))
+	<span class="hljs-keyword">return</span> toType(eface.typ)
+&#125;</code></pre></div>
+<p><code>reflect.TypeOf</code>方法传入的值要是体现地址特性，我们一般直接使用传入变量（变量一般指的是copy值，但是编译器在使用到该方法时会有一个<strong>隐式的复制值</strong>，传入到<code>TypeOf</code>上）</p>
+<div class="hljs"><pre><code class="hljs go">Package tt
+<span class="hljs-keyword">type</span> T1 <span class="hljs-keyword">struct</span>&#123;
+    Name <span class="hljs-keyword">string</span>
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(t T1)</span> <span class="hljs-title">A</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-built_in">println</span>(<span class="hljs-string">"A"</span>)
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(t T1)</span> <span class="hljs-title">B</span><span class="hljs-params">()</span></span>&#123;
+    <span class="hljs-built_in">println</span>(<span class="hljs-string">"B"</span>)
+&#125;</code></pre></div>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;
+    a:=tt.T1&#123;Name:<span class="hljs-string">"mhh"</span>&#125;
+    <span class="hljs-comment">//这里使用</span>
+    t:=reflect.TypeOf(a)
+    <span class="hljs-built_in">println</span>(t.Name(),t.NumMethod())
+&#125;</code></pre></div>
+<h3 id="2-reflect-value">2. reflect.Value</h3>
+<p>上面主要是用反射读取信息，</p>
+<p>使用反射修改信息用到<code>reflect.Value</code>:</p>
+<ul>
+<li><code>typ</code>用作存储 反射变量的类型元数据 指针</li>
+<li><code>ptr</code>存储数据的地址</li>
+<li><code>flag</code>存储反射值的一些描述信息(是不是指针，是不是method，只读等等)</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Value <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">// typ holds the type of the value represented by a Value.</span>
+	typ *rtype
+
+	<span class="hljs-comment">// Pointer-valued data or, if flagIndir is set, pointer to data.</span>
+	<span class="hljs-comment">// Valid when either flagIndir is set or typ.pointers() is true.</span>
+	ptr unsafe.Pointer
+
+	<span class="hljs-comment">// flag holds metadata about the value.</span>
+	<span class="hljs-comment">// The lowest bits are flag bits:</span>
+	<span class="hljs-comment">//	- flagStickyRO: obtained via unexported not embedded field, so read-only</span>
+	<span class="hljs-comment">//	- flagEmbedRO: obtained via unexported embedded field, so read-only</span>
+	<span class="hljs-comment">//	- flagIndir: val holds a pointer to the data</span>
+	<span class="hljs-comment">//	- flagAddr: v.CanAddr is true (implies flagIndir)</span>
+	<span class="hljs-comment">//	- flagMethod: v is a method value.</span>
+	<span class="hljs-comment">// The next five bits give the Kind of the value.</span>
+	<span class="hljs-comment">// This repeats typ.Kind() except for method values.</span>
+	<span class="hljs-comment">// The remaining 23+ bits give a method number for method values.</span>
+	<span class="hljs-comment">// If flag.kind() != Func, code can assume that flagMethod is unset.</span>
+	<span class="hljs-comment">// If ifaceIndir(typ), code can assume that flagIndir is set.</span>
+	flag
+
+	<span class="hljs-comment">// A method value represents a curried method invocation</span>
+	<span class="hljs-comment">// like r.Read for some receiver r. The typ+val+flag bits describe</span>
+	<span class="hljs-comment">// the receiver r, but the flag's Kind bits say Func (methods are</span>
+	<span class="hljs-comment">// functions), and the top bits of the flag give the method number</span>
+	<span class="hljs-comment">// in r's type's method table.</span>
+&#125;</code></pre></div>
+<ul>
+<li>通常通过<code>reflect.ValueOf</code>拿到这个变量的value,注意传入的是空接口(同<code>reflect.TypeOf</code>处理方法一样)</li>
+<li>另外还会显式的<code>escapes(i)</code>将指向的变量逃逸到堆上</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// ValueOf returns a new Value initialized to the concrete value</span>
+<span class="hljs-comment">// stored in the interface i. ValueOf(nil) returns the zero Value.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">ValueOf</span><span class="hljs-params">(i <span class="hljs-keyword">interface</span>&#123;&#125;)</span> <span class="hljs-title">Value</span></span> &#123;
+	<span class="hljs-keyword">if</span> i == <span class="hljs-literal">nil</span> &#123;
+		<span class="hljs-keyword">return</span> Value&#123;&#125;
+	&#125;
+
+	<span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> Maybe allow contents of a Value to live on the stack.</span>
+	<span class="hljs-comment">// For now we make the contents always escape to the heap. It</span>
+	<span class="hljs-comment">// makes life easier in a few places (see chanrecv/mapassign</span>
+	<span class="hljs-comment">// comment below).</span>
+	escapes(i)
+
+	<span class="hljs-keyword">return</span> unpackEface(i)
+&#125;</code></pre></div>
+<p>关于逃逸:
+同TypeOf函数一样，编译器会隐式创建一个copy值，但是因为逃逸，这个真正的数据会在堆上创建，而保留在栈上的是这个数据的地址，
+但是因为这个是一个临时变量，毫无意义的修改不会影响到原来的<code>s</code>变量,所以会发生panic(use unaddressable value)</p>
+<div class="hljs"><pre><code class="hljs go">
+s:=<span class="hljs-string">"test"</span>
+t:=reflect.ValueOf(s)
+t.SetString(<span class="hljs-string">"test1"</span>) <span class="hljs-comment">//panic</span>
+<span class="hljs-built_in">println</span>(s)</code></pre></div>
+<p>更改后：</p>
+<ul>
+<li>将s的地址传入</li>
+<li>调用<code>Elem</code>方法，会将<code>t.ptr</code>指向的变量s包装成<code>reflect.Value</code>的返回值</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go">s:=<span class="hljs-string">"test"</span>
+t:=reflect.ValueOf(&amp;s)
+t=t.Elem()
+t.SetString(<span class="hljs-string">"test1"</span>) <span class="hljs-comment">//panic</span>
+<span class="hljs-built_in">println</span>(s)</code></pre></div>
+<h3 id="3-reflect-kind">3. reflect.Kind</h3>
 <h2 id="interface">Interface{}</h2>
 <p>接下来说一说经常用到的 interface{} 结构体，
 传参的时候如果接收参数是interface{}，其实就用到隐式的反射，但是这个interface{}本身的属性也比较特殊；</p>
@@ -258,7 +421,24 @@
 
 &#125;
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *doInterfaceWithoutMethod)</span> <span class="hljs-title">Do1</span><span class="hljs-params">(s <span class="hljs-keyword">string</span>)</span> <span class="hljs-title">string</span></span>&#123;&#125;</code></pre></div>
-
+<h2 id="额外">额外</h2>
+<p>go会缓存itab的类型为一个k-v的表(底层有一个数组排列)，需要一个itab会首先从<code>itabTable</code>里面找</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">const</span> itabInitSize = <span class="hljs-number">512</span>
+<span class="hljs-comment">// Note: change the formula in the mallocgc call in itabAdd if you change these fields.</span>
+<span class="hljs-keyword">type</span> itabTableType <span class="hljs-keyword">struct</span> &#123;
+	size    <span class="hljs-keyword">uintptr</span>             <span class="hljs-comment">// length of entries array. Always a power of 2.</span>
+	count   <span class="hljs-keyword">uintptr</span>             <span class="hljs-comment">// current number of filled entries.</span>
+	entries [itabInitSize]*itab <span class="hljs-comment">// really [size] large</span>
+&#125;</code></pre></div>
+<p>如果能够找得到，就直接使用里面的itab值，否则会生成一个新的itab,存入<code>itabTableType.entries</code>字段中</p>
+<p>key的hash 计算:</p>
+<ul>
+<li>用接口类型的hash值XOR 动态类型的类型hash值</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">itabHashFunc</span><span class="hljs-params">(inter *interfacetype, typ *_type)</span> <span class="hljs-title">uintptr</span></span> &#123;
+	<span class="hljs-comment">// compiler has provided some good hash codes for us.</span>
+	<span class="hljs-keyword">return</span> <span class="hljs-keyword">uintptr</span>(inter.typ.hash ^ typ.hash)
+&#125;</code></pre></div>
             </div>
             <hr>
             <div>

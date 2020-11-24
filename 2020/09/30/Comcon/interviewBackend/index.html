@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.6k 字
+      1.7k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      18
+      20
        分钟
     </span>
   
@@ -575,6 +575,14 @@ consumer和consumer group的关系是动态维护的，并不固定，当某个c
 <ol start="5">
 <li>failbackup,用资源换延迟，发送多个请求，有一个返回就用那个</li>
 </ol>
+<h1>项目</h1>
+<p>库存管理
+数据库升级,MySQL -&gt; Mongo 聚合型，业务要求，库存和价格混合覆盖,省钱;</p>
+<p>线程池实现job的更新队列速度，改进，top类别使用第三方队列，可以考虑全部用第三方队列，宕机之后方便恢复;</p>
+<p>促销：秒杀，方案从读缓存，不存在入Mongo(write through,read through)到直接在Redis上进行增加减少(一段时间或大促过后更新到持久层)
+促销定时器,(redis zset-&gt;时间轮);</p>
+<p>过滤平台请求：kafka入队信息，定时器计数;</p>
+<p>运营系统，对账(减内存占用，保证准确性);</p>
 
             </div>
             <hr>
@@ -598,9 +606,9 @@ consumer和consumer group的关系是动态维护的，并不固定，当某个c
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2020/10/03/Comcon/linuxCommand/">
+                      <a href="/2020/10/02/Go/sync/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Linux Cheat sheet</span>
+                        <span class="hidden-mobile">Golang Sync Package</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     

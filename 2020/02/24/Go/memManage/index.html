@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      262
+      263
        分钟
     </span>
   
@@ -517,7 +517,7 @@ mheap中的arenas字段实际是一个指针数组，每个<code>heapArena</code
 <p>有67种，在<code>class_to_size</code> 和 <code>class_to_allocnpages</code>上,参照下面<a href="#%E8%A1%A5%E5%85%A8%E7%9A%84spanClass">补全的表格</a></p>
 </li>
 <li>
-<p>其除了保存类别的ID，还会保存<code>noscan</code>标记位，这个标记了对象<strong>是否包含指针</strong>，gc会对无该标记位的<code>mspan</code>扫描</p>
+<p>其除了保存类别的ID(前7位)，还会保存<code>noscan</code>标记位(最后一位)，这个标记了对象<strong>是否包含指针</strong>，gc会对无该标记位的<code>mspan</code>扫描</p>
 </li>
 </ul>
 <p>以下的函数为ID和标记位的保存方式:</p>
@@ -646,7 +646,7 @@ mheap中的arenas字段实际是一个指针数组，每个<code>heapArena</code
 	<span class="hljs-comment">// sweeping in the next sweep phase.</span>
 	s.sweepgen = mheap_.sweepgen + <span class="hljs-number">3</span>
 &#125;</code></pre></div>
-<p>注意这个是向<code>mcache</code>插入<code>mSpan</code>的唯一方法;</p>
+<p>注意这个是向<code>mcache</code>插入<code>mSpan</code>的唯一方法(上一级是<code>nextFree</code>函数，在<code>mallocgc</code>上被使用);</p>
 <h4 id="分配超小-tiny-对象-16kb-的字段">分配超小(tiny)对象(&lt;16KB)的字段</h4>
 <p>mcache还对微小对象进行了分配处理:</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> mcache <span class="hljs-keyword">struct</span> &#123;
@@ -699,7 +699,7 @@ mheap中的arenas字段实际是一个指针数组，每个<code>heapArena</code
 	....
 &#125;</code></pre></div>
 <p>代码中的pad是用作分割多个<code>mcentral</code>，以<code>CacheLinePadSize</code>个Bytes分割开，所以每一个<code>mcentral</code>的lock可以得到自己的cache line
-我认为可以看做是内存对齐的一种方法(???是不是捏)</p>
+我认为可以看做是内存对齐的一种方法(???是不是捏，是的，为了<strong>不同列表间互斥锁不会伪共享</strong>)</p>
 <h4 id="获得mspan">获得mSpan</h4>
 <p><code>mcache</code>会通过<code>mcentral.cacheSpan</code>方法获取新的内存管理单元<code>mSpan</code>:</p>
 <p>可以大致分为几个步骤:</p>

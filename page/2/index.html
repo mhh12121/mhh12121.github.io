@@ -167,6 +167,95 @@
     
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
+        <a href="/2020/07/03/MySQL/log/">Notes about MySQL Log</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/07/03/MySQL/log/">
+          
+          
+            
+          
+          几种常用的log
+binlog
+归档日志（二进制日志）在MySql Server上进行(因为主从复制mysql支持多种引擎，所以和redo log分开)
+
+
+作用：用于复制，在主从复制中，从库利用主库上的binlog进行重播，实现主从同步，用于数据库的基于时间点的还原。
+
+
+内容：逻辑格式的日志，可以简单认为就是执行过的事务中的sql语句；
+但又不完全是sql语句这么简单，而是包括了执行的sql语
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-07-03 14:20" pubdate>
+              2020-07-03
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/MySQL/">MySQL</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        <a href="/2020/06/24/Go/type/">Golang type</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/06/24/Go/type/">
+          
+          
+            
+          
+          //todo
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-06-24 22:10" pubdate>
+              2020-06-24
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/golang/">golang</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
         <a href="/2020/05/03/Go/Pointer/">Golang指针</a>
       </h1>
 
@@ -259,6 +348,8 @@
             
           
           Reflect Package
+很多类型在runtime里是未导出的，比如_type,typeAlg,interfaceType,eface,iface等等，reflect包就是用于对应导出这些类型;
+所以他们的结果在两个包中其实是一样的;
         </a>
       </p>
 
@@ -477,86 +568,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/Distributed/">Distributed</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/02/03/Comcon/os/">OS basis</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/02/03/Comcon/os/">
-          
-          
-            
-          
-          一些乱糟糟的笔记
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-02-03 14:20" pubdate>
-              2020-02-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/OS/">OS</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/02/03/Go/timer/">Golang timer</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/02/03/Go/timer/">
-          
-          
-            
-          
-          //TODO
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-02-03 14:20" pubdate>
-              2020-02-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/golang/">golang</a>
             
           </div>
         

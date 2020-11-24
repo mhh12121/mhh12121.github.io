@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.9k 字
+      3.1k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      37
+      40
        分钟
     </span>
   
@@ -325,20 +325,36 @@ log.retention.check.interval.ms=300000</code></pre></div>
     <span class="hljs-keyword">return</span> bytesTransferred;
 &#125;</code></pre></div>
 <p>这种设计还有一种名字叫做<code>zeroCopy</code>:</p>
+<h5 id="传统read-write">传统read write</h5>
 <p>传统的<code>read()</code>大概经历了如图 <img src="/img/zeroCopy.png" srcset="/img/loading.gif" alt="所示"></p>
-<p>整个操作两次 cpu copy，两次 DMA copy，四次上下文切换，两次系统调用;</p>
+<p>整个操作两次 cpu copy，两次 DMA copy，四次上下文切换(读两次，写两次)，两次系统调用;</p>
+<h5 id="sendfile">sendfile</h5>
 <p>而<code>zeroCopy</code>可以直接从内核缓冲区写入socket缓冲区，避免了普通的<code>read()</code>方法的各种<strong>上下文交换</strong>以及<strong>内核空间缓冲区与用户空间缓冲区</strong>的交换</p>
 <p>改写后就会变成<img src="/img/zeroCopyreal.png" srcset="/img/loading.gif" alt="如图"></p>
-<p>整个过程两次 DMA copy，两次上下文切换，0 次 cpu copy，一个系统调用;</p>
-<h4 id="scatter-gather">Scatter/Gather</h4>
-<p>ps：看到上图，既然read buffer与socekt buffer之间还有一次copy，如果我们将该copy去掉呢？</p>
+<p>整个过程两次 DMA copy，两次上下文切换，1 次 cpu copy，一个系统调用;</p>
+<h5 id="scatter-gather-dma-sendfile">Scatter/Gather DMA + sendfile</h5>
+<p>ps：看到上图，既然read buffer与socekt buffer之间还有一次CPU copy，如果我们将该copy去掉呢？</p>
 <p>首先讲下原因： 这是因为在一般的Block DMA方式中，<code>源物理地址</code>和<code>目标物理地址</code>都得是<strong>连续</strong>的，所以一次只能传输物理上连续的一块数据，每传输一个块发起一次中断，直到传输完成，所以必须要在两个缓冲区之间拷贝数据;</p>
-<p>而<code>Scatter/Gather DMA</code>方式则不同，会预先维护一个物理上不连续的块描述符的链表，描述符中包含有数据的<code>起始地址</code>和<code>长度</code>;
-传输时只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比Block DMA要高。也就是说，硬件可以通过<code>Scatter/Gather DMA</code>直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据。因此上面的时序图还可以进一步简化;</p>
-<p>如<img src="/img/scatterGather.png" srcset="/img/loading.gif" alt="下图"></p>
-<h5 id="unmap内存映射支持">Unmap内存映射支持</h5>
+<p>而<code>Scatter/Gather DMA</code>方式则不同，会预先维护一个物理上<code>不连续的块描述符</code>的链表，描述符中包含有数据的<code>起始地址</code>和<code>长度</code>;
+传输时((DMA控制器负责)只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比<code>Block DMA</code></p>
+<blockquote>
+<blockquote>
+<p>Block DMA: 如果在传输完一块物理上连续的数据后引起一次中断，然后再由主机进行下一块物理上连续的数据传输</p>
+</blockquote>
+</blockquote>
+<p>要高。也就是说，硬件可以通过<code>Scatter/Gather DMA</code>直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据(再次省去了一次CPU copy)。因此上面的时序图还可以进一步简化;</p>
+<p>如<img src="/img/zeroCopyScatterGather.png" srcset="/img/loading.gif" alt="下图"></p>
+<p>总的只需要2次上下文切换，0次CPU copy,3 次DMAcopy；</p>
+<h5 id="mmap-unmap内存映射支持">mmap/Unmap内存映射支持</h5>
 <p>上面的<code>Scatter/gather</code>很明显DMA从内核取得数据是不可以更改数据的，如果要修改数据，则需要<code>内存映射</code>的支持,可以将文件数据映射到内核地址空间，修改完后刷回去;</p>
-<p>当然了，<code>mmap</code>也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,对应的的最后也要调用一个<code>unmap()</code>方法</p>
+<p>当然了，<code>mmap</code>也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,然后进行一次<code>write()</code>的调用，对应的的最后也要调用一个<code>unmap()</code>系统调用,所以这里总共会有六次上下文切换,</p>
+<p>另外，还需要在TLB中维护所有数据对应的地址空间;</p>
+<p><img src="/img/zeroCopymap.png" srcset="/img/loading.gif" alt="如图"></p>
+<p>总的需要6次上下文切换，1次CPU copy，2次DMA copy</p>
+<h5 id="splice">Splice</h5>
+<p>还有一种方法<code>Splice</code>是基于管道的，可以用于在内核区进行,同样避免了用户态切换以及CPU的copy:
+<img src="/img/zeroCopySplice.png" srcset="/img/loading.gif" alt="如图"></p>
+<p>要特别注意的就是这两个buffer其中一个的<code>fd</code>必须是管道设备</p>
 <h4 id="线程设计">线程设计</h4>
 <p>进程方面也是一个acceptor的线程和N个processor线程，其中processor线程都会处理<strong>固定数目</strong>的connection;</p>
 <h3 id="存储">存储</h3>

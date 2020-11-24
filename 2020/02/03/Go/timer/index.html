@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      662 字
+      4.5k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      11
+      78
        分钟
     </span>
   
@@ -226,19 +226,730 @@
 	C &lt;-<span class="hljs-keyword">chan</span> Time <span class="hljs-comment">//一个channel，在timer过期后，这个只读chan会有一个值</span>
 	r runtimeTimer
 &#125;</code></pre></div>
+<p>在1.13以下(实际还要加上1.10以后),timer的实现有些不一样，首先timer结构复杂了一些:</p>
+<p><code>timerproc</code>和小顶堆分成最多64个<code>timerproc</code>协程和四叉堆，
+用来休眠就近时间的方法还是依赖<code>futex timeout</code>机制。默认timerproc数量会跟<code>GOMAXPROCS</code>一致的，但最大也就64个，因为会被64取摸;</p>
+<p>但在1.14下，其性能优化了了几个数量级:</p>
+<ul>
+<li>其将存放事件的四叉堆放到了P中</li>
+<li>取消了<code>timerproc</code>，使用netpoll的epollwait来做就近时间的休眠等待(这样每次<code>runtime.schedule</code>都可以检查到定时器上有无运行到时的timer)；</li>
+</ul>
+<h3 id="1-13版本下">1.13版本下</h3>
+<p>回顾一下:</p>
+<ul>
+<li>new一个<code>timer</code>使用的是<code>NewTimer()</code>函数，实际调用了<code>startTimer(t *timer)</code>,</li>
+<li>而<code>startTimer</code>函数实际就是调用了<code>runtime.addTimer</code>函数，实际增加一个timer t到当前<code>P</code>上，避免了修改其他P的堆上的timer的<code>when</code>字段，可能会导致堆无法排序:</li>
+</ul>
+<p>timer的结构是一个64长度的数组:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">const</span> timersLen = <span class="hljs-number">64</span>
+
+<span class="hljs-keyword">var</span> timers [timersLen]<span class="hljs-keyword">struct</span> &#123;
+    timersBucket
+    <span class="hljs-comment">// The padding should eliminate false sharing</span>
+	<span class="hljs-comment">// between timersBucket values.</span>
+	pad [cpu.CacheLinePadSize - unsafe.Sizeof(timersBucket&#123;&#125;)%cpu.CacheLinePadSize]<span class="hljs-keyword">byte</span>
+&#125;
+<span class="hljs-comment">//runtime下</span>
+<span class="hljs-comment">//go:notinheap</span>
+<span class="hljs-keyword">type</span> timersBucket <span class="hljs-keyword">struct</span> &#123;
+	lock         mutex
+	gp           *g
+	created      <span class="hljs-keyword">bool</span>
+	sleeping     <span class="hljs-keyword">bool</span>
+	rescheduling <span class="hljs-keyword">bool</span>
+	sleepUntil   <span class="hljs-keyword">int64</span>
+	waitnote     note
+	t            []*timer
+&#125;
+
+<span class="hljs-comment">// Package time knows the layout of this structure.</span>
+<span class="hljs-comment">// If this struct changes, adjust ../time/sleep.go:/runtimeTimer.</span>
+<span class="hljs-comment">// For GOOS=nacl, package syscall knows the layout of this structure.</span>
+<span class="hljs-comment">// If this struct changes, adjust ../syscall/net_nacl.go:/runtimeTimer.</span>
+<span class="hljs-keyword">type</span> timer <span class="hljs-keyword">struct</span> &#123;
+	tb *timersBucket <span class="hljs-comment">// the bucket the timer lives in</span>
+	i  <span class="hljs-keyword">int</span>           <span class="hljs-comment">// heap index</span>
+
+	<span class="hljs-comment">// Timer wakes up at when, and then at when+period, ... (period &gt; 0 only)</span>
+	<span class="hljs-comment">// each time calling f(arg, now) in the timer goroutine, so f must be</span>
+	<span class="hljs-comment">// a well-behaved function and not block.</span>
+	when   <span class="hljs-keyword">int64</span>
+	period <span class="hljs-keyword">int64</span>
+	f      <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(<span class="hljs-keyword">interface</span>&#123;&#125;, <span class="hljs-keyword">uintptr</span>)</span>
+	<span class="hljs-title">arg</span>    <span class="hljs-title">interface</span></span>&#123;&#125;
+	seq    <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
 <p>runtimeTimer结构:
 是一个接口</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Interface to timers implemented in package runtime.</span>
 <span class="hljs-comment">// Must be in sync with ../runtime/time.go:/^type timer</span>
+<span class="hljs-comment">//同runtime.timer结构一样</span>
 <span class="hljs-keyword">type</span> runtimeTimer <span class="hljs-keyword">struct</span> &#123;
 	tb <span class="hljs-keyword">uintptr</span>
 	i  <span class="hljs-keyword">int</span>
 
 	when   <span class="hljs-keyword">int64</span>
-	period <span class="hljs-keyword">int64</span>
+	period <span class="hljs-keyword">int64</span> <span class="hljs-comment">//是否是周期运行</span>
 	f      <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(<span class="hljs-keyword">interface</span>&#123;&#125;, <span class="hljs-keyword">uintptr</span>)</span> // <span class="hljs-title">NOTE</span>: <span class="hljs-title">must</span> <span class="hljs-title">not</span> <span class="hljs-title">be</span> <span class="hljs-title">closure</span>,不能是闭包？？？，初始化计时器
 	<span class="hljs-title">arg</span>    <span class="hljs-title">interface</span></span>&#123;&#125;
 	seq    <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
+<p>调用的函数:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//1.13</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">addtimer</span><span class="hljs-params">(t *timer)</span></span> &#123;
+    <span class="hljs-comment">// 得到要被插入的 bucket</span>
+    tb := t.assignBucket()
+
+    <span class="hljs-comment">// 加锁，将timer插入到bucket中</span>
+    lock(&amp;tb.lock)
+    ok := tb.addtimerLocked(t)
+    unlock(&amp;tb.lock)
+
+    <span class="hljs-keyword">if</span> !ok &#123;
+    badTimer()
+    &#125;
+&#125;
+<span class="hljs-comment">//分配timer buckets</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(t *timer)</span> <span class="hljs-title">assignBucket</span><span class="hljs-params">()</span> *<span class="hljs-title">timersBucket</span></span> &#123;
+    id := <span class="hljs-keyword">uint8</span>(getg().m.p.ptr().id) % timersLen
+    t.tb = &amp;timers[id].timersBucket
+    <span class="hljs-keyword">return</span> t.tb
+&#125;
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(tb *timersBucket)</span> <span class="hljs-title">addtimerLocked</span><span class="hljs-params">(t *timer)</span> <span class="hljs-title">bool</span></span> &#123;
+    t.i = <span class="hljs-built_in">len</span>(tb.t)
+    tb.t = <span class="hljs-built_in">append</span>(tb.t, t)
+    <span class="hljs-keyword">if</span> !siftupTimer(tb.t, t.i) &#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    &#125;
+    <span class="hljs-keyword">if</span> t.i == <span class="hljs-number">0</span> &#123;
+        <span class="hljs-keyword">if</span> tb.sleeping &amp;&amp; tb.sleepUntil &gt; t.when &#123;
+            tb.sleeping = <span class="hljs-literal">false</span>
+            notewakeup(&amp;tb.waitnote)
+        &#125;
+        ...
+        <span class="hljs-keyword">if</span> !tb.created &#123;
+            tb.created = <span class="hljs-literal">true</span>
+            <span class="hljs-keyword">go</span> timerproc(tb)
+        &#125;
+    &#125;
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+&#125;</code></pre></div>
+<p>我们发现有一个bucket的概念:</p>
+<p>在1.13之前，有64个全局的timerBucket，timer整个生命周期全部由timerBucket管理和调度;</p>
+<ul>
+<li>
+<p>然后再调用<code>timerproc</code>方法从堆顶拿timer，判断是否过期，到期就执行</p>
+</li>
+<li>
+<p>bucket中无任务时，会调用<code>goparkunlock</code>来休眠该goroutine</p>
+</li>
+<li>
+<p>至少有一个timer任务时，<code>notetsleepg</code>传入下次到期时间来休眠（<code>notetsleepg</code>其实有调用<code>entrysyscallback</code>触发<code>handoffp</code>，即一定触发到调度）</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">timerproc</span><span class="hljs-params">(tb *timersBucket)</span></span> &#123;
+    tb.gp = getg()
+	<span class="hljs-keyword">for</span> &#123;
+		lock(&amp;tb.lock)
+		tb.sleeping = <span class="hljs-literal">false</span>
+		now := nanotime()
+		delta := <span class="hljs-keyword">int64</span>(<span class="hljs-number">-1</span>)
+		<span class="hljs-keyword">for</span> &#123;
+			<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(tb.t) == <span class="hljs-number">0</span> &#123;
+				delta = <span class="hljs-number">-1</span>
+				<span class="hljs-keyword">break</span>
+			&#125;
+			t := tb.t[<span class="hljs-number">0</span>]
+            delta = t.when - now
+            <span class="hljs-comment">//timer未到期</span>
+			<span class="hljs-keyword">if</span> delta &gt; <span class="hljs-number">0</span> &#123;
+				<span class="hljs-keyword">break</span>
+			&#125;
+			ok := <span class="hljs-literal">true</span>
+			<span class="hljs-keyword">if</span> t.period &gt; <span class="hljs-number">0</span> &#123;
+				<span class="hljs-comment">// leave in heap but adjust next time to fire</span>
+				t.when += t.period * (<span class="hljs-number">1</span> + -delta/t.period)
+				<span class="hljs-keyword">if</span> !siftdownTimer(tb.t, <span class="hljs-number">0</span>) &#123;
+					ok = <span class="hljs-literal">false</span>
+				&#125;
+			&#125; <span class="hljs-keyword">else</span> &#123;
+				<span class="hljs-comment">// remove from heap</span>
+				last := <span class="hljs-built_in">len</span>(tb.t) - <span class="hljs-number">1</span>
+				<span class="hljs-keyword">if</span> last &gt; <span class="hljs-number">0</span> &#123;
+					tb.t[<span class="hljs-number">0</span>] = tb.t[last]
+					tb.t[<span class="hljs-number">0</span>].i = <span class="hljs-number">0</span>
+				&#125;
+				tb.t[last] = <span class="hljs-literal">nil</span>
+				tb.t = tb.t[:last]
+				<span class="hljs-keyword">if</span> last &gt; <span class="hljs-number">0</span> &#123;
+					<span class="hljs-keyword">if</span> !siftdownTimer(tb.t, <span class="hljs-number">0</span>) &#123;
+						ok = <span class="hljs-literal">false</span>
+					&#125;
+				&#125;
+				t.i = <span class="hljs-number">-1</span> <span class="hljs-comment">// mark as removed</span>
+			&#125;
+			f := t.f
+			arg := t.arg
+			seq := t.seq
+			unlock(&amp;tb.lock)
+			<span class="hljs-keyword">if</span> !ok &#123;
+				badTimer()
+			&#125;
+			...
+			f(arg, seq)
+			lock(&amp;tb.lock)
+        &#125;
+        <span class="hljs-comment">//无任务剩下</span>
+		<span class="hljs-keyword">if</span> delta &lt; <span class="hljs-number">0</span> || faketime &gt; <span class="hljs-number">0</span> &#123;
+			<span class="hljs-comment">// No timers left - put goroutine to sleep.</span>
+			tb.rescheduling = <span class="hljs-literal">true</span>
+			goparkunlock(&amp;tb.lock, waitReasonTimerGoroutineIdle, traceEvGoBlock, <span class="hljs-number">1</span>)
+			<span class="hljs-keyword">continue</span>
+		&#125;
+		<span class="hljs-comment">// At least one timer pending. Sleep until then.</span>
+		tb.sleeping = <span class="hljs-literal">true</span>
+		tb.sleepUntil = now + delta
+		noteclear(&amp;tb.waitnote)
+		unlock(&amp;tb.lock)
+		notetsleepg(&amp;tb.waitnote, delta)
+	&#125;
+&#125;</code></pre></div>
+<ul>
+<li>其中<code>notetsleepg</code>会调用<code>notetsleepg_internal</code>,该函数最后实际会调用<code>futexsleep</code>来休眠</li>
+<li>相应的要使用<code>futexwakeup</code>来唤醒</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Atomically,</span>
+<span class="hljs-comment">//	if(*addr == val) sleep</span>
+<span class="hljs-comment">// Might be woken up spuriously; that's allowed.</span>
+<span class="hljs-comment">// Don't sleep longer than ns; ns &lt; 0 means forever.</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">futexsleep</span><span class="hljs-params">(addr *<span class="hljs-keyword">uint32</span>, val <span class="hljs-keyword">uint32</span>, ns <span class="hljs-keyword">int64</span>)</span></span> &#123;
+	<span class="hljs-comment">// Some Linux kernels have a bug where futex of</span>
+	<span class="hljs-comment">// FUTEX_WAIT returns an internal error code</span>
+	<span class="hljs-comment">// as an errno. Libpthread ignores the return value</span>
+	<span class="hljs-comment">// here, and so can we: as it says a few lines up,</span>
+	<span class="hljs-comment">// spurious wakeups are allowed.</span>
+	<span class="hljs-keyword">if</span> ns &lt; <span class="hljs-number">0</span> &#123;
+		futex(unsafe.Pointer(addr), _FUTEX_WAIT_PRIVATE, val, <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>)
+		<span class="hljs-keyword">return</span>
+	&#125;
+
+	<span class="hljs-keyword">var</span> ts timespec
+	ts.setNsec(ns)
+	futex(unsafe.Pointer(addr), _FUTEX_WAIT_PRIVATE, val, unsafe.Pointer(&amp;ts), <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>)
+&#125;
+<span class="hljs-comment">// If any procs are sleeping on addr, wake up at most cnt.</span>
+<span class="hljs-comment">//go:nosplit</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">futexwakeup</span><span class="hljs-params">(addr *<span class="hljs-keyword">uint32</span>, cnt <span class="hljs-keyword">uint32</span>)</span></span> &#123;
+	ret := futex(unsafe.Pointer(addr), _FUTEX_WAKE_PRIVATE, cnt, <span class="hljs-literal">nil</span>, <span class="hljs-literal">nil</span>, <span class="hljs-number">0</span>)
+	<span class="hljs-keyword">if</span> ret &gt;= <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">return</span>
+	&#125;
+
+	<span class="hljs-comment">// I don't know that futex wakeup can return</span>
+	<span class="hljs-comment">// EAGAIN or EINTR, but if it does, it would be</span>
+	<span class="hljs-comment">// safe to loop and call futex again.</span>
+	systemstack(<span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;
+		<span class="hljs-built_in">print</span>(<span class="hljs-string">"futexwakeup addr="</span>, addr, <span class="hljs-string">" returned "</span>, ret, <span class="hljs-string">"\n"</span>)
+	&#125;)
+
+	*(*<span class="hljs-keyword">int32</span>)(unsafe.Pointer(<span class="hljs-keyword">uintptr</span>(<span class="hljs-number">0x1006</span>))) = <span class="hljs-number">0x1006</span>
+&#125;</code></pre></div>
+<h3 id="1-14版本下">1.14版本下:</h3>
+<p>处理器P中有:<code>timers</code>数组，用作四叉堆:
+timer的结构:</p>
+<ul>
+<li><code>pp</code>:</li>
+<li><code>when</code>和<code>period</code>: 会在<code>when</code>的时候唤醒，然后下一次<code>when</code>+<code>period</code></li>
+<li><code>f</code>:timer调用的function应该well-behave(???不是很明白)且不能阻塞的</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go">
+<span class="hljs-keyword">type</span> p <span class="hljs-keyword">struct</span> &#123;
+        <span class="hljs-comment">// 保护timers堆读写安全</span>
+        timersLock mutex
+
+        <span class="hljs-comment">// 存放定时器任务</span>
+        timers []*timer
+    
+        ,,,
+&#125;
+<span class="hljs-comment">//可以对比一下1.13的timer</span>
+<span class="hljs-comment">//runtime.timer</span>
+<span class="hljs-keyword">type</span> timer <span class="hljs-keyword">struct</span> &#123;
+    <span class="hljs-comment">// If this timer is on a heap, which P's heap it is on.</span>
+	<span class="hljs-comment">// puintptr rather than *p to match uintptr in the versions</span>
+	<span class="hljs-comment">// of this struct defined in other packages.</span>
+    pp puintptr  <span class="hljs-comment">// p的位置</span>
+    <span class="hljs-comment">// Timer wakes up at when, and then at when+period, ... (period &gt; 0 only)</span>
+	<span class="hljs-comment">// each time calling f(arg, now) in the timer goroutine, so f must be</span>
+	<span class="hljs-comment">// a well-behaved function and not block.</span>
+    when   <span class="hljs-keyword">int64</span> <span class="hljs-comment">// 到期时间</span>
+    period <span class="hljs-keyword">int64</span> <span class="hljs-comment">// 周期时间，适合ticker</span>
+    f      <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(<span class="hljs-keyword">interface</span>&#123;&#125;, <span class="hljs-keyword">uintptr</span>)</span> // 回调方法
+    <span class="hljs-title">arg</span>    <span class="hljs-title">interface</span></span>&#123;&#125;  <span class="hljs-comment">// 参数</span>
+    seq    <span class="hljs-keyword">uintptr</span>  <span class="hljs-comment">// 序号</span>
+
+    <span class="hljs-comment">//// What to set the when field to in timerModifiedXX status.</span>
+    nextwhen <span class="hljs-keyword">int64</span> <span class="hljs-comment">// 下次的到期时间</span>
+    status <span class="hljs-keyword">uint32</span> <span class="hljs-comment">// 状态</span>
+&#125;</code></pre></div>
+<ul>
+<li><code>status</code>:取值如下所示:</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Values for the timer status field.</span>
+<span class="hljs-keyword">const</span> (
+	<span class="hljs-comment">// Timer has no status set yet.</span>
+	timerNoStatus = <span class="hljs-literal">iota</span>
+
+	<span class="hljs-comment">// Waiting for timer to fire.</span>
+	<span class="hljs-comment">// The timer is in some P's heap.</span>
+	timerWaiting
+
+	<span class="hljs-comment">// Running the timer function.</span>
+	<span class="hljs-comment">// A timer will only have this status briefly.</span>
+	timerRunning
+
+	<span class="hljs-comment">// The timer is deleted and should be removed.</span>
+	<span class="hljs-comment">// It should not be run, but it is still in some P's heap.</span>
+	timerDeleted
+
+	<span class="hljs-comment">// The timer is being removed.</span>
+	<span class="hljs-comment">// The timer will only have this status briefly.</span>
+	timerRemoving
+
+	<span class="hljs-comment">// The timer has been stopped.</span>
+	<span class="hljs-comment">// It is not in any P's heap.</span>
+	timerRemoved
+
+	<span class="hljs-comment">// The timer is being modified.</span>
+	<span class="hljs-comment">// The timer will only have this status briefly.</span>
+	timerModifying
+
+	<span class="hljs-comment">// The timer has been modified to an earlier time.</span>
+	<span class="hljs-comment">// The new when value is in the nextwhen field.</span>
+	<span class="hljs-comment">// The timer is in some P's heap, possibly in the wrong place.</span>
+	timerModifiedEarlier
+
+	<span class="hljs-comment">// The timer has been modified to the same or a later time.</span>
+	<span class="hljs-comment">// The new when value is in the nextwhen field.</span>
+	<span class="hljs-comment">// The timer is in some P's heap, possibly in the wrong place.</span>
+	timerModifiedLater
+
+	<span class="hljs-comment">// The timer has been modified and is being moved.</span>
+	<span class="hljs-comment">// The timer will only have this status briefly.</span>
+	timerMoving
+)</code></pre></div>
+<h4 id="大概流程">大概流程</h4>
+<ul>
+<li><code>startTimer</code>：<code>time/sleep.go</code>里面的startTimer实际就是runtime里面的startTimer</li>
+<li><code>addTimer</code>:将定时任务放到当前P中</li>
+<li><code>wakeNetPoller(when)</code>: when之前不会wakeup任何一个，全局的<code>sched.lastpoll</code>记录到上一次是否有wakeup，如果无就进行判断,</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// startTimer adds t to the timer heap.</span>
+<span class="hljs-comment">//go:linkname startTimer time.startTimer</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">startTimer</span><span class="hljs-params">(t *timer)</span></span> &#123;
+	<span class="hljs-keyword">if</span> raceenabled &#123;
+		racerelease(unsafe.Pointer(t))
+	&#125;
+	addtimer(t)
+&#125;
+<span class="hljs-comment">// addtimer adds a timer to the current P.</span>
+<span class="hljs-comment">// This should only be called with a newly created timer.</span>
+<span class="hljs-comment">// That avoids the risk of changing the when field of a timer in some P's heap,</span>
+<span class="hljs-comment">// which could cause the heap to become unsorted.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">addtimer</span><span class="hljs-params">(t *timer)</span></span> &#123;
+	<span class="hljs-comment">// when must never be negative; otherwise runtimer will overflow</span>
+	<span class="hljs-comment">// during its delta calculation and never expire other runtime timers.</span>
+	<span class="hljs-keyword">if</span> t.when &lt; <span class="hljs-number">0</span> &#123;
+		t.when = maxWhen
+	&#125;
+	<span class="hljs-keyword">if</span> t.status != timerNoStatus &#123;
+		throw(<span class="hljs-string">"addtimer called with initialized timer"</span>)
+	&#125;
+	t.status = timerWaiting
+
+	when := t.when
+
+	pp := getg().m.p.ptr()
+	lock(&amp;pp.timersLock)
+	cleantimers(pp)
+	doaddtimer(pp, t)
+	unlock(&amp;pp.timersLock)
+
+	wakeNetPoller(when)
+&#125;
+<span class="hljs-comment">// wakeNetPoller wakes up the thread sleeping in the network poller,</span>
+<span class="hljs-comment">// if there is one, and if it isn't going to wake up anyhow before</span>
+<span class="hljs-comment">// the when argument.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">wakeNetPoller</span><span class="hljs-params">(when <span class="hljs-keyword">int64</span>)</span></span> &#123;
+	<span class="hljs-keyword">if</span> atomic.Load64(&amp;sched.lastpoll) == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// In findrunnable we ensure that when polling the pollUntil</span>
+		<span class="hljs-comment">// field is either zero or the time to which the current</span>
+		<span class="hljs-comment">// poll is expected to run. This can have a spurious wakeup</span>
+		<span class="hljs-comment">// but should never miss a wakeup.</span>
+		pollerPollUntil := <span class="hljs-keyword">int64</span>(atomic.Load64(&amp;sched.pollUntil))
+		<span class="hljs-keyword">if</span> pollerPollUntil == <span class="hljs-number">0</span> || pollerPollUntil &gt; when &#123;
+			netpollBreak()
+		&#125;
+	&#125;
+&#125;</code></pre></div>
+<p>这里注意<code>wakeNetPoller</code>激活netpoll的等待，是在<code>findrunnable</code>方法里面会超时阻塞(再次复习一次):</p>
+<ul>
+<li>初始化<code>netpollinit</code>中， 会创建一个读(netpollBreakRd)，写(netpollBreakWr)的管道(通过<code>nonblockingPipe</code>)</li>
+<li>而激活的<code>wakeNetPoller</code>实际就是往<code>netpollBreakWr</code>管道里面写入东西，自然就会唤醒netPoll</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">var</span> (
+	epfd <span class="hljs-keyword">int32</span> = <span class="hljs-number">-1</span> <span class="hljs-comment">// epoll descriptor</span>
+
+	netpollBreakRd, netpollBreakWr <span class="hljs-keyword">uintptr</span> <span class="hljs-comment">// for netpollBreak</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">netpollinit</span><span class="hljs-params">()</span></span> &#123;
+	epfd = epollcreate1(_EPOLL_CLOEXEC)
+	<span class="hljs-keyword">if</span> epfd &lt; <span class="hljs-number">0</span> &#123;
+		epfd = epollcreate(<span class="hljs-number">1024</span>)
+		<span class="hljs-keyword">if</span> epfd &lt; <span class="hljs-number">0</span> &#123;
+			<span class="hljs-built_in">println</span>(<span class="hljs-string">"runtime: epollcreate failed with"</span>, -epfd)
+			throw(<span class="hljs-string">"runtime: netpollinit failed"</span>)
+		&#125;
+		closeonexec(epfd)
+	&#125;
+	r, w, errno := nonblockingPipe()
+	<span class="hljs-keyword">if</span> errno != <span class="hljs-number">0</span> &#123;
+		<span class="hljs-built_in">println</span>(<span class="hljs-string">"runtime: pipe failed with"</span>, -errno)
+		throw(<span class="hljs-string">"runtime: pipe failed"</span>)
+	&#125;
+	ev := epollevent&#123;
+		events: _EPOLLIN,
+	&#125;
+	*(**<span class="hljs-keyword">uintptr</span>)(unsafe.Pointer(&amp;ev.data)) = &amp;netpollBreakRd
+	errno = epollctl(epfd, _EPOLL_CTL_ADD, r, &amp;ev)
+	<span class="hljs-keyword">if</span> errno != <span class="hljs-number">0</span> &#123;
+		<span class="hljs-built_in">println</span>(<span class="hljs-string">"runtime: epollctl failed with"</span>, -errno)
+		throw(<span class="hljs-string">"runtime: epollctl failed"</span>)
+	&#125;
+	netpollBreakRd = <span class="hljs-keyword">uintptr</span>(r)
+	netpollBreakWr = <span class="hljs-keyword">uintptr</span>(w)
+&#125;
+
+<span class="hljs-comment">// netpollBreak interrupts an epollwait.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">netpollBreak</span><span class="hljs-params">()</span></span> &#123;
+	<span class="hljs-keyword">for</span> &#123;
+		<span class="hljs-keyword">var</span> b <span class="hljs-keyword">byte</span>
+		n := write(netpollBreakWr, unsafe.Pointer(&amp;b), <span class="hljs-number">1</span>)
+		<span class="hljs-keyword">if</span> n == <span class="hljs-number">1</span> &#123;
+			<span class="hljs-keyword">break</span>
+		&#125;
+		<span class="hljs-keyword">if</span> n == -_EINTR &#123;
+			<span class="hljs-keyword">continue</span>
+		&#125;
+		<span class="hljs-keyword">if</span> n == -_EAGAIN &#123;
+			<span class="hljs-keyword">return</span>
+		&#125;
+		<span class="hljs-built_in">println</span>(<span class="hljs-string">"runtime: netpollBreak write failed with"</span>, -n)
+		throw(<span class="hljs-string">"runtime: netpollBreak write failed"</span>)
+	&#125;
+&#125;</code></pre></div>
+<ul>
+<li>而这一切都是在<code>findrunnable</code>中尝试进行netpoll检查时<code>netpoll(0)</code>方法用到epoll_wait,这里不仅监控到红黑树上的fd,又可以监控到定时任务的等待;</li>
+<li>注意一下<code>checkTimers</code>方法获取<code>pollUntil</code>的方法，下面会继续讲解</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Finds a runnable goroutine to execute.</span>
+<span class="hljs-comment">// Tries to steal from other P's, get g from local or global queue, poll network.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">findrunnable</span><span class="hljs-params">()</span> <span class="hljs-params">(gp *g, inheritTime <span class="hljs-keyword">bool</span>)</span></span> &#123;
+    ...
+    <span class="hljs-comment">// Poll network.</span>
+	<span class="hljs-comment">// This netpoll is only an optimization before we resort to stealing.</span>
+	<span class="hljs-comment">// We can safely skip it if there are no waiters or a thread is blocked</span>
+	<span class="hljs-comment">// in netpoll already. If there is any kind of logical race with that</span>
+	<span class="hljs-comment">// blocked thread (e.g. it has already returned from netpoll, but does</span>
+	<span class="hljs-comment">// not set lastpoll yet), this thread will do blocking netpoll below</span>
+    <span class="hljs-comment">// anyway.</span>
+    <span class="hljs-comment">//这里是非阻塞，还没进去呢</span>
+	<span class="hljs-keyword">if</span> netpollinited() &amp;&amp; atomic.Load(&amp;netpollWaiters) &gt; <span class="hljs-number">0</span> &amp;&amp; atomic.Load64(&amp;sched.lastpoll) != <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> list := netpoll(<span class="hljs-number">0</span>); !list.empty() &#123; <span class="hljs-comment">// non-blocking</span>
+			gp := list.pop()
+			injectglist(&amp;list)
+			casgstatus(gp, _Gwaiting, _Grunnable)
+			<span class="hljs-keyword">if</span> trace.enabled &#123;
+				traceGoUnpark(gp, <span class="hljs-number">0</span>)
+			&#125;
+			<span class="hljs-keyword">return</span> gp, <span class="hljs-literal">false</span>
+		&#125;
+    &#125;
+    ...
+    <span class="hljs-comment">//尝试4次，从其他p的runq偷，再从其他p的timer偷</span>
+    <span class="hljs-keyword">for</span> i := <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">4</span>; i++ &#123;
+		<span class="hljs-keyword">for</span> enum := stealOrder.start(fastrand()); !enum.done(); enum.next() &#123;
+			<span class="hljs-keyword">if</span> sched.gcwaiting != <span class="hljs-number">0</span> &#123;
+				<span class="hljs-keyword">goto</span> top
+			&#125;
+			stealRunNextG := i &gt; <span class="hljs-number">2</span> <span class="hljs-comment">// first look for ready queues with more than 1 g</span>
+			p2 := allp[enum.position()]
+			<span class="hljs-keyword">if</span> _p_ == p2 &#123;
+				<span class="hljs-keyword">continue</span>
+			&#125;
+			<span class="hljs-keyword">if</span> gp := runqsteal(_p_, p2, stealRunNextG); gp != <span class="hljs-literal">nil</span> &#123;
+				<span class="hljs-keyword">return</span> gp, <span class="hljs-literal">false</span>
+			&#125;
+
+			<span class="hljs-comment">// Consider stealing timers from p2.</span>
+			<span class="hljs-comment">// This call to checkTimers is the only place where</span>
+			<span class="hljs-comment">// we hold a lock on a different P's timers.</span>
+			<span class="hljs-comment">// Lock contention can be a problem here, so avoid</span>
+			<span class="hljs-comment">// grabbing the lock if p2 is running and not marked</span>
+			<span class="hljs-comment">// for preemption. If p2 is running and not being</span>
+            <span class="hljs-comment">// preempted we assume it will handle its own timers.</span>
+            <span class="hljs-comment">//p2在运行且不在被抢占中，才可以认为其可以处理自己的timers</span>
+			<span class="hljs-keyword">if</span> i &gt; <span class="hljs-number">2</span> &amp;&amp; shouldStealTimers(p2) &#123;
+                <span class="hljs-comment">//执行已经到期的定时任务</span>
+                <span class="hljs-comment">//注意这里返回的w，下面详细讲解...</span>
+				tnow, w, ran := checkTimers(p2, now)
+                now = tnow
+                
+				<span class="hljs-keyword">if</span> w != <span class="hljs-number">0</span> &amp;&amp; (pollUntil == <span class="hljs-number">0</span> || w &lt; pollUntil) &#123;
+					pollUntil = w
+				&#125;
+				<span class="hljs-keyword">if</span> ran &#123;
+					<span class="hljs-comment">// Running the timers may have</span>
+					<span class="hljs-comment">// made an arbitrary number of G's</span>
+					<span class="hljs-comment">// ready and added them to this P's</span>
+					<span class="hljs-comment">// local run queue. That invalidates</span>
+					<span class="hljs-comment">// the assumption of runqsteal</span>
+					<span class="hljs-comment">// that is always has room to add</span>
+					<span class="hljs-comment">// stolen G's. So check now if there</span>
+					<span class="hljs-comment">// is a local G to run.</span>
+					<span class="hljs-keyword">if</span> gp, inheritTime := runqget(_p_); gp != <span class="hljs-literal">nil</span> &#123;
+						<span class="hljs-keyword">return</span> gp, inheritTime
+					&#125;
+					ranTimer = <span class="hljs-literal">true</span>
+				&#125;
+			&#125;
+		&#125;
+	&#125;
+    <span class="hljs-comment">//计算delta值，距离当前时间最近的时间点的时间差</span>
+    delta := <span class="hljs-keyword">int64</span>(<span class="hljs-number">-1</span>)
+	<span class="hljs-keyword">if</span> pollUntil != <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// checkTimers ensures that polluntil &gt; now.</span>
+		delta = pollUntil - now
+	&#125;
+    ...
+    <span class="hljs-comment">//最后还要进行一次阻塞的pollnetwork</span>
+    <span class="hljs-comment">// poll network</span>
+	<span class="hljs-keyword">if</span> netpollinited() &amp;&amp; (atomic.Load(&amp;netpollWaiters) &gt; <span class="hljs-number">0</span> || pollUntil != <span class="hljs-number">0</span>) &amp;&amp; atomic.Xchg64(&amp;sched.lastpoll, <span class="hljs-number">0</span>) != <span class="hljs-number">0</span> &#123;
+		atomic.Store64(&amp;sched.pollUntil, <span class="hljs-keyword">uint64</span>(pollUntil))
+		<span class="hljs-keyword">if</span> _g_.m.p != <span class="hljs-number">0</span> &#123;
+			throw(<span class="hljs-string">"findrunnable: netpoll with p"</span>)
+		&#125;
+		<span class="hljs-keyword">if</span> _g_.m.spinning &#123;
+			throw(<span class="hljs-string">"findrunnable: netpoll with spinning"</span>)
+		&#125;
+		<span class="hljs-keyword">if</span> faketime != <span class="hljs-number">0</span> &#123;
+			<span class="hljs-comment">// When using fake time, just poll.</span>
+			delta = <span class="hljs-number">0</span>
+		&#125;
+		list := netpoll(delta) <span class="hljs-comment">// block until new work is available</span>
+		atomic.Store64(&amp;sched.pollUntil, <span class="hljs-number">0</span>)
+		atomic.Store64(&amp;sched.lastpoll, <span class="hljs-keyword">uint64</span>(nanotime()))
+		<span class="hljs-keyword">if</span> faketime != <span class="hljs-number">0</span> &amp;&amp; list.empty() &#123;
+			<span class="hljs-comment">// Using fake time and nothing is ready; stop M.</span>
+			<span class="hljs-comment">// When all M's stop, checkdead will call timejump.</span>
+			stopm()
+			<span class="hljs-keyword">goto</span> top
+		&#125;
+&#125;
+<span class="hljs-comment">// netpoll checks for ready network connections.</span>
+<span class="hljs-comment">// Returns list of goroutines that become runnable.</span>
+<span class="hljs-comment">// delay &lt; 0: blocks indefinitely</span>
+<span class="hljs-comment">// delay == 0: does not block, just polls</span>
+<span class="hljs-comment">// delay &gt; 0: block for up to that many nanoseconds</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">netpoll</span><span class="hljs-params">(delay <span class="hljs-keyword">int64</span>)</span> <span class="hljs-title">gList</span></span> &#123;
+    ...
+retry:
+    n := epollwait(epfd, &amp;events[<span class="hljs-number">0</span>], <span class="hljs-keyword">int32</span>(<span class="hljs-built_in">len</span>(events)), waitms)
+    ...
+&#125;</code></pre></div>
+<h4 id="checktimers方法">CheckTimers方法</h4>
+<p>继续上面的<code>checkTimers</code>方法:
+该方法主要是检查传入P上任何准备就绪的timers，通过<code>runtimers</code>来运行到期的定时任务，返回<code>下一次到期时间</code>以及<code>是否有定时任务到期</code></p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// checkTimers runs any timers for the P that are ready.</span>
+<span class="hljs-comment">// If now is not 0 it is the current time.</span>
+<span class="hljs-comment">// It returns the current time or 0 if it is not known,</span>
+<span class="hljs-comment">// and the time when the next timer should run or 0 if there is no next timer,</span>
+<span class="hljs-comment">// and reports whether it ran any timers.</span>
+<span class="hljs-comment">// If the time when the next timer should run is not 0,</span>
+<span class="hljs-comment">// it is always larger than the returned time.</span>
+<span class="hljs-comment">// We pass now in and out to avoid extra calls of nanotime.</span>
+<span class="hljs-comment">//go:yeswritebarrierrec</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">checkTimers</span><span class="hljs-params">(pp *p, now <span class="hljs-keyword">int64</span>)</span> <span class="hljs-params">(rnow, pollUntil <span class="hljs-keyword">int64</span>, ran <span class="hljs-keyword">bool</span>)</span></span> &#123;
+	<span class="hljs-comment">// If there are no timers to adjust, and the first timer on</span>
+	<span class="hljs-comment">// the heap is not yet ready to run, then there is nothing to do.</span>
+	<span class="hljs-keyword">if</span> atomic.Load(&amp;pp.adjustTimers) == <span class="hljs-number">0</span> &#123;
+		next := <span class="hljs-keyword">int64</span>(atomic.Load64(&amp;pp.timer0When))
+		<span class="hljs-keyword">if</span> next == <span class="hljs-number">0</span> &#123;
+			<span class="hljs-keyword">return</span> now, <span class="hljs-number">0</span>, <span class="hljs-literal">false</span>
+		&#125;
+		<span class="hljs-keyword">if</span> now == <span class="hljs-number">0</span> &#123;
+			now = nanotime()
+		&#125;
+		<span class="hljs-keyword">if</span> now &lt; next &#123;
+			<span class="hljs-comment">// Next timer is not ready to run.</span>
+			<span class="hljs-comment">// But keep going if we would clear deleted timers.</span>
+			<span class="hljs-comment">// This corresponds to the condition below where</span>
+			<span class="hljs-comment">// we decide whether to call clearDeletedTimers.</span>
+			<span class="hljs-keyword">if</span> pp != getg().m.p.ptr() || <span class="hljs-keyword">int</span>(atomic.Load(&amp;pp.deletedTimers)) &lt;= <span class="hljs-keyword">int</span>(atomic.Load(&amp;pp.numTimers)/<span class="hljs-number">4</span>) &#123;
+				<span class="hljs-keyword">return</span> now, next, <span class="hljs-literal">false</span>
+			&#125;
+		&#125;
+	&#125;
+
+	lock(&amp;pp.timersLock)
+
+	adjusttimers(pp)
+
+	rnow = now
+	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(pp.timers) &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">if</span> rnow == <span class="hljs-number">0</span> &#123;
+			rnow = nanotime()
+		&#125;
+		<span class="hljs-keyword">for</span> <span class="hljs-built_in">len</span>(pp.timers) &gt; <span class="hljs-number">0</span> &#123;
+			<span class="hljs-comment">// Note that runtimer may temporarily unlock</span>
+            <span class="hljs-comment">// pp.timersLock.</span>
+            <span class="hljs-comment">//运行定时任务</span>
+			<span class="hljs-keyword">if</span> tw := runtimer(pp, rnow); tw != <span class="hljs-number">0</span> &#123;
+				<span class="hljs-keyword">if</span> tw &gt; <span class="hljs-number">0</span> &#123;
+					pollUntil = tw
+				&#125;
+				<span class="hljs-keyword">break</span>
+			&#125;
+			ran = <span class="hljs-literal">true</span>
+		&#125;
+	&#125;
+
+	<span class="hljs-comment">// If this is the local P, and there are a lot of deleted timers,</span>
+	<span class="hljs-comment">// clear them out. We only do this for the local P to reduce</span>
+	<span class="hljs-comment">// lock contention on timersLock.</span>
+	<span class="hljs-keyword">if</span> pp == getg().m.p.ptr() &amp;&amp; <span class="hljs-keyword">int</span>(atomic.Load(&amp;pp.deletedTimers)) &gt; <span class="hljs-built_in">len</span>(pp.timers)/<span class="hljs-number">4</span> &#123;
+		clearDeletedTimers(pp)
+	&#125;
+
+	unlock(&amp;pp.timersLock)
+
+	<span class="hljs-keyword">return</span> rnow, pollUntil, ran
+&#125;</code></pre></div>
+<p>其中<code>runtimers</code>方法:</p>
+<ul>
+<li>遍历p的timer堆顶任务是否到期，如果是<code>timerWaiting</code>状态，进入尝试执行</li>
+<li><code>runOneTimer</code>尝试执行，如果是周期任务，还会重新入队;</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// runtimer examines the first timer in timers. If it is ready based on now,</span>
+<span class="hljs-comment">// it runs the timer and removes or updates it.</span>
+<span class="hljs-comment">// Returns 0 if it ran a timer, -1 if there are no more timers, or the time</span>
+<span class="hljs-comment">// when the first timer should run.</span>
+<span class="hljs-comment">// The caller must have locked the timers for pp.</span>
+<span class="hljs-comment">// If a timer is run, this will temporarily unlock the timers.</span>
+<span class="hljs-comment">//go:systemstack</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runtimer</span><span class="hljs-params">(pp *p, now <span class="hljs-keyword">int64</span>)</span> <span class="hljs-title">int64</span></span> &#123;
+	<span class="hljs-keyword">for</span> &#123;
+		t := pp.timers[<span class="hljs-number">0</span>]
+		<span class="hljs-keyword">if</span> t.pp.ptr() != pp &#123;
+			throw(<span class="hljs-string">"runtimer: bad p"</span>)
+		&#125;
+		<span class="hljs-keyword">switch</span> s := atomic.Load(&amp;t.status); s &#123;
+		<span class="hljs-keyword">case</span> timerWaiting:
+			<span class="hljs-keyword">if</span> t.when &gt; now &#123;
+				<span class="hljs-comment">// Not ready to run.</span>
+				<span class="hljs-keyword">return</span> t.when
+			&#125;
+
+			<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, s, timerRunning) &#123;
+				<span class="hljs-keyword">continue</span>
+			&#125;
+			<span class="hljs-comment">// Note that runOneTimer may temporarily unlock</span>
+			<span class="hljs-comment">// pp.timersLock.</span>
+			runOneTimer(pp, t, now)
+			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
+
+		<span class="hljs-keyword">case</span> timerDeleted:
+			<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, s, timerRemoving) &#123;
+				<span class="hljs-keyword">continue</span>
+			&#125;
+			dodeltimer0(pp)
+			<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, timerRemoving, timerRemoved) &#123;
+				badTimer()
+			&#125;
+			atomic.Xadd(&amp;pp.deletedTimers, <span class="hljs-number">-1</span>)
+			<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(pp.timers) == <span class="hljs-number">0</span> &#123;
+				<span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>
+			&#125;
+
+		<span class="hljs-keyword">case</span> timerModifiedEarlier, timerModifiedLater:
+			<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, s, timerMoving) &#123;
+				<span class="hljs-keyword">continue</span>
+			&#125;
+			t.when = t.nextwhen
+			dodeltimer0(pp)
+			doaddtimer(pp, t)
+			<span class="hljs-keyword">if</span> s == timerModifiedEarlier &#123;
+				atomic.Xadd(&amp;pp.adjustTimers, <span class="hljs-number">-1</span>)
+			&#125;
+			<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, timerMoving, timerWaiting) &#123;
+				badTimer()
+			&#125;
+
+		<span class="hljs-keyword">case</span> timerModifying:
+			<span class="hljs-comment">// Wait for modification to complete.</span>
+			osyield()
+
+		<span class="hljs-keyword">case</span> timerNoStatus, timerRemoved:
+			<span class="hljs-comment">// Should not see a new or inactive timer on the heap.</span>
+			badTimer()
+		<span class="hljs-keyword">case</span> timerRunning, timerRemoving, timerMoving:
+			<span class="hljs-comment">// These should only be set when timers are locked,</span>
+			<span class="hljs-comment">// and we didn't do it.</span>
+			badTimer()
+		<span class="hljs-keyword">default</span>:
+			badTimer()
+		&#125;
+	&#125;
+&#125;
+
+<span class="hljs-comment">// runOneTimer runs a single timer.</span>
+<span class="hljs-comment">// The caller must have locked the timers for pp.</span>
+<span class="hljs-comment">// This will temporarily unlock the timers while running the timer function.</span>
+<span class="hljs-comment">//go:systemstack</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">runOneTimer</span><span class="hljs-params">(pp *p, t *timer, now <span class="hljs-keyword">int64</span>)</span></span> &#123;
+	...
+
+	f := t.f
+	arg := t.arg
+	seq := t.seq
+
+	<span class="hljs-keyword">if</span> t.period &gt; <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// Leave in heap but adjust next time to fire.</span>
+		delta := t.when - now
+		t.when += t.period * (<span class="hljs-number">1</span> + -delta/t.period)
+		siftdownTimer(pp.timers, <span class="hljs-number">0</span>)
+		<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, timerRunning, timerWaiting) &#123;
+			badTimer()
+		&#125;
+		updateTimer0When(pp)
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-comment">// Remove from heap.</span>
+		dodeltimer0(pp)
+		<span class="hljs-keyword">if</span> !atomic.Cas(&amp;t.status, timerRunning, timerNoStatus) &#123;
+			badTimer()
+		&#125;
+	&#125;
+
+	...
+
+	unlock(&amp;pp.timersLock)
+
+	f(arg, seq)
+
+	lock(&amp;pp.timersLock)
+    ...
 &#125;</code></pre></div>
 <h4 id="reset-d-duration-方法">Reset(d Duration)方法</h4>
 <ol>
@@ -279,6 +990,24 @@
 	startTimer(&amp;t.r)
 	<span class="hljs-keyword">return</span> active
 &#125;</code></pre></div>
+<h2 id="性能分析">性能分析</h2>
+<ol>
+<li>
+<p>锁竞争?</p>
+<p>go1.14虽然将timer放在timer内，但是p操作heap也是需要锁的(<code>findrunnable</code>可能要偷其他p的timers)；
+go1.13<code>timerProcs</code>有timers和对应的锁,最大64个,但是最大的问题是<code>timerproc</code>操作<code>notetsleepg</code>会有系统调用，接着<code>handoffp</code>，这里要涉及全局<code>sched.lock</code>锁;</p>
+</li>
+<li>
+<p>runtime调度次数</p>
+<p>go1.13的<code>timerproc</code>本身就是属于goroutine，受到runtime的调度影响；
+go1.14则将timer的工作交给了<code>runtime.schedule</code>，不需要额外调度;</p>
+</li>
+<li>
+<p>上下文切换
+新增任务时，futex(在竞争导致操作结果不一致的时候还是会进入kernel)和epoll_wait都是syscall，无区别；
+但是go1.14无<code>timerproc</code>,新任务可以直接插入或者多次插入后再考虑是否休眠;</p>
+</li>
+</ol>
 <h2 id="引出">引出</h2>
 <h3 id="race-detector-竞态条件检测">Race Detector(竞态条件检测)</h3>
 <p>很简单:</p>
