@@ -1,0 +1,636 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content>
+  <meta name="author" content="Doujohner">
+  <meta name="keywords" content>
+  <title>Golang Sync Package - 兜的破烂</title>
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+
+
+  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
+  <link rel="stylesheet" href="/lib/hint/hint.min.css">
+
+  
+    
+    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_6peoq002giu.css">
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/color-schema.js"></script>
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Doujohner</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" href="javascript:">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container page-header text-center fade-in-up">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-10-02 15:01" pubdate>
+      October 2, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.6k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      24
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto" id="post">
+            <!-- SEO header -->
+            <h1 style="display: none">Golang Sync Package</h1>
+            
+            <div class="markdown-body" id="post-body">
+              <h1>Sync包的一些笔记</h1>
+<a id="more"></a>
+<h2 id="sync-once">Sync.Once</h2>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Once is an object that will perform exactly one action.</span>
+<span class="hljs-keyword">type</span> Once <span class="hljs-keyword">struct</span> &#123;
+	<span class="hljs-comment">// done indicates whether the action has been performed.</span>
+	<span class="hljs-comment">// It is first in the struct because it is used in the hot path.</span>
+	<span class="hljs-comment">// The hot path is inlined at every call site.</span>
+	<span class="hljs-comment">// Placing done first allows more compact instructions on some architectures (amd64/x86),</span>
+	<span class="hljs-comment">// and fewer instructions (to calculate offset) on other architectures.</span>
+	done <span class="hljs-keyword">uint32</span>
+	m    Mutex
+&#125;</code></pre></div>
+<p><code>once.Do()</code>方法中注意下要进行一次原子操作和一次加锁</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Do calls the function f if and only if Do is being called for the</span>
+<span class="hljs-comment">// first time for this instance of Once. In other words, given</span>
+<span class="hljs-comment">// 	var once Once</span>
+<span class="hljs-comment">// if once.Do(f) is called multiple times, only the first call will invoke f,</span>
+<span class="hljs-comment">// even if f has a different value in each invocation. A new instance of</span>
+<span class="hljs-comment">// Once is required for each function to execute.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Do is intended for initialization that must be run exactly once. Since f</span>
+<span class="hljs-comment">// is niladic, it may be necessary to use a function literal to capture the</span>
+<span class="hljs-comment">// arguments to a function to be invoked by Do:</span>
+<span class="hljs-comment">// 	config.once.Do(func() &#123; config.init(filename) &#125;)</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// Because no call to Do returns until the one call to f returns, if f causes</span>
+<span class="hljs-comment">// Do to be called, it will deadlock.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// If f panics, Do considers it to have returned; future calls of Do return</span>
+<span class="hljs-comment">// without calling f.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(o *Once)</span> <span class="hljs-title">Do</span><span class="hljs-params">(f <span class="hljs-keyword">func</span>()</span>)</span> &#123;
+	<span class="hljs-comment">// Note: Here is an incorrect implementation of Do:</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">//	if atomic.CompareAndSwapUint32(&amp;o.done, 0, 1) &#123;</span>
+	<span class="hljs-comment">//		f()</span>
+	<span class="hljs-comment">//	&#125;</span>
+    <span class="hljs-comment">//</span>
+    <span class="hljs-comment">//注意，上面是不正确的，因为要保证，atomic.StoreUint32在f返回后才能调用;</span>
+    <span class="hljs-comment">//两个goroutine同时进来call f，快的一个会直接call f，这个时候慢的那一个不会等待快的f完成，而是直接返回</span>
+	<span class="hljs-comment">// Do guarantees that when it returns, f has finished.</span>
+	<span class="hljs-comment">// This implementation would not implement that guarantee:</span>
+	<span class="hljs-comment">// given two simultaneous calls, the winner of the cas would</span>
+	<span class="hljs-comment">// call f, and the second would return immediately, without</span>
+	<span class="hljs-comment">// waiting for the first's call to f to complete.</span>
+	<span class="hljs-comment">// This is why the slow path falls back to a mutex, and why</span>
+	<span class="hljs-comment">// the atomic.StoreUint32 must be delayed until after f returns.</span>
+
+	<span class="hljs-keyword">if</span> atomic.LoadUint32(&amp;o.done) == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">// Outlined slow-path to allow inlining of the fast-path.</span>
+		o.doSlow(f)
+	&#125;
+&#125;
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(o *Once)</span> <span class="hljs-title">doSlow</span><span class="hljs-params">(f <span class="hljs-keyword">func</span>()</span>)</span> &#123;
+	o.m.Lock()
+    <span class="hljs-keyword">defer</span> o.m.Unlock()
+     <span class="hljs-comment">//这里需要再次重新判断下，因为atomic.LoadUint32取出状态值到o.m.Lock之间是有可能存在其它gotoutine改变status的状态值的</span>
+	<span class="hljs-keyword">if</span> o.done == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-keyword">defer</span> atomic.StoreUint32(&amp;o.done, <span class="hljs-number">1</span>)
+		f()
+	&#125;
+&#125;</code></pre></div>
+<h2 id="sync-waitgroup">sync.WaitGroup</h2>
+<p>首先看下其结构：</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A WaitGroup waits for a collection of goroutines to finish.</span>
+<span class="hljs-comment">// The main goroutine calls Add to set the number of</span>
+<span class="hljs-comment">// goroutines to wait for. Then each of the goroutines</span>
+<span class="hljs-comment">// runs and calls Done when finished. At the same time,</span>
+<span class="hljs-comment">// Wait can be used to block until all goroutines have finished.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// A WaitGroup must not be copied after first use.</span>
+<span class="hljs-keyword">type</span> WaitGroup <span class="hljs-keyword">struct</span> &#123;
+	noCopy noCopy
+
+	<span class="hljs-comment">// 64-bit value: high 32 bits are counter, low 32 bits are waiter count.</span>
+	<span class="hljs-comment">// 64-bit atomic operations require 64-bit alignment, but 32-bit</span>
+	<span class="hljs-comment">// compilers do not ensure it. So we allocate 12 bytes and then use</span>
+	<span class="hljs-comment">// the aligned 8 bytes in them as state, and the other 4 as storage</span>
+	<span class="hljs-comment">// for the sema.</span>
+	state1 [<span class="hljs-number">3</span>]<span class="hljs-keyword">uint32</span>
+&#125;</code></pre></div>
+<ul>
+<li>
+<p>带有nocopy，即使用时只可以传指针
+copy的隐藏含义是，这个结构体在传参的时候所有字段都会被复制，那么试想一下多线程下，同时对<code>state1</code>进行修改，明显不能保证线程安全;</p>
+</li>
+<li>
+<p>state1是一个3个uint32元素的数组，高32位为计数器（当前仍未执行结束的goroutine数目），第二个32位为等待goroutine完成的数目（有多少个等待者）,
+第三个可以理解为信号量semaphore， 至于为什么是3个元素，这个跟内存对齐有关，如下:</p>
+</li>
+</ul>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// state returns pointers to the state and sema fields stored within wg.state1.</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(wg *WaitGroup)</span> <span class="hljs-title">state</span><span class="hljs-params">()</span> <span class="hljs-params">(statep *<span class="hljs-keyword">uint64</span>, semap *<span class="hljs-keyword">uint32</span>)</span></span> &#123;
+	<span class="hljs-comment">//判断是否8位对齐</span>
+	<span class="hljs-keyword">if</span> <span class="hljs-keyword">uintptr</span>(unsafe.Pointer(&amp;wg.state1))%<span class="hljs-number">8</span> == <span class="hljs-number">0</span> &#123;
+		<span class="hljs-comment">//前面8个bytes做uint64指针statep，后面4bytes做sema</span>
+		<span class="hljs-keyword">return</span> (*<span class="hljs-keyword">uint64</span>)(unsafe.Pointer(&amp;wg.state1)), &amp;wg.state1[<span class="hljs-number">2</span>]
+	&#125; <span class="hljs-keyword">else</span> &#123;
+		<span class="hljs-keyword">return</span> (*<span class="hljs-keyword">uint64</span>)(unsafe.Pointer(&amp;wg.state1[<span class="hljs-number">1</span>])), &amp;wg.state1[<span class="hljs-number">0</span>]
+	&#125;
+&#125;</code></pre></div>
+<p><code>Add(delta)</code>方法: 将delta加到<code>[0]state1</code> 中
+<code>Wait()</code>,[1]state1(waiter counter) 减一;
+<code>Done()</code>，[0]state1(counter)减一;</p>
+<h2 id="sync-mutex">Sync.Mutex</h2>
+<p>互斥锁, 分为正常模式和饥饿模式
+结构体，注意也是<code>nocopy</code>的:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A Mutex is a mutual exclusion lock.</span>
+<span class="hljs-comment">// The zero value for a Mutex is an unlocked mutex.</span>
+<span class="hljs-comment">//</span>
+<span class="hljs-comment">// A Mutex must not be copied after first use.</span>
+<span class="hljs-keyword">type</span> Mutex <span class="hljs-keyword">struct</span> &#123;
+	state <span class="hljs-keyword">int32</span>
+	sema  <span class="hljs-keyword">uint32</span>
+&#125;</code></pre></div>
+<p><code>sema</code>就是Semaphore(信号量，mutex实际就是一种特殊的信号量)，平常用的<code>runtime.Semacquire</code>、<code>runtime.SemaRelease</code>等函数使用的用作同步的原语；</p>
+<p>其中<code>state</code>有几个状态:</p>
+<ul>
+<li><code>mutextLocked</code></li>
+<li><code>mutexWoken</code></li>
+<li><code>mutexStarving</code></li>
+<li><code>mutexWaiterShift</code></li>
+</ul>
+<p><code>starvationThresholdNs</code>:饥饿状态下,为了保证公平性，占用的过期时间</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">const</span> (
+	mutexLocked = <span class="hljs-number">1</span> &lt;&lt; <span class="hljs-literal">iota</span> <span class="hljs-comment">// mutex is locked</span>
+	mutexWoken
+	mutexStarving
+	mutexWaiterShift = <span class="hljs-literal">iota</span>
+
+	<span class="hljs-comment">// Mutex fairness.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Mutex can be in 2 modes of operations: normal and starvation.</span>
+	<span class="hljs-comment">// In normal mode waiters are queued in FIFO order, but a woken up waiter</span>
+	<span class="hljs-comment">// does not own the mutex and competes with new arriving goroutines over</span>
+	<span class="hljs-comment">// the ownership. New arriving goroutines have an advantage -- they are</span>
+	<span class="hljs-comment">// already running on CPU and there can be lots of them, so a woken up</span>
+	<span class="hljs-comment">// waiter has good chances of losing. In such case it is queued at front</span>
+	<span class="hljs-comment">// of the wait queue. If a waiter fails to acquire the mutex for more than 1ms,</span>
+	<span class="hljs-comment">// it switches mutex to the starvation mode.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// In starvation mode ownership of the mutex is directly handed off from</span>
+	<span class="hljs-comment">// the unlocking goroutine to the waiter at the front of the queue.</span>
+	<span class="hljs-comment">// New arriving goroutines don't try to acquire the mutex even if it appears</span>
+	<span class="hljs-comment">// to be unlocked, and don't try to spin. Instead they queue themselves at</span>
+	<span class="hljs-comment">// the tail of the wait queue.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// If a waiter receives ownership of the mutex and sees that either</span>
+	<span class="hljs-comment">// (1) it is the last waiter in the queue, or (2) it waited for less than 1 ms,</span>
+	<span class="hljs-comment">// it switches mutex back to normal operation mode.</span>
+	<span class="hljs-comment">//</span>
+	<span class="hljs-comment">// Normal mode has considerably better performance as a goroutine can acquire</span>
+	<span class="hljs-comment">// a mutex several times in a row even if there are blocked waiters.</span>
+	<span class="hljs-comment">// Starvation mode is important to prevent pathological cases of tail latency.</span>
+	starvationThresholdNs = <span class="hljs-number">1e6</span>
+)</code></pre></div>
+<p>其实上面的注释写的比较明白:</p>
+<ul>
+<li>
+<p><code>正常模式</code>: <code>mutex</code>的等待者都以FIFO顺序在排队，前一个协程执行结束解锁时，会唤醒等待队列中的一个协程，唤醒的协程和刚来的协程（<strong>还没进入队列</strong>）竞争锁的所有权,
+因为刚进来的协程当前正在持有着cpu，资源也不需要重新调度，对比之下刚唤醒的协程大概率竞争不过新来的协程，所以当唤醒的协程沉睡超过<code>1ms</code>，会将锁置为饥饿模式;</p>
+</li>
+<li>
+<p><code>饥饿模式</code>: 解锁的协程将锁的所有权移交给等待队列中的<strong>队首</strong>协程，新到来的协程<strong>不会</strong>尝试去获取锁的控制权（即时当前是可获取状态），也<strong>不会</strong>尝试去自旋，会直接加入到队尾等待被唤醒;</p>
+</li>
+</ul>
+<p><code>饥饿模式</code>还会解除:</p>
+<ul>
+<li>当前获取<code>mutex</code>所有权的协程是阻塞队列的最后一个协程;</li>
+<li>或者该协程等待时间小于<code>1ms</code>，则将饥饿模式转换成正常模式;</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/golang/">golang</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/10/03/Comcon/linuxCommand/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Linux Cheat sheet</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/09/30/Comcon/interviewBackend/">
+                        <span class="hidden-mobile">Interview</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: '#post-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Golang Sync Package&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      235 字
+      562 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      3
+      6
        分钟
     </span>
   
@@ -209,11 +209,45 @@
             <h1 style="display: none">Something in gRPC</h1>
             
             <div class="markdown-body" id="post-body">
-              <p>常用的rpc框架，我们先从它的proto开始了解吧//todo</p>
+              <p>常用的rpc框架</p>
 <a id="more"></a>
-<p>我们这里只讨论go语法，语言方面其他都是大同小异</p>
+<h2 id="服务发现和服务注册">服务发现和服务注册</h2>
+<p>很遗憾，grpc只提供了接口,这些是要自己用其他服务发现的中间件来实现</p>
+<h3 id="一般的设计">一般的设计</h3>
+<h4 id="集中式lb">集中式LB</h4>
+<p>就是在server和client端中间加一个proxy来记录注册的服务（一些地址映射表）；</p>
+<ul>
+<li>单点问题(proxy改成分布式组件即可)</li>
+<li>增加了额外中间件，复杂度提高</li>
+</ul>
+<h4 id="进程内lb-balancing-aware-client">进程内LB(Balancing-aware client)</h4>
+<p>因为第一个问题，那么我们把这个proxy放到消费方进程里，这个可以叫软负载或者客户端负载；
+定期用心跳来同步服务注册表来表明服务存活状态</p>
+<ul>
+<li>
+<p>LB和服务发现分散到每一个服务消费者进程内部</p>
+</li>
+<li>
+<p>同时，消费方和提供方是直接连接，无消耗</p>
+</li>
+<li>
+<p>开发成本高，不同语言的调用方要有不同语言版本的LB</p>
+</li>
+<li>
+<p>升级后，每个都要重新发布</p>
+</li>
+</ul>
+<h4 id="独立进程lb">独立进程LB</h4>
+<p>同进程内LB差不多，都是在消费方进程中，只不过这个进程是独立出来专门负责服务发现和LB的</p>
+<ul>
+<li>因为不同进程，简化服务调用方，不需要重新开发不同语言客户端</li>
+<li>升级不用服务调用方改代码</li>
+</ul>
+<h2 id="http2">http2</h2>
+<p>见我自己的http2的文章，随便记了一点;</p>
 <h2 id="proto">proto</h2>
-<p>创建proto文件 <strong>data.proto</strong></p>
+<p>我们这里只讨论go语法，语言方面其他都是大同小异
+创建proto文件 <strong>data.proto</strong></p>
 <div class="hljs"><pre><code class="hljs go">syntax = <span class="hljs-string">"proto2"</span>;
 
 service Authenticate&#123;

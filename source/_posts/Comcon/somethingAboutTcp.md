@@ -65,8 +65,14 @@ tcp会进行**慢启动**直到丢包,每接到一个ack就会把窗口（cwnd�
 3. client收到确认报文后，还要给server发送确认收到。
 把**确认ACK=1**,ack=server_w+1(之前SYN消耗了序号)
 自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,**但如果不携带数据则不消耗序号**，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）
-4. server收到确认报文后，进入established状态，全部连接完成
+4. server收到确认报文后，进入`established`状态，全部连接完成
 
+##### 半连接状态(即服务器SYN-RECV状态)
+
+服务器维护一个半连接队列(`BackLogs`表示半连接队列的最大容纳数目)，存放半连接。该队列为每个客户端的SYN包（syn=j）开设一个条目，该条目表明服务器已收到SYN包，并向客户发出确认，正在等待客户的ACK确认包。这些条目所标识的连接在服务器处于`SYN_RECV`状态，当服务器收到客户的确认包时，删除该条目，服务器进入`ESTABLISHED`状态。
+
+##### SYN-ACK重传次数
+服务器发送完`SYN－ACK`包，如果未收到客户确认包，服务器进行首次重传，等待一段时间仍未收到客户确认包，进行第二次重传，如果重传次数超过系统规定的**最大重传次数**，系统将该连接信息从半连接队列中删除。注意，每次重传等待的时间不一定相同;
 
 ##### 三次握手能避免啥🐔儿东西呢（为啥两次不行？）
 
@@ -102,7 +108,7 @@ client发出的第一个请求没有丢，只是网络阻塞;
 ACK=1 
 确认号**ack=server_u2+1**
 序号**seq=client_u+1** （前面1的FIN报文消耗了一个序号client_u）
-然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值）再进入CLOSED状态
+然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值: 60s 在linux内`/proc/sys/net/ipv4/tcp_fin_timeout`）再进入CLOSED状态
 client撤销相应的TCB（传输控制块）后，结束连接
 
 ##### 为啥要等2MSL
@@ -207,12 +213,23 @@ Nagle就是解决这种问题，具体做法
 
 #### TCP Small Queues (TSQ)
 
-
-
 #### Early Departure Time (EDT)
 
 
 ### 5. 其他
+
+#### UDP有什么是TCP不可以代替的?
+
+1. 授时协议，tcp的重传会加大时间计算的误差
+
+2. 广播
+
+
+如果要将UDP包装成TCP:
+
+1. 增加ACK/Seq机制
+2. 发送和接收缓冲区
+3. 超时重传机制
 
 #### TCP Backlogs
 

@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      3.3k 字
+      3.7k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      37
+      40
        分钟
     </span>
   
@@ -266,8 +266,12 @@
 <li>client收到确认报文后，还要给server发送确认收到。
 把<strong>确认ACK=1</strong>,ack=server_w+1(之前SYN消耗了序号)
 自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,<strong>但如果不携带数据则不消耗序号</strong>，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）</li>
-<li>server收到确认报文后，进入established状态，全部连接完成</li>
+<li>server收到确认报文后，进入<code>established</code>状态，全部连接完成</li>
 </ol>
+<h5 id="半连接状态-即服务器syn-recv状态">半连接状态(即服务器SYN-RECV状态)</h5>
+<p>服务器维护一个半连接队列(<code>BackLogs</code>表示半连接队列的最大容纳数目)，存放半连接。该队列为每个客户端的SYN包（syn=j）开设一个条目，该条目表明服务器已收到SYN包，并向客户发出确认，正在等待客户的ACK确认包。这些条目所标识的连接在服务器处于<code>SYN_RECV</code>状态，当服务器收到客户的确认包时，删除该条目，服务器进入<code>ESTABLISHED</code>状态。</p>
+<h5 id="syn-ack重传次数">SYN-ACK重传次数</h5>
+<p>服务器发送完<code>SYN－ACK</code>包，如果未收到客户确认包，服务器进行首次重传，等待一段时间仍未收到客户确认包，进行第二次重传，如果重传次数超过系统规定的<strong>最大重传次数</strong>，系统将该连接信息从半连接队列中删除。注意，每次重传等待的时间不一定相同;</p>
 <h5 id="三次握手能避免啥🐔儿东西呢-为啥两次不行？">三次握手能避免啥🐔儿东西呢（为啥两次不行？）</h5>
 <p>我们假设client给server发了个连接请求，但是请求丢失，然后client再发一个，server收到这个然后建立连接，这里面client发送了两个请求
 会有以下情况出现：</p>
@@ -303,7 +307,7 @@
 ACK=1
 确认号<strong>ack=server_u2+1</strong>
 序号<strong>seq=client_u+1</strong> （前面1的FIN报文消耗了一个序号client_u）
-然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值）再进入CLOSED状态
+然后client进入TIME_WAIT状态，然后经过2MSL（RFC 793设为2mins，但其实应该要用更小的数值: 60s 在linux内<code>/proc/sys/net/ipv4/tcp_fin_timeout</code>）再进入CLOSED状态
 client撤销相应的TCB（传输控制块）后，结束连接</p>
 </li>
 </ol>
@@ -396,6 +400,21 @@ Nagle就是解决这种问题，具体做法</p>
 <h4 id="tcp-small-queues-tsq">TCP Small Queues (TSQ)</h4>
 <h4 id="early-departure-time-edt">Early Departure Time (EDT)</h4>
 <h3 id="5-其他">5. 其他</h3>
+<h4 id="udp有什么是tcp不可以代替的">UDP有什么是TCP不可以代替的?</h4>
+<ol>
+<li>
+<p>授时协议，tcp的重传会加大时间计算的误差</p>
+</li>
+<li>
+<p>广播</p>
+</li>
+</ol>
+<p>如果要将UDP包装成TCP:</p>
+<ol>
+<li>增加ACK/Seq机制</li>
+<li>发送和接收缓冲区</li>
+<li>超时重传机制</li>
+</ol>
 <h4 id="tcp-backlogs">TCP Backlogs</h4>
 <p>针对SYN floods攻击，linux下使用了**两个队列(模型)**来缓解:</p>
 <ul>

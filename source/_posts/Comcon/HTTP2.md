@@ -12,6 +12,7 @@ HTTP2
 
 
 ## 相对于HTTP1.1 改变了啥子
+
 ### HTTP1.1提供的特性
 
 HTTP1.1有一个关键的特性：keep-alive头字段
@@ -23,6 +24,13 @@ HTTP1.1有一个关键的特性：keep-alive头字段
 1. 连接数过多，浏览器一般就会因为这个设置TCP连接限制;
 一般是6-8个，假设是6,如果apache最大并发数为300,服务器每次承载最多只有300/6=50而已，多过这个数就要等待
 2. 文件传输只能是**串行**的（在一个通道里面）
+
+### HTTP2结构
+
+HTTP2 传输的最小单位是 Frame（帧）。HTTP2 的帧包含很多类型：`DATA Frame`、`HEADERS Frame`、`PRIORITY Frame`、`RST_STREAM Frame`、`CONTINUATON Frame` 等。一个 HTTP2 请求/响应可以被拆成多个帧并行发送，每一帧都有一个 StreamID 来标记属于哪个 Stream。服务端收到 Frame 后，根据 StreamID 组装出原始请求数据;
+
+如图:![tu](/img/http2header.png)
+
 
 ### HTTP2多路复用
 

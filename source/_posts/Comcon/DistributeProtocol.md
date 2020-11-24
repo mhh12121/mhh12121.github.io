@@ -299,7 +299,7 @@ Leader(或者某个服务器)被隔绝开集群
 解决方法:
 Pre-Vote:
 
--  新增一种Pre-Vote RPC( curTerm+1, lastLogIndex, lastLogTerm )
+-  新增一种`Pre-Vote` RPC( curTerm+1, lastLogIndex, lastLogTerm )
 - 不修改server的任何状态
 - Pre-Vote RPC多数派返回成功，本地Term++，将节点状态转换为Candidate，发出真正的Vote RPC
 - 分区后节点，Pre-Vote不会成功，term不会增加，再次加入就不会导致集群异常;
@@ -307,7 +307,9 @@ Pre-Vote:
 缺点:???
 - 个人认为增加了一个RPC，有延迟
 
+#### 分区
 
+增加`preVote`的原因主要是在于，B被分区后每次electiontimeout后，`term`都会增加，网络分区恢复后，如果leader收到比自己大的`term`消息，leader就会认为自己已经不是leader，然后发起选举流程，但其实是没必要的。为了让B 的term不增加，所以加了个`preVote`流程。
 
 #### Joint consensus
 交叉共识包含

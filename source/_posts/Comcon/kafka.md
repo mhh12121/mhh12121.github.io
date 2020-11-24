@@ -166,36 +166,56 @@ log.retention.check.interval.ms=300000
 ```
 
 这种设计还有一种名字叫做`zeroCopy`:
+##### 传统read write
 
 传统的`read()`大概经历了如图 ![所示](/img/zeroCopy.png)
 
-整个操作两次 cpu copy，两次 DMA copy，四次上下文切换，两次系统调用;
+整个操作两次 cpu copy，两次 DMA copy，四次上下文切换(读两次，写两次)，两次系统调用;
 
+##### sendfile
 
 而`zeroCopy`可以直接从内核缓冲区写入socket缓冲区，避免了普通的`read()`方法的各种**上下文交换**以及**内核空间缓冲区与用户空间缓冲区**的交换
 
 改写后就会变成![如图](/img/zeroCopyreal.png)
 
-整个过程两次 DMA copy，两次上下文切换，0 次 cpu copy，一个系统调用;
+整个过程两次 DMA copy，两次上下文切换，1 次 cpu copy，一个系统调用;
 
-#### Scatter/Gather
+##### Scatter/Gather DMA + sendfile
 
-ps：看到上图，既然read buffer与socekt buffer之间还有一次copy，如果我们将该copy去掉呢？
+ps：看到上图，既然read buffer与socekt buffer之间还有一次CPU copy，如果我们将该copy去掉呢？
 
 首先讲下原因： 这是因为在一般的Block DMA方式中，`源物理地址`和`目标物理地址`都得是**连续**的，所以一次只能传输物理上连续的一块数据，每传输一个块发起一次中断，直到传输完成，所以必须要在两个缓冲区之间拷贝数据;
 
-而`Scatter/Gather DMA`方式则不同，会预先维护一个物理上不连续的块描述符的链表，描述符中包含有数据的`起始地址`和`长度`;
-传输时只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比Block DMA要高。也就是说，硬件可以通过`Scatter/Gather DMA`直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据。因此上面的时序图还可以进一步简化;
+而`Scatter/Gather DMA`方式则不同，会预先维护一个物理上`不连续的块描述符`的链表，描述符中包含有数据的`起始地址`和`长度`;
+传输时((DMA控制器负责)只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比`Block DMA`
 
-如![下图](/img/scatterGather.png)
+>> Block DMA: 如果在传输完一块物理上连续的数据后引起一次中断，然后再由主机进行下一块物理上连续的数据传输
 
+要高。也就是说，硬件可以通过`Scatter/Gather DMA`直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据(再次省去了一次CPU copy)。因此上面的时序图还可以进一步简化;
 
-##### Unmap内存映射支持
+如![下图](/img/zeroCopyScatterGather.png)
+
+总的只需要2次上下文切换，0次CPU copy,3 次DMAcopy；
+
+##### mmap/Unmap内存映射支持
 
 上面的`Scatter/gather`很明显DMA从内核取得数据是不可以更改数据的，如果要修改数据，则需要`内存映射`的支持,可以将文件数据映射到内核地址空间，修改完后刷回去;
 
-当然了，`mmap`也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,对应的的最后也要调用一个`unmap()`方法
+当然了，`mmap`也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,然后进行一次`write()`的调用，对应的的最后也要调用一个`unmap()`系统调用,所以这里总共会有六次上下文切换,
 
+另外，还需要在TLB中维护所有数据对应的地址空间;
+
+![如图](/img/zeroCopymap.png)
+
+总的需要6次上下文切换，1次CPU copy，2次DMA copy
+
+
+##### Splice
+
+还有一种方法`Splice`是基于管道的，可以用于在内核区进行,同样避免了用户态切换以及CPU的copy: 
+![如图](/img/zeroCopySplice.png)
+
+要特别注意的就是这两个buffer其中一个的`fd`必须是管道设备
 
 #### 线程设计
 

@@ -335,7 +335,7 @@ type spanClass uint8
 
 - 有67种，在`class_to_size` 和 `class_to_allocnpages`上,参照下面[补全的表格](#补全的spanClass)
 
-- 其除了保存类别的ID，还会保存`noscan`标记位，这个标记了对象**是否包含指针**，gc会对无该标记位的`mspan`扫描
+- 其除了保存类别的ID(前7位)，还会保存`noscan`标记位(最后一位)，这个标记了对象**是否包含指针**，gc会对无该标记位的`mspan`扫描
 
 以下的函数为ID和标记位的保存方式:
 
@@ -487,7 +487,7 @@ func (c *mcache) refill(spc spanClass) {
 }
 ```
 
-注意这个是向`mcache`插入`mSpan`的唯一方法;
+注意这个是向`mcache`插入`mSpan`的唯一方法(上一级是`nextFree`函数，在`mallocgc`上被使用);
 
 #### 分配超小(tiny)对象(<16KB)的字段
 
@@ -566,7 +566,7 @@ type mheap struct{
 
 
 代码中的pad是用作分割多个`mcentral`，以`CacheLinePadSize`个Bytes分割开，所以每一个`mcentral`的lock可以得到自己的cache line
-我认为可以看做是内存对齐的一种方法(???是不是捏)
+我认为可以看做是内存对齐的一种方法(???是不是捏，是的，为了**不同列表间互斥锁不会伪共享**)
 
 #### 获得mSpan
 

@@ -167,6 +167,46 @@
     
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
+        <a href="/2020/11/09/Comcon/seckillDesign/">Something about Seckill</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/11/09/Comcon/seckillDesign/">
+          
+          
+            
+          
+          常说的秒杀系统
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-11-09 15:01" pubdate>
+              2020-11-09
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Design/">Design</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
         <a href="/2020/10/03/Comcon/linuxCommand/">Linux Cheat sheet</a>
       </h1>
 
@@ -221,6 +261,46 @@ ps -ely
     
     <article class="col-12 col-md-12 mx-auto index-info">
       <h1 class="index-header">
+        <a href="/2020/10/02/Go/sync/">Golang Sync Package</a>
+      </h1>
+
+      <p class="index-excerpt">
+        <a href="/2020/10/02/Go/sync/">
+          
+          
+            
+          
+          Sync包的一些笔记
+        </a>
+      </p>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2020-10-02 15:01" pubdate>
+              2020-10-02
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/golang/">golang</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
         <a href="/2020/09/30/Comcon/interviewBackend/">Interview</a>
       </h1>
 
@@ -230,33 +310,47 @@ ps -ely
           
             
           
-          面试准备(后端)语言go1. 内存管理总体结构
+          面试准备(后端)
+语言go
+1. 内存管理
+总体结构
+
+
 tcmalloc
+
 
 mspan
 
+
 mcache
+
 
 mheap
 
 
 sync.Pool
+
+
 环状列表
+
 
 victimCache (1.13)
 
 
-2. 同步关键字及其用法原理channelselectsync.WaitGroup思想
+2. 同步
+关键字及其用法原理
+channel
+select
+sync.WaitGroup
+思想
+
 名句
 
-3. 垃圾回收三色波面推进(标记整理)具体相关字段流程比较其他垃圾回收器
-引用计数
-
-
-标记回收
-
-标记回收整理
-
+3. 垃圾回收
+三色波面推进(标记整理)
+具体相关字段
+流程
+比较其他垃圾回收器
 
         </a>
       </p>
@@ -337,9 +431,10 @@ victimCache (1.13)
           
             
           
-          kafka一些名词Broker：消息中间件处理结点，一个Kafka节点就是一个broker，多个broker可以组成一个Kafka集群。
+          kafka一些名词
+Broker：消息中间件处理结点，一个Kafka节点就是一个broker，多个broker可以组成一个Kafka集群。
 Topic：一类消息，例如page view日志、click日志等都可以以topic的形式存在，Kafka集群能够同时负责多个topic的分发。
-Partition：topic物理上的分组，一个topic可以分为多个partition，每个partition是一
+Partition：topic物理上的分组，一个topic可以分为多个partition，每个partition是
         </a>
       </p>
 
@@ -511,90 +606,6 @@ Partition：topic物理上的分组，一个topic可以分为多个partition，�
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/Distributed/">Distributed</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/07/03/MySQL/log/">Notes about MySQL Log</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/07/03/MySQL/log/">
-          
-          
-            
-          
-          几种常用的logbinlog归档日志（二进制日志）在MySql Server上进行(因为主从复制mysql支持多种引擎，所以和redo log分开)
-
-作用：用于复制，在主从复制中，从库利用主库上的binlog进行重播，实现主从同步，用于数据库的基于时间点的还原。
-
-内容：逻辑格式的日志，可以简单认为就是执行过的事务中的sql语句；  但又不完全是sql语句这么简单，而是包括了执行的sql语句（增
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-07-03 14:20" pubdate>
-              2020-07-03
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/MySQL/">MySQL</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        <a href="/2020/06/24/Go/type/">Golang type</a>
-      </h1>
-
-      <p class="index-excerpt">
-        <a href="/2020/06/24/Go/type/">
-          
-          
-            
-          
-          //todo
-        </a>
-      </p>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2020-06-24 22:10" pubdate>
-              2020-06-24
-            </time>
-          </div>
-        
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/golang/">golang</a>
             
           </div>
         

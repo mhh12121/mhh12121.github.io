@@ -211,15 +211,19 @@
             <div class="markdown-body" id="post-body">
               <p>defer的一些东西</p>
 <a id="more"></a>
-<h2 id="看看个坑"><a href="#看看个坑" class="headerlink" title="看看个坑"></a>看看个坑</h2><p>我们先来看一个例子:</p>
+<h2 id="看看个坑">看看个坑</h2>
+<p>我们先来看一个例子:</p>
 <div class="hljs"><pre><code class="hljs go">func() &#123;
   var run func() = nil
   defer run()
   fmt.Println("runs")
 &#125;</code></pre></div>
-<p>结果是:<br><div class="hljs"><pre><code class="hljs undefined">panic: runtime error: invalid memory<span class="hljs-built_in"> address </span><span class="hljs-keyword">or</span> <span class="hljs-literal">nil</span> pointer dereference</code></pre></div></p>
-<h2 id="详情"><a href="#详情" class="headerlink" title="详情"></a>详情</h2><p>在<code>g</code>和<code>p</code>上都有相关结构,其中<code>p</code>上的为一个<code>defer pool</code>//todo</p>
-<h3 id="一些相关结构"><a href="#一些相关结构" class="headerlink" title="一些相关结构"></a>一些相关结构</h3><p><code>_defer</code>的结构：</p>
+<p>结果是:</p>
+<div class="hljs"><pre><code class="hljs undefined">panic: runtime error: invalid memory<span class="hljs-built_in"> address </span><span class="hljs-keyword">or</span> <span class="hljs-literal">nil</span> pointer dereference</code></pre></div>
+<h2 id="详情">详情</h2>
+<p>在<code>g</code>和<code>p</code>上都有相关结构,其中<code>p</code>上的为一个<code>defer pool</code>//todo</p>
+<h3 id="一些相关结构">一些相关结构</h3>
+<p><code>_defer</code>的结构：</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// A _defer holds an entry on the list of deferred calls.</span>
 <span class="hljs-comment">// If you add a field here, add code to clear it in freedefer and deferProcStack</span>
 <span class="hljs-comment">// This struct must match the code in cmd/compile/internal/gc/reflect.go:deferstruct</span>
@@ -276,17 +280,21 @@
 	goexit    <span class="hljs-keyword">bool</span>
 &#125;</code></pre></div>
 <p><code>defer</code>在整个程序时实现主要分成编译期和运行时有不同的动作：</p>
-<h3 id="编译期-有三种不同的编译方式-1-14新增一种"><a href="#编译期-有三种不同的编译方式-1-14新增一种" class="headerlink" title="编译期(有三种不同的编译方式,1.14新增一种)"></a>编译期(有三种不同的编译方式,1.14新增一种)</h3><ol>
+<h3 id="编译期-有三种不同的编译方式-1-14新增一种">编译期(有三种不同的编译方式,1.14新增一种)</h3>
+<ol>
 <li><code>defer</code> 关键字<strong>转换成</strong>了<code>deferproc</code>,堆上分配 ;</li>
 <li>还会在所有调用defer的函数末尾插入<code>deferreturn</code>，栈上分配, ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用<code>cmd/compile/internal/gc.state.call</code>将结构体分配到栈并调用<code>runtime.deferprocStack</code>);</li>
-<li><code>open-coded</code>(1.14新增),只会在以下情况:<ul>
+<li><code>open-coded</code>(1.14新增),只会在以下情况:
+<ul>
 <li>函数的 <code>defer</code> 数量少于或者等于 8 个；</li>
 <li>函数的 <code>defer</code> 关键字不能在循环中执行(包括goto)；</li>
-<li>函数的 <code>return</code> 语句与 <code>defer</code> 语句的乘积小于或者等于 15 个；<br>编译时会根据以上条件判断是否开启;</li>
+<li>函数的 <code>return</code> 语句与 <code>defer</code> 语句的乘积小于或者等于 15 个；
+编译时会根据以上条件判断是否开启;</li>
 </ul>
 </li>
 </ol>
-<h4 id="转换defer关键字"><a href="#转换defer关键字" class="headerlink" title="转换defer关键字"></a>转换defer关键字</h4><p><code>cmd/compile/internal/gc.state.stmt</code>会处理<code>defer</code>关键字</p>
+<h4 id="转换defer关键字">转换defer关键字</h4>
+<p><code>cmd/compile/internal/gc.state.stmt</code>会处理<code>defer</code>关键字</p>
 <p><code>cmd/compile/internal/gc.state.call</code> 该函数负责所有函数和方法调用生成中间代码:</p>
 <ol>
 <li>获取需要执行的函数名、闭包指针、代码指针和函数调用的接收方；</li>
@@ -315,7 +323,8 @@
 			<span class="hljs-keyword">fallthrough</span>
 	...
 &#125;</code></pre></div>
-<h4 id="栈上分配"><a href="#栈上分配" class="headerlink" title="栈上分配"></a>栈上分配</h4><div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// deferprocStack queues a new deferred function with a defer record on the stack.</span>
+<h4 id="栈上分配">栈上分配</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// deferprocStack queues a new deferred function with a defer record on the stack.</span>
 <span class="hljs-comment">// The defer record must have its siz and fn fields initialized.</span>
 <span class="hljs-comment">// All other fields can contain junk.</span>
 <span class="hljs-comment">// The defer record must be immediately followed in memory by</span>
@@ -359,11 +368,13 @@
 	<span class="hljs-comment">// No code can go here - the C return register has</span>
 	<span class="hljs-comment">// been set and must not be clobbered.</span>
 &#125;</code></pre></div>
-<h3 id="运行时"><a href="#运行时" class="headerlink" title="运行时"></a>运行时</h3><ol>
+<h3 id="运行时">运行时</h3>
+<ol>
 <li><code>deferproc</code>会将一个新的_defer结构体追加到当前goroutine的链表头(分配一个<code>_defer</code>对象并加入延迟参数)</li>
 <li><code>deferreturn</code>会从goroutine的链表(已经在函数调用栈中)取出<code>_defer</code>并执行</li>
 </ol>
-<h4 id="创建延迟调用-堆上"><a href="#创建延迟调用-堆上" class="headerlink" title="创建延迟调用(堆上)"></a>创建延迟调用(堆上)</h4><div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Create a new deferred function fn with siz bytes of arguments.</span>
+<h4 id="创建延迟调用-堆上">创建延迟调用(堆上)</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Create a new deferred function fn with siz bytes of arguments.</span>
 <span class="hljs-comment">// The compiler turns a defer statement into a call to this.</span>
 <span class="hljs-comment">//go:nosplit</span>
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">deferproc</span><span class="hljs-params">(siz <span class="hljs-keyword">int32</span>, fn *funcval)</span></span> &#123; <span class="hljs-comment">// arguments of fn follow fn</span>
@@ -420,11 +431,14 @@
 &#125;</code></pre></div>
 <p>其中<code>newdefer()</code>的作用就是要获取一个<code>_defer</code>结构,大概分为几种方式:</p>
 <ul>
-<li><p>从 全局调度器 的延迟调用缓存池<code>sched.deferpool</code>中取出结构体并将该结构体追加到当前goroutine的缓存池</p>
+<li>
+<p>从 全局调度器 的延迟调用缓存池<code>sched.deferpool</code>中取出结构体并将该结构体追加到当前goroutine的缓存池</p>
 </li>
-<li><p>从goroutine绑定的<code>p</code>的延迟调用缓存池<code>pp.deferpool</code>中取出</p>
+<li>
+<p>从goroutine绑定的<code>p</code>的延迟调用缓存池<code>pp.deferpool</code>中取出</p>
 </li>
-<li><p><code>mallocgc()</code>创建一个新的结构体</p>
+<li>
+<p><code>mallocgc()</code>创建一个新的结构体</p>
 </li>
 </ul>
 <p>无论哪种，最后都会被放入到<code>link</code>链表的最前面</p>
@@ -491,7 +505,8 @@
 	<span class="hljs-keyword">return</span> d
 &#125;</code></pre></div>
 <p>上面<code>defer</code>关键字插入是从后到前，但是其执行是从前到后，即为什么运行好像一个栈一样</p>
-<h4 id="执行延迟调用-堆上"><a href="#执行延迟调用-堆上" class="headerlink" title="执行延迟调用(堆上)"></a>执行延迟调用(堆上)</h4><div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Run a deferred function if there is one.</span>
+<h4 id="执行延迟调用-堆上">执行延迟调用(堆上)</h4>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Run a deferred function if there is one.</span>
 <span class="hljs-comment">// The compiler inserts a call to this at the end of any</span>
 <span class="hljs-comment">// function which calls defer.</span>
 <span class="hljs-comment">// If there is a deferred function, this will call runtime·jmpdefer,</span>
@@ -571,11 +586,14 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $<span class="hljs-number">0</span><span cl
 	SUBQ	$<span class="hljs-number">5</span>, (SP)	<span class="hljs-comment">// return to CALL again</span>
 	MOVQ	<span class="hljs-number">0</span>(DX), BX
 	JMP	BX	<span class="hljs-comment">// but first run the deferred function</span></code></pre></div>
-<p>//todo ????<br><code>deferreturn</code> 函数会多次判断当前 Goroutine 的 _defer 链表中是否有未执行的剩余结构，在所有的延迟函数调用都执行完成之后，该函数才会返回;</p>
+<p>//todo ???
+<code>deferreturn</code> 函数会多次判断当前 Goroutine 的 _defer 链表中是否有未执行的剩余结构，在所有的延迟函数调用都执行完成之后，该函数才会返回;</p>
 <ul>
 <li>调用<code>deferproc</code>创建新的延迟调用时就会立刻copy函数的参数，所以参数在defer声明时就已经开始执行计算</li>
 </ul>
-<h4 id="open-coded"><a href="#open-coded" class="headerlink" title="open-coded"></a>open-coded</h4><p>对于<code>运行中</code>才确定的defer，<br>可以看到其中1.14新增的<code>open-coded</code>，采用位操作(<code>defer bits</code>)来确认分支</p>
+<h4 id="open-coded">open-coded</h4>
+<p>对于<code>运行中</code>才确定的defer，
+可以看到其中1.14新增的<code>open-coded</code>，采用位操作(<code>defer bits</code>)来确认分支</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// runOpenDeferFrame runs the active open-coded defers in the frame specified by</span>
 <span class="hljs-comment">// d. It normally processes all active defers in the frame, but stops immediately</span>
 <span class="hljs-comment">// if a defer does a successful recover. It returns true if there are no</span>

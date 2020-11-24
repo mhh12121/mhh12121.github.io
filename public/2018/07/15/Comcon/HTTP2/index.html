@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      500 字
+      590 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      5
+      6
        分钟
     </span>
   
@@ -223,6 +223,9 @@
 一般是6-8个，假设是6,如果apache最大并发数为300,服务器每次承载最多只有300/6=50而已，多过这个数就要等待</li>
 <li>文件传输只能是<strong>串行</strong>的（在一个通道里面）</li>
 </ol>
+<h3 id="http2结构">HTTP2结构</h3>
+<p>HTTP2 传输的最小单位是 Frame（帧）。HTTP2 的帧包含很多类型：<code>DATA Frame</code>、<code>HEADERS Frame</code>、<code>PRIORITY Frame</code>、<code>RST_STREAM Frame</code>、<code>CONTINUATON Frame</code> 等。一个 HTTP2 请求/响应可以被拆成多个帧并行发送，每一帧都有一个 StreamID 来标记属于哪个 Stream。服务端收到 Frame 后，根据 StreamID 组装出原始请求数据;</p>
+<p>如图:<img src="/img/http2header.png" srcset="/img/loading.gif" alt="tu"></p>
 <h3 id="http2多路复用">HTTP2多路复用</h3>
 <ol>
 <li>

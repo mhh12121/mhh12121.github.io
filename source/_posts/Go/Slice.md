@@ -233,8 +233,11 @@ func growslice(et *_type, old slice, cap int) slice {// et 是_type指针，详�
     var lenmem, newlenmem, capmem uintptr
     // Specialize for common values of et.size.
     // For 1 we don't need any division/multiplication.
-    // For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.//这里就说到会优化
+    // For sys.PtrSize, compiler will optimize division/multiplication into a shift by a constant.
     // For powers of 2, use a variable shift.
+    //1 不用做任何处理
+    //2 是指针大小会，进行roundup
+    //3 2的幂次方，会使用移位来进行计算
     switch {
     case et.size == 1:
         lenmem = uintptr(old.len)
@@ -245,10 +248,11 @@ func growslice(et *_type, old slice, cap int) slice {// et 是_type指针，详�
     case et.size == sys.PtrSize://是一个指针大小
         lenmem = uintptr(old.len) * sys.PtrSize
         newlenmem = uintptr(cap) * sys.PtrSize
+        //这里注意要roundup以下，对应sizetoclass表
         capmem = roundupsize(uintptr(newcap) * sys.PtrSize)
         overflow = uintptr(newcap) > maxAlloc/sys.PtrSize
         newcap = int(capmem / sys.PtrSize)//sys.PtrSize指的是一个指针的size，64位的机器就是8
-    case isPowerOfTwo(et.size)://2次幂会用variable shift
+    case isPowerOfTwo(et.size)://类型为2次幂会用variable shift，比如
         var shift uintptr
         if sys.PtrSize == 8 {
             // Mask shift for better code generation.
@@ -315,7 +319,7 @@ func growslice(et *_type, old slice, cap int) slice {// et 是_type指针，详�
 func roundupsize(size uintptr) uintptr{}
 ```
 
-即会对传入类型进行内存对齐,这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！
+即会对传入类型进行内存对齐(并roundup),这也可能会导致扩容的容量跟之前说的*2或1.25倍不同！
 
 我们做一个实验:
 ```go
@@ -348,10 +352,130 @@ log.Printf("%+v", cap(t))
 1025,1360 ,符合 
 
 
+扩容不符合
+
+```go
+    b := []int{23, 51}
+    b = append(b, 4, 5, 6)
+    fmt.Println("cap of b is ",cap(b))
+```
+
+上面输出
+```go
+cap of b is 6
+```
+
+因为，size=int,即是8Bytes，里面计算cap是
+`capmem = roundupsize(uintptr(newcap) * sys.PtrSize)`计算出来的，其中newcap=5(比oldcap*2=2*2=4要大)
+uintptr(newcap)*sys.PtrSize=5*8=40,但是roundup会使用`sizetoclass`表，所以会变成48;
 
 
 
 
 
-## 4. 回收
+## 4. 复制切片
+
+### 使用函数
+当使用`copy`关键字进行slice的复制时，`cmd/compile/internal/gc.copyany`函数会有两种情况:
+- 如果当前`copy`不是在runtime调用,`copy`会直接转换成以下代码:
+
+```go
+n := len(a)
+if n > len(b) {
+    n = len(b)
+}
+if a.ptr != b.ptr {
+    memmove(a.ptr, b.ptr, n*sizeof(elem(a))) 
+}
+```
+
+- 如果是在runtime下调用，则会使用`runtime.slicecopy`函数替换运行期间调用的`copy`:
+
+```go
+func slicecopy(to, fm slice, width uintptr) int {
+	if fm.len == 0 || to.len == 0 {
+		return 0
+	}
+
+	n := fm.len
+	if to.len < n {
+		n = to.len
+	}
+
+	if width == 0 {
+		return n
+	}
+    //race代码
+	...
+
+	size := uintptr(n) * width
+	if size == 1 { // common case worth about 2x to do here
+		// TODO: is this still worth it with new memmove impl?
+		*(*byte)(to.array) = *(*byte)(fm.array) // known to be a byte pointer
+	} else {
+		memmove(to.array, fm.array, size)
+	}
+	return n
+}
+
+```
+### 现象
+第一个，切片:
+```go
+    a := []int{1, 2, 3}
+	for k, v := range a {
+		if k == 0 {
+			a[0], a[1] = 100, 200
+			fmt.Print(a)
+		}
+		a[k] = 100 + v
+	}
+	fmt.Print(a)
+```
+```go
+[100,200,3]
+[101,300,103]
+```
+
+第二个，传入是数组:
+```go
+    a := [3]int{1, 2, 3}
+	for k, v := range a {
+		if k == 0 {
+			a[0], a[1] = 100, 200
+			fmt.Print(a)
+		}
+		a[k] = 100 + v
+	}
+	fmt.Print(a)
+```
+
+```go
+[100,200,3]
+[101,102,103]
+```
+
+原因是针对数组而言,在loop内修改其元素数据不会第一时间反应在数据源中，这就是为什么`a[k]=100+v`覆盖了`k==0`时`a[1]=200`的条件;
+而针对slice，修改元素会真正修改数据源，因为slice实际是一个`struct`,其header保存着底层数组的数据;
+
+## 5. 回收
 //todo
+
+
+## 再看现象
+
+将一个slice y等于另外一个slice x(x已经到达其最大的capacity)的截断片，再append
+
+```go
+func main(){
+	x:=make([]int,5,5)
+	x[0]=1
+	x[1]=2
+	x[2]=3
+	x[3]=4
+	x[4]=5
+	y:=x[2:4]
+	y=append(y,9)
+    log.Printf("%+v",y)
+}
+```

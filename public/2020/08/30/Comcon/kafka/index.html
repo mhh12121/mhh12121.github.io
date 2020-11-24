@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.8k 字
+      3.1k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      36
+      40
        分钟
     </span>
   
@@ -209,28 +209,38 @@
             <h1 style="display: none">Kafka notes</h1>
             
             <div class="markdown-body" id="post-body">
-              <h2 id="kafka一些名词"><a href="#kafka一些名词" class="headerlink" title="kafka一些名词"></a>kafka一些名词</h2><p><code>Broker</code>：消息中间件处理结点，一个Kafka节点就是一个broker，多个broker可以组成一个Kafka集群。</p>
+              <h2 id="kafka一些名词">kafka一些名词</h2>
+<p><code>Broker</code>：消息中间件处理结点，一个Kafka节点就是一个broker，多个broker可以组成一个Kafka集群。</p>
 <p><code>Topic</code>：一类消息，例如page view日志、click日志等都可以以topic的形式存在，Kafka集群能够同时负责多个topic的分发。</p>
 <p><code>Partition</code>：topic物理上的分组，一个topic可以分为多个partition，每个partition是一个有序的队列。</p>
 <p><code>Segment</code>：partition物理上由多个segment组成，下面2.2和2.3有详细说明。</p>
-<p><code>offset</code>：每个partition都由一系列有序的、不可变的消息组成，这些消息被连续的追加到partition中;<br>partition中的每个消息都有一个连续的序列号叫做offset,用于partition唯一标识一条消息</p>
+<p><code>offset</code>：每个partition都由一系列有序的、不可变的消息组成，这些消息被连续的追加到partition中;
+partition中的每个消息都有一个连续的序列号叫做offset,用于partition唯一标识一条消息</p>
 <p><code>producer</code>: 生产者，负责发布信息到broker</p>
 <p><code>consumer</code>: 消费者，每个consumer都属于一个consumer group，可以指定其名字；同一个topic只能被同一个consumer group下的一个consumer消费，但是多个consumer group可以同时消费该topic</p>
-<h2 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h2><p>作为一个消息队列，要求有哪些</p>
+<h2 id="思考">思考</h2>
+<p>作为一个消息队列，要求有哪些</p>
 <ol>
 <li>队列（数据结构）</li>
 <li>持久性（可以恢复数据），怎么存储，怎么恢复,过期的数据处理（因为不可能全部保存）</li>
 <li>分布式（高可用），基于zookeeper带来的ZAB选举协议，后面会慢慢去掉该依赖</li>
-<li>速度（性能） 持久化速度，网络IO速度（编码）；<div class="hljs"><pre><code>     消费端exactly-once消费
-</code></pre></div></li>
+<li>速度（性能） 持久化速度，网络IO速度（编码）；
+消费端exactly-once消费</li>
 <li>如何设置相关参数?</li>
 <li>其他功能？ 延时队列（场景：并发量大，订单超时取消）</li>
 </ol>
-<h2 id="持久性"><a href="#持久性" class="headerlink" title="持久性"></a>持久性</h2><h3 id="怎么存"><a href="#怎么存" class="headerlink" title="怎么存"></a>怎么存</h3><p>通过日志存储：</p>
-<p>Topic 包含 Parition<br>Parition包含log</p>
-<h4 id="存到哪个partition呢"><a href="#存到哪个partition呢" class="headerlink" title="存到哪个partition呢?"></a>存到哪个partition呢?</h4><p>可以在server.properties设置里面<code>num.Partitions</code>设置多个partition,存到哪个要由客户端决定</p>
-<h4 id="log又是怎么存的"><a href="#log又是怎么存的" class="headerlink" title="log又是怎么存的?"></a>log又是怎么存的?</h4><p>log实际是分为<br>00000000000000000000.index  00000000000000000000.log  00000000000000000000.timeindex  00000000000000000001.snapshot  leader-epoch-checkpoint</p>
-<h4 id="存储的时机"><a href="#存储的时机" class="headerlink" title="存储的时机"></a>存储的时机</h4><p>同样可以从<code>server.properties</code>中看到</p>
+<h2 id="持久性">持久性</h2>
+<h3 id="怎么存">怎么存</h3>
+<p>通过日志存储：</p>
+<p>Topic 包含 Parition
+Parition包含log</p>
+<h4 id="存到哪个partition呢">存到哪个partition呢?</h4>
+<p>可以在server.properties设置里面<code>num.Partitions</code>设置多个partition,存到哪个要由客户端决定</p>
+<h4 id="log又是怎么存的">log又是怎么存的?</h4>
+<p>log实际是分为
+00000000000000000000.index  00000000000000000000.log  00000000000000000000.timeindex  00000000000000000001.snapshot  leader-epoch-checkpoint</p>
+<h4 id="存储的时机">存储的时机</h4>
+<p>同样可以从<code>server.properties</code>中看到</p>
 <div class="hljs"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> Messages are immediately written to the filesystem but by default we only fsync() to sync</span>
 <span class="hljs-meta">#</span><span class="bash"> the OS cache lazily. The following configurations control the flush of data to disk.</span>
 <span class="hljs-meta">#</span><span class="bash"> There are a few important trade-offs here:</span>
@@ -246,20 +256,28 @@
 #</span><span class="bash"> The maximum amount of time a message can sit <span class="hljs-keyword">in</span> a <span class="hljs-built_in">log</span> before we force a flush</span>
 <span class="hljs-meta">#</span><span class="bash">log.flush.interval.ms=1000</span></code></pre></div>
 <p>其中<code>log.flush.interval.ms=1000</code> 和<code>log.flush.interval.messages=10000</code> 就是刷盘的时机；</p>
-<h4 id="压缩"><a href="#压缩" class="headerlink" title="压缩"></a>压缩</h4><p>从文档中可以获得其设计内容:</p>
+<h4 id="压缩">压缩</h4>
+<p>从文档中可以获得其设计内容:</p>
 <blockquote>
 <blockquote>
-<p> Log compaction is handled by the log cleaner, a pool of background threads that recopy log segment files, removing records whose key   appears in the head of the log. Each compactor thread works as follows:<br>It chooses the log that has the highest ratio of log head to log tail<br>It creates a succinct summary of the last offset for each key in the head of the log<br>It recopies the log from beginning to end removing keys which have a later occurrence in the log. New, clean segments are swapped into the log immediately so the additional disk space required is just one additional log segment (not a fully copy of the log).<br>The summary of the log head is essentially just a space-compact hash table. It uses exactly 24 bytes per entry. As a result with 8GB of cleaner buffer one cleaner iteration can clean around 366GB of log head (assuming 1k messages).</p>
+<p>Log compaction is handled by the log cleaner, a pool of background threads that recopy log segment files, removing records whose key   appears in the head of the log. Each compactor thread works as follows:
+It chooses the log that has the highest ratio of log head to log tail
+It creates a succinct summary of the last offset for each key in the head of the log
+It recopies the log from beginning to end removing keys which have a later occurrence in the log. New, clean segments are swapped into the log immediately so the additional disk space required is just one additional log segment (not a fully copy of the log).
+The summary of the log head is essentially just a space-compact hash table. It uses exactly 24 bytes per entry. As a result with 8GB of cleaner buffer one cleaner iteration can clean around 366GB of log head (assuming 1k messages).</p>
 </blockquote>
 </blockquote>
 <ol>
 <li>压缩由<code>log cleaner</code>处理，<code>log cleaner</code>是一堆由后台的复制logsegment files的线程池，负责移除那些key在log头部的记录;</li>
 <li>每个压缩线程会选择最经常出现的记录(整个log)</li>
 <li>其会 在 log的头部创建每个key的最近一次offset的summary</li>
-<li>其会从头recopy相关的log到尾部，然后移除在靠后出现的keys；<br>新的，干净的segments会被立即替换到log（因此只需<strong>一次</strong>额外的log segment IO即可）</li>
+<li>其会从头recopy相关的log到尾部，然后移除在靠后出现的keys；
+新的，干净的segments会被立即替换到log（因此只需<strong>一次</strong>额外的log segment IO即可）</li>
 <li></li>
 </ol>
-<h3 id="怎么恢复"><a href="#怎么恢复" class="headerlink" title="怎么恢复"></a>怎么恢复</h3><h3 id="过期删除"><a href="#过期删除" class="headerlink" title="过期删除"></a>过期删除</h3><p>同样，log不可能无限增长，都设置了删除log的时机，也是由<code>log cleaner</code>处理，条件</p>
+<h3 id="怎么恢复">怎么恢复</h3>
+<h3 id="过期删除">过期删除</h3>
+<p>同样，log不可能无限增长，都设置了删除log的时机，也是由<code>log cleaner</code>处理，条件</p>
 <div class="hljs"><pre><code class="hljs shell"><span class="hljs-meta">#</span><span class="bash"> The following configurations control the disposal of <span class="hljs-built_in">log</span> segments. The policy can</span>
 <span class="hljs-meta">#</span><span class="bash"> be <span class="hljs-built_in">set</span> to delete segments after a period of time, or after a given size has accumulated.</span>
 <span class="hljs-meta">#</span><span class="bash"> A segment will be deleted whenever *either* of these criteria are met. Deletion always happens</span>
@@ -278,8 +296,11 @@ log.segment.bytes=1073741824
 #</span><span class="bash"> The interval at <span class="hljs-built_in">which</span> <span class="hljs-built_in">log</span> segments are checked to see <span class="hljs-keyword">if</span> they can be deleted according</span>
 <span class="hljs-meta">#</span><span class="bash"> to the retention policies</span>
 log.retention.check.interval.ms=300000</code></pre></div>
-<h2 id="速度"><a href="#速度" class="headerlink" title="速度"></a>速度</h2><h3 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h3><p>使用NIO server;</p>
-<h4 id="zerocopy"><a href="#zerocopy" class="headerlink" title="zerocopy"></a>zerocopy</h4><p>接口是<code>MessageSet</code>,写入是其<code>writeTo</code>方法，</p>
+<h2 id="速度">速度</h2>
+<h3 id="网络层">网络层</h3>
+<p>使用NIO server;</p>
+<h4 id="zerocopy">zerocopy</h4>
+<p>接口是<code>MessageSet</code>,写入是其<code>writeTo</code>方法，</p>
 <p>其不使用buffer write的原因是这个方法允许file-backed messages set去使用更加有效率的java中的<code>FileChannel.transferTo()</code>方法,其实际就是操作系统的<code>sendfile()</code>系统调用！</p>
 <p>在kafka中用于<code>FileRecords</code>的<code>writeTo()</code>方法</p>
 <div class="hljs"><pre><code class="hljs java"><span class="hljs-meta">@Override</span>
@@ -304,39 +325,81 @@ log.retention.check.interval.ms=300000</code></pre></div>
     <span class="hljs-keyword">return</span> bytesTransferred;
 &#125;</code></pre></div>
 <p>这种设计还有一种名字叫做<code>zeroCopy</code>:</p>
+<h5 id="传统read-write">传统read write</h5>
 <p>传统的<code>read()</code>大概经历了如图 <img src="/img/zeroCopy.png" srcset="/img/loading.gif" alt="所示"></p>
-<p>整个操作两次 cpu copy，两次 DMA copy，四次上下文切换，两次系统调用;</p>
+<p>整个操作两次 cpu copy，两次 DMA copy，四次上下文切换(读两次，写两次)，两次系统调用;</p>
+<h5 id="sendfile">sendfile</h5>
 <p>而<code>zeroCopy</code>可以直接从内核缓冲区写入socket缓冲区，避免了普通的<code>read()</code>方法的各种<strong>上下文交换</strong>以及<strong>内核空间缓冲区与用户空间缓冲区</strong>的交换</p>
 <p>改写后就会变成<img src="/img/zeroCopyreal.png" srcset="/img/loading.gif" alt="如图"></p>
-<p>整个过程两次 DMA copy，两次上下文切换，0 次 cpu copy，一个系统调用;</p>
-<h4 id="Scatter-Gather"><a href="#Scatter-Gather" class="headerlink" title="Scatter/Gather"></a>Scatter/Gather</h4><p>ps：看到上图，既然read buffer与socekt buffer之间还有一次copy，如果我们将该copy去掉呢？</p>
+<p>整个过程两次 DMA copy，两次上下文切换，1 次 cpu copy，一个系统调用;</p>
+<h5 id="scatter-gather-dma-sendfile">Scatter/Gather DMA + sendfile</h5>
+<p>ps：看到上图，既然read buffer与socekt buffer之间还有一次CPU copy，如果我们将该copy去掉呢？</p>
 <p>首先讲下原因： 这是因为在一般的Block DMA方式中，<code>源物理地址</code>和<code>目标物理地址</code>都得是<strong>连续</strong>的，所以一次只能传输物理上连续的一块数据，每传输一个块发起一次中断，直到传输完成，所以必须要在两个缓冲区之间拷贝数据;</p>
-<p>而<code>Scatter/Gather DMA</code>方式则不同，会预先维护一个物理上不连续的块描述符的链表，描述符中包含有数据的<code>起始地址</code>和<code>长度</code>;<br>传输时只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比Block DMA要高。也就是说，硬件可以通过<code>Scatter/Gather DMA</code>直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据。因此上面的时序图还可以进一步简化;</p>
-<p>如<img src="/img/scatterGather.png" srcset="/img/loading.gif" alt="下图"></p>
-<h5 id="Unmap内存映射支持"><a href="#Unmap内存映射支持" class="headerlink" title="Unmap内存映射支持"></a>Unmap内存映射支持</h5><p>上面的<code>Scatter/gather</code>很明显DMA从内核取得数据是不可以更改数据的，如果要修改数据，则需要<code>内存映射</code>的支持,可以将文件数据映射到内核地址空间，修改完后刷回去;</p>
-<p>当然了，<code>mmap</code>也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,对应的的最后也要调用一个<code>unmap()</code>方法</p>
-<h4 id="线程设计"><a href="#线程设计" class="headerlink" title="线程设计"></a>线程设计</h4><p>进程方面也是一个acceptor的线程和N个processor线程，其中processor线程都会处理<strong>固定数目</strong>的connection;</p>
-<h3 id="存储"><a href="#存储" class="headerlink" title="存储"></a>存储</h3><p>kafka借用了系统的page cache的来处理缓存;<br>原因有几点：</p>
+<p>而<code>Scatter/Gather DMA</code>方式则不同，会预先维护一个物理上<code>不连续的块描述符</code>的链表，描述符中包含有数据的<code>起始地址</code>和<code>长度</code>;
+传输时((DMA控制器负责)只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比<code>Block DMA</code></p>
+<blockquote>
+<blockquote>
+<p>Block DMA: 如果在传输完一块物理上连续的数据后引起一次中断，然后再由主机进行下一块物理上连续的数据传输</p>
+</blockquote>
+</blockquote>
+<p>要高。也就是说，硬件可以通过<code>Scatter/Gather DMA</code>直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据(再次省去了一次CPU copy)。因此上面的时序图还可以进一步简化;</p>
+<p>如<img src="/img/zeroCopyScatterGather.png" srcset="/img/loading.gif" alt="下图"></p>
+<p>总的只需要2次上下文切换，0次CPU copy,3 次DMAcopy；</p>
+<h5 id="mmap-unmap内存映射支持">mmap/Unmap内存映射支持</h5>
+<p>上面的<code>Scatter/gather</code>很明显DMA从内核取得数据是不可以更改数据的，如果要修改数据，则需要<code>内存映射</code>的支持,可以将文件数据映射到内核地址空间，修改完后刷回去;</p>
+<p>当然了，<code>mmap</code>也是系统调用，会引起上下文切换,不需要上下切换的只不过是改的过程,然后进行一次<code>write()</code>的调用，对应的的最后也要调用一个<code>unmap()</code>系统调用,所以这里总共会有六次上下文切换,</p>
+<p>另外，还需要在TLB中维护所有数据对应的地址空间;</p>
+<p><img src="/img/zeroCopymap.png" srcset="/img/loading.gif" alt="如图"></p>
+<p>总的需要6次上下文切换，1次CPU copy，2次DMA copy</p>
+<h5 id="splice">Splice</h5>
+<p>还有一种方法<code>Splice</code>是基于管道的，可以用于在内核区进行,同样避免了用户态切换以及CPU的copy:
+<img src="/img/zeroCopySplice.png" srcset="/img/loading.gif" alt="如图"></p>
+<p>要特别注意的就是这两个buffer其中一个的<code>fd</code>必须是管道设备</p>
+<h4 id="线程设计">线程设计</h4>
+<p>进程方面也是一个acceptor的线程和N个processor线程，其中processor线程都会处理<strong>固定数目</strong>的connection;</p>
+<h3 id="存储">存储</h3>
+<h4 id="顺序读写">顺序读写</h4>
+<p>都是append到文件中;</p>
+<h4 id="page-cache">page cache</h4>
+<p>kafka借用了系统的page cache的来处理缓存;
+原因有几点：</p>
 <ul>
 <li>如果自己管理cache，因为其为自定义object，jvm会将其设为object overhead，浪费空间；</li>
 <li>JVM会有自己的GC，过大的堆也会影响GC，降低吞吐量</li>
 <li>如果Kafka崩溃，在内存中的数据也会不见；</li>
 </ul>
-<h2 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h2><h3 id="同步问题"><a href="#同步问题" class="headerlink" title="同步问题"></a>同步问题</h3><p>主要由几点保证： </p>
-<h4 id="1-Replicated"><a href="#1-Replicated" class="headerlink" title="1. Replicated"></a>1. Replicated</h4><p>ISR：In-Sync Replicated<br>每个Partition都有一个ISR</p>
+<h4 id="分区">分区</h4>
+<p>topic可以分为多个partition，每个partition又可以分为多个segment，每次操作都是对小部分操作，大量减少消耗和增加并行性;</p>
+<h3 id="数据本身处理">数据本身处理</h3>
+<h4 id="批量发送">批量发送</h4>
+<h4 id="压缩-v2">压缩</h4>
+<p>Gzip,snappy压缩数据</p>
+<h2 id="分布式">分布式</h2>
+<h3 id="同步问题">同步问题</h3>
+<p>主要由几点保证：</p>
+<h4 id="1-replicated">1. Replicated</h4>
+<p>ISR：In-Sync Replicated
+每个Partition都有一个ISR</p>
 <p>AR: assigned Replicated</p>
 <p>ISR由leader维护,follower</p>
-<h4 id="2-HW，LEO"><a href="#2-HW，LEO" class="headerlink" title="2. HW，LEO"></a>2. HW，LEO</h4><p>看几幅图!(盗图)[/img/kafkaDef.png]</p>
+<h4 id="2-hw-leo">2. HW，LEO</h4>
+<p>看几幅图<img src="/img/kafkaDef.png" srcset="/img/loading.gif" alt="盗图"></p>
 <ul>
-<li><p>Base Offset: 第一条日志的offset，</p>
+<li>
+<p>Base Offset: 第一条日志的offset，</p>
 </li>
-<li><p>HW: replicated的leader和follower都会有这个值，leader中的HW决定consumer可以消费到哪个offset；如图[0,8]的消息都可以被消费;</p>
+<li>
+<p>HW: replicated的leader和follower都会有这个值，leader中的HW决定consumer可以消费到哪个offset；如图[0,8]的消息都可以被消费;</p>
 </li>
-<li><p>LEO: log end offset,即日志末端位移，代表日志文件中下一条待写入消息的offset，同样leader和follower都有该值；<br>  leader收到消息后这个值+1,但follower要从leader副本fetch到消息后才可以增加，最后leader取两者之间的LEO的最小值作为HW，更新自己的HW；</p>
+<li>
+<p>LEO: log end offset,即日志末端位移，代表日志文件中下一条待写入消息的offset，同样leader和follower都有该值；
+leader收到消息后这个值+1,但follower要从leader副本fetch到消息后才可以增加，最后leader取两者之间的LEO的最小值作为HW，更新自己的HW；</p>
 </li>
 </ul>
 <p>几个副本中，最旧版本offset即为High watermark，恢复数据时也以这个为准</p>
-<h5 id="epoch"><a href="#epoch" class="headerlink" title="epoch"></a>epoch</h5><p> 在0.11以后的版本，新增了(Leader epoch);<br> 解决了 宕机问题造成的offset数据不一致以及数据丢失两种问题:</p>
+<h5 id="epoch">epoch</h5>
+<p>在0.11以后的版本，新增了(Leader epoch);
+解决了 宕机问题造成的offset数据不一致以及数据丢失两种问题:</p>
 <ul>
 <li>数据丢失:</li>
 </ul>
@@ -345,27 +408,51 @@ log.retention.check.interval.ms=300000</code></pre></div>
 </ul>
 <p>增加了epoch,存储在leader broker上，与offset组成<code>(epoch, offset)</code>key-value pair,其会被定期写入一个checkpoint;</p>
 <ul>
-<li><p>Leader每<strong>发生一次变化</strong>epoch就会+1，offset就代表该epoch版本的Leader写入的第一条日志的位移;</p>
+<li>
+<p>Leader每<strong>发生一次变化</strong>epoch就会+1，offset就代表该epoch版本的Leader写入的第一条日志的位移;</p>
 </li>
-<li><p>Leader首次写入就会增加一个记录；</p>
-</li>
-</ul>
-<h4 id="3-ACK"><a href="#3-ACK" class="headerlink" title="3. ACK"></a>3. ACK</h4><h2 id="如何设置相关参数"><a href="#如何设置相关参数" class="headerlink" title="如何设置相关参数"></a>如何设置相关参数</h2><ul>
-<li><p>Partition数量设置最好是broker的整数倍，这样topic会平均分到每个broker相同的partitions</p>
-</li>
-<li><p>另一个需要特别注意的问题是<code>lagging consumer</code>，即那些消费速率慢、明显落后的consumer;<br>它们要读取的数据有较大概率不在broker page cache中，因此会增加很多不必要的读盘操作;<br>比这更坏的是，<code>lagging consumer</code>读取的“冷”数据仍然会进入<code>page cache</code>，污染了多数正常consumer要读取的“热”数据，连带着正常consumer的性能变差;</p>
-</li>
-<li><p>page_cache的设置：<br>  <code>/proc/sys/vm/dirty_writeback_centisecs</code>：flush检查的周期。单位为0.01秒，默认值500，即5秒。每次检查都会按照以下三个参数控制的逻辑来处理。<br>  <code>/proc/sys/vm/dirty_expire_centisecs</code>：如果page cache中的页被标记为dirty的时间超过了这个值，就会被直接刷到磁盘。单位为0.01秒。默认值3000，即半分钟。<br>  <code>/proc/sys/vm/dirty_background_ratio</code>：如果dirty page的总大小占空闲内存量的比例超过了该值，就会在后台调度flusher线程异步写磁盘，不会阻塞当前的write()操作。默认值为10%。<br>  <code>/proc/sys/vm/dirty_ratio</code>：如果dirty page的总大小占总内存量的比例超过了该值，就会阻塞所有进程的write()操作，并且强制每个进程将自己的文件写入磁盘。默认值为20%。<br>  一般可以考虑调整dirty_expire_centisecs 和 dirty_background_ratio</p>
+<li>
+<p>Leader首次写入就会增加一个记录；</p>
 </li>
 </ul>
-<h2 id="一些版本更替问题"><a href="#一些版本更替问题" class="headerlink" title="一些版本更替问题"></a>一些版本更替问题</h2><h3 id="主要是对zookeeper依赖问题"><a href="#主要是对zookeeper依赖问题" class="headerlink" title="主要是对zookeeper依赖问题"></a>主要是对zookeeper依赖问题</h3><h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h4><ul>
+<h4 id="3-ack">3. ACK</h4>
+<h2 id="如何设置相关参数">如何设置相关参数</h2>
+<ul>
+<li>
+<p>Partition数量设置最好是broker的整数倍，这样topic会平均分到每个broker相同的partitions</p>
+</li>
+<li>
+<p>另一个需要特别注意的问题是<code>lagging consumer</code>，即那些消费速率慢、明显落后的consumer;
+它们要读取的数据有较大概率不在broker page cache中，因此会增加很多不必要的读盘操作;
+比这更坏的是，<code>lagging consumer</code>读取的“冷”数据仍然会进入<code>page cache</code>，污染了多数正常consumer要读取的“热”数据，连带着正常consumer的性能变差;</p>
+</li>
+<li>
+<p>page_cache的设置：
+<code>/proc/sys/vm/dirty_writeback_centisecs</code>：flush检查的周期。单位为0.01秒，默认值500，即5秒。每次检查都会按照以下三个参数控制的逻辑来处理。
+<code>/proc/sys/vm/dirty_expire_centisecs</code>：如果page cache中的页被标记为dirty的时间超过了这个值，就会被直接刷到磁盘。单位为0.01秒。默认值3000，即半分钟。
+<code>/proc/sys/vm/dirty_background_ratio</code>：如果dirty page的总大小占空闲内存量的比例超过了该值，就会在后台调度flusher线程异步写磁盘，不会阻塞当前的write()操作。默认值为10%。
+<code>/proc/sys/vm/dirty_ratio</code>：如果dirty page的总大小占总内存量的比例超过了该值，就会阻塞所有进程的write()操作，并且强制每个进程将自己的文件写入磁盘。默认值为20%。
+一般可以考虑调整dirty_expire_centisecs 和 dirty_background_ratio</p>
+</li>
+</ul>
+<h2 id="一些版本更替问题">一些版本更替问题</h2>
+<h3 id="主要是对zookeeper依赖问题">主要是对zookeeper依赖问题</h3>
+<h4 id="客户端">客户端</h4>
+<ul>
 <li>Kafka 0.8时代，Kafka有3个客户端，分别是Producer、Consumer和Admin Tool;</li>
 </ul>
-<p>其中Producer负责向Kafka写消息，Consumer负责从Kafka读消息，而Admin Tool执行各种运维任务，比如创建或删除主题等;<br>其中Consumer的位移数据保存在ZooKeeper上，因此Consumer端的位移提交和位移获取操作都需要访问ZooKeeper，另外Admin Tool执行运维操作也要访问ZooKeeper，比如在对应的ZooKeeper znode上创建一个临时节点，然后由预定义的Watch触发相应的处理逻辑。</p>
-<h4 id="服务端-broker"><a href="#服务端-broker" class="headerlink" title="服务端(broker)"></a>服务端(broker)</h4><p>依赖较为严重:</p>
+<p>其中Producer负责向Kafka写消息，Consumer负责从Kafka读消息，而Admin Tool执行各种运维任务，比如创建或删除主题等;
+其中Consumer的位移数据保存在ZooKeeper上，因此Consumer端的位移提交和位移获取操作都需要访问ZooKeeper，另外Admin Tool执行运维操作也要访问ZooKeeper，比如在对应的ZooKeeper znode上创建一个临时节点，然后由预定义的Watch触发相应的处理逻辑。</p>
+<h4 id="服务端-broker">服务端(broker)</h4>
+<p>依赖较为严重:</p>
 <p>主要是</p>
-<p>-Broker注册管理(靠zk的quorum)<br>-ACL安全层配置<br>-动态参数管理<br>-ISR管理<br>-Controller选举</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://www.jianshu.com/p/92f33aa0ff52" target="_blank" rel="noopener">https://www.jianshu.com/p/92f33aa0ff52</a></p>
+<p>-Broker注册管理(靠zk的quorum)
+-ACL安全层配置
+-动态参数管理
+-ISR管理
+-Controller选举</p>
+<h1>参考</h1>
+<p><a href="https://www.jianshu.com/p/92f33aa0ff52" target="_blank" rel="noopener">https://www.jianshu.com/p/92f33aa0ff52</a></p>
 
             </div>
             <hr>

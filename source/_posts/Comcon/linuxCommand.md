@@ -72,4 +72,25 @@ iconv -f [encoding] -t [encoding] sourcefile -o outputfile
 
 
 - tcpdump
+实时抓取当前连接，同wireshark相似
+
+- tcp连接状态
+
+```s
+netstat -na | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
+```
+- chmod
+改变权限
+权限组分为`拥有者`，`群组`，`其他用户`三种级别,分别为`RWS`，对应读、写、执行；
+
+组成的权限为二进制的bit array，如下所示:
+```s
+r-- = 100
+-w- = 010
+--x = 001
+--- = 000
+```
+
+注意：对于文件夹来说，`s`执行,是其读取`r`(ls),`w`写入(在里面进行创建删除更改等操作)的前提，没有`s`权限，
+
 
