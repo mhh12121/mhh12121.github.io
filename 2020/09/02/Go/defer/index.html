@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      3.1k 字
+      3.6k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      52
+      58
        分钟
     </span>
   
@@ -283,7 +283,7 @@
 <h3 id="编译期-有三种不同的编译方式-1-14新增一种">编译期(有三种不同的编译方式,1.14新增一种)</h3>
 <ol>
 <li><code>defer</code> 关键字<strong>转换成</strong>了<code>deferproc</code>,堆上分配 ;</li>
-<li>还会在所有调用defer的函数末尾插入<code>deferreturn</code>，栈上分配, ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用<code>cmd/compile/internal/gc.state.call</code>将结构体分配到栈并调用<code>runtime.deferprocStack</code>);</li>
+<li>还会在所有调用defer的函数末尾插入<code>deferreturn</code>，栈上分配(1.13新增), ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用<code>cmd/compile/internal/gc.state.call</code>将结构体分配到栈并调用<code>runtime.deferprocStack</code>);</li>
 <li><code>open-coded</code>(1.14新增),只会在以下情况:
 <ul>
 <li>函数的 <code>defer</code> 数量少于或者等于 8 个；</li>
@@ -323,7 +323,7 @@
 			<span class="hljs-keyword">fallthrough</span>
 	...
 &#125;</code></pre></div>
-<h4 id="栈上分配">栈上分配</h4>
+<h4 id="栈上分配-消耗更少">栈上分配(消耗更少)</h4>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// deferprocStack queues a new deferred function with a defer record on the stack.</span>
 <span class="hljs-comment">// The defer record must have its siz and fn fields initialized.</span>
 <span class="hljs-comment">// All other fields can contain junk.</span>
@@ -593,7 +593,18 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $<span class="hljs-number">0</span><span cl
 </ul>
 <h4 id="open-coded">open-coded</h4>
 <p>对于<code>运行中</code>才确定的defer，
-可以看到其中1.14新增的<code>open-coded</code>，采用位操作(<code>defer bits</code>)来确认分支</p>
+可以看到其中1.14新增的<code>open-coded</code>，采用位操作(<code>defer bits</code>，即变量<code>df</code>)来确认分支:</p>
+<ul>
+<li>
+<p>首先直接在<code>defer func()</code>这种会直接插入;</p>
+</li>
+<li>
+<p>其次，在<code>条件判断分支</code>中的 defer,则要在<code>运行时</code>记录每个defer是否被执行，从而便于判断最后的延迟调用该执行哪些函数;</p>
+</li>
+</ul>
+<p>原理：</p>
+<p>同一个函数内每出现一个 defer 都会为其分配 <code>var df byte</code>，如果被执行到则设为 <code>1</code>，否则设为 <code>0</code>(比如<code>df|=1</code>)，当到达函数返回之前需要判断延迟调用时，则用掩码(比如<code>df&amp;1&gt;0</code>判断第一个defer是否存在)判断每个位置的比特，若为 1 则调用延迟函数，否则跳过。</p>
+<p>为了轻量，官方将延迟比特限制为 1 个字节，即 8 个比特，这就是为什么不能超过 8 个 <code>defer</code> 的原因，若超过依然会选择堆栈分配，但显然大部分情况不会超过 8 个;</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// runOpenDeferFrame runs the active open-coded defers in the frame specified by</span>
 <span class="hljs-comment">// d. It normally processes all active defers in the frame, but stops immediately</span>
 <span class="hljs-comment">// if a defer does a successful recover. It returns true if there are no</span>
@@ -617,7 +628,7 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $<span class="hljs-number">0</span><span cl
 		argWidth, fd = readvarintUnsafe(fd)
 		closureOffset, fd = readvarintUnsafe(fd)
 		nArgs, fd = readvarintUnsafe(fd)
-		<span class="hljs-comment">//移位来判定</span>
+		<span class="hljs-comment">//移位来判定,掩码</span>
 		<span class="hljs-keyword">if</span> deferBits&amp;(<span class="hljs-number">1</span>&lt;&lt;i) == <span class="hljs-number">0</span> &#123;
 			<span class="hljs-keyword">for</span> j := <span class="hljs-keyword">uint32</span>(<span class="hljs-number">0</span>); j &lt; nArgs; j++ &#123;
 				_, fd = readvarintUnsafe(fd)
@@ -659,6 +670,26 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $<span class="hljs-number">0</span><span cl
 
 	<span class="hljs-keyword">return</span> done
 &#125;</code></pre></div>
+<h5 id="缺点">缺点</h5>
+<p>官方给出的测试中提高了几乎有一个0，但是要注意到一种问题，如果在插入的多个oepn-coded代码之间<code>panic</code>或者<code>goExit()</code>，下面的代码就不会进入，而是去找注册的<code>defer</code>;
+针对这种情况，程序还会去进行一次栈扫描;</p>
+<p>当然针对这些情况，<code>_defer</code>结构体就新增了以下几个字段来帮忙找到未注册到链表的defer函数:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">type</span> _defer <span class="hljs-keyword">struct</span> &#123;
+	...
+    openDefer <span class="hljs-keyword">bool</span>
+	<span class="hljs-comment">// If openDefer is true, the fields below record values about the stack</span>
+	<span class="hljs-comment">// frame and associated function that has the open-coded defer(s). sp</span>
+	<span class="hljs-comment">// above will be the sp for the frame, and pc will be address of the</span>
+	<span class="hljs-comment">// deferreturn call in the function.</span>
+	fd   unsafe.Pointer <span class="hljs-comment">// funcdata for the function associated with the frame</span>
+	varp <span class="hljs-keyword">uintptr</span>        <span class="hljs-comment">// value of varp for the stack frame</span>
+	<span class="hljs-comment">// framepc is the current pc associated with the stack frame. Together,</span>
+	<span class="hljs-comment">// with sp above (which is the sp associated with the stack frame),</span>
+	<span class="hljs-comment">// framepc/sp can be used as pc/sp pair to continue a stack trace via</span>
+	<span class="hljs-comment">// gentraceback().</span>
+	framepc <span class="hljs-keyword">uintptr</span>
+&#125;</code></pre></div>
+<p>其实就导致在1.14中，如果使用opencoded，defer的确会变快了，但是在有panic的情况，却更慢了;</p>
 
             </div>
             <hr>

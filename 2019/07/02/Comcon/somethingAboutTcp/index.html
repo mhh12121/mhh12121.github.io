@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      3.7k 字
+      4.2k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      40
+      46
        分钟
     </span>
   
@@ -214,27 +214,28 @@
 <h3 id="1-为什么多个tcp连接会比单个tcp连接快？-tmd面试傻了-居然没答出来这个">1. 为什么多个tcp连接会比单个tcp连接快？（tmd面试傻了，居然没答出来这个）</h3>
 <p>一开始看见，这不是显而易见的吗？？？</p>
 <p>后来发现，其实他想听到的答案是：</p>
-<ol>
-<li>tcp的流量窗口rwnd(接收方),拥塞控制cwnd(发送方)
-如下图(盗图)：
+<h4 id="tcp的流量窗口rwnd-接收方-拥塞控制cwnd-发送方">tcp的流量窗口rwnd(接收方),拥塞控制cwnd(发送方)</h4>
+<p>如下图(盗图)：
 <img src="/img/tcpWindow.jpg" srcset="/img/loading.gif" alt="tcpwindow">
 绿色为 发送者发送，且接收者acked
 黄色为 发送者发送，接收者未确认（in-flight）
-蓝色为 可用但为发送</li>
-</ol>
+蓝色为 可用但为发送</p>
 <p>cwnd= width（in-flight）+width（not sent）</p>
 <p>发送速率：
 <strong>rate = cwnd / RTT byte/sec</strong>
 即发送速率在RTT（往返时延）一定的情况下，只受cwnd影响</p>
-<ol start="2">
-<li>慢启动，拥塞避免</li>
-</ol>
-<p>tcp会进行<strong>慢启动</strong>直到丢包,每接到一个ack就会把窗口（cwnd）×2，超过ssThreshold就进行拥塞避免只增加 1/cwnd;</p>
+<h4 id="慢启动-拥塞避免">慢启动，拥塞避免</h4>
+<p>注意: 建立连接后，client和server都有一个窗口，每次进行调整窗口都是调整自己的窗口控制发送速率(当然可以传送报文，让对方调整速率);</p>
+<p><code>慢启动</code>(其实一点也不慢): tcp会进行直到丢包,每接到一个ack就会把窗口<code>（cwnd）×2</code>，超过<code>ssThreshold</code>就进行拥塞避免每一轮<code>RTT</code>只增加 <code>1/cwnd</code>（但是以上这个已经是废弃了!!! ）
+<code>拥塞避免</code>: 到达<code>sshThreshold</code>后会以线性速度上升，但是如果超时（出现拥塞），就将<code>ssThreshold</code>设置为出现拥塞的窗口的一半，然后将窗口设为1，重新开始慢启动</p>
+<p><code>快恢复</code>: 现在慢启动已经废弃了，在收到3个重复确认的ACK时就采用快恢复重传算法，<code>ssThreshold</code>设置为出现拥塞的窗口的一半，将cwnd设为<code>ssThreshold</code>的一半但不采用慢开始;</p>
 <p>当出现丢包的，有以下两种状况：</p>
 <ul>
 <li>接收者发送给发送者的ACK丢失，会导致 timeout</li>
 <li>发送者发送给接收者的数据丢失，发送者会收到接受者的重复ACK，如果收到三个重复的ACK，可以确认为丢包</li>
 </ul>
+<p>这里盗一幅图:</p>
+<p><img src="/img/tcpBlock.png" srcset="/img/loading.gif" alt="如图"></p>
 <ol start="3">
 <li>路由器（多个TCP有拥塞控制）
 给出带宽为R，有K个连接经过
@@ -251,22 +252,29 @@
 <img src="/img/TCPshakeFhand.jpg" srcset="/img/loading.gif" alt="tcpconn"></p>
 <ol>
 <li>client发送server<br>
-<strong>SYN=1</strong>（同步位，这种报文不能携带数据，但要<strong>消耗一个序号</strong>）
+<code>SYN=1</code>（同步位，这种报文不能携带数据，但要<strong>消耗一个序号</strong>）
 自己的序号 <strong>Seq=client_w ( isn )</strong> 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）</li>
 </ol>
 <blockquote>
 <blockquote>
-<p>ps: <strong>isn</strong>泛指一种计算序号的算法，有一种是每4μs+1，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；</p>
+<p>ps: <strong>isn</strong>泛指一种计算序号的算法，有一种是每4μs+1(动态随机,增加安全性，为了避免被第三方猜测到，从而被第三方伪造的RST报文Reset)，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；
+意义: 发送方的字节数据编号的原点，让对方生成一个合法的接收窗口;</p>
 </blockquote>
 </blockquote>
 <ol start="2">
-<li>server收到报文，把确认报文段中的SYN和ACK都设为1
+<li>
+<p>server收到报文，把确认报文段中的SYN和ACK都设为1
 <strong>SYN=1</strong>(同理<strong>要消耗一个序号</strong>) 和 <strong>ACK=1</strong>
-自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）</li>
-<li>client收到确认报文后，还要给server发送确认收到。
+自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）</p>
+</li>
+<li>
+<p>client收到确认报文后，还要给server发送确认收到。
 把<strong>确认ACK=1</strong>,ack=server_w+1(之前SYN消耗了序号)
-自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,<strong>但如果不携带数据则不消耗序号</strong>，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）</li>
-<li>server收到确认报文后，进入<code>established</code>状态，全部连接完成</li>
+自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,<strong>但如果不携带数据则不消耗序号</strong>，这里<code>(可以)</code>携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）</p>
+</li>
+<li>
+<p>server收到确认报文后，进入<code>established</code>状态，全部连接完成</p>
+</li>
 </ol>
 <h5 id="半连接状态-即服务器syn-recv状态">半连接状态(即服务器SYN-RECV状态)</h5>
 <p>服务器维护一个半连接队列(<code>BackLogs</code>表示半连接队列的最大容纳数目)，存放半连接。该队列为每个客户端的SYN包（syn=j）开设一个条目，该条目表明服务器已收到SYN包，并向客户发出确认，正在等待客户的ACK确认包。这些条目所标识的连接在服务器处于<code>SYN_RECV</code>状态，当服务器收到客户的确认包时，删除该条目，服务器进入<code>ESTABLISHED</code>状态。</p>
@@ -284,22 +292,21 @@
 <ol>
 <li>
 <p>client 发送
-<strong>FIN=1</strong>（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，<strong>无论带不带数据，这厮都要消耗一个序号！</strong>）
-<strong>seq=client_u</strong> （这里序号是<strong>前面一个传送过的数据最后一个字节的序号+1</strong>）;(client进入FIN-WAIT-1状态)</p>
+<code>FIN=1</code>（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，<strong>无论带不带数据，这厮都要消耗一个序号！</strong>）
+<code>seq=client_u</code> （这里序号是<strong>前面一个传送过的数据最后一个字节的序号+1</strong>）;(client进入<code>FIN-WAIT-1</code>状态)</p>
 </li>
 <li>
 <p>server收到释放报文返回
-<strong>ACK=1</strong>
-<strong>Seq=server_u</strong>(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server-&gt;client方向的连接保持，但client-&gt;server已经没有<strong>数据</strong>要传输了)</p>
+<code>ACK=1</code>
+<code>Seq=server_u</code>(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server-&gt;client方向的连接保持，但client-&gt;server已经没有<strong>数据</strong>要传输了)</p>
 </li>
 <li>
-<p>client收到server的确认后，进入FIN-WAIT2状态，等待server的连接释放报文</p>
+<p>client收到server的确认后，进入<code>FIN-WAIT2</code>状态，等待server的连接释放报文</p>
 </li>
 <li>
 <p>如果server没有数据要发给client了（server持续发送数据到client，也可以不发），
-携带报文 <strong>FIN=1</strong>， ACK=1
-<strong>seq=server_u2</strong>(新，可能发送了一些数据)
-<strong>ack=client_u+1</strong>（重复上次已发送的确认号）
+携带报文 <code>FIN=1</code>, <code>ACK=1</code>, <code>seq=server_u2</code>(新，可能发送了一些数据)
+<code>ack=client_u+1</code>（重复上次已发送的确认号）
 (server进入LAST-ACK状态)</p>
 </li>
 <li>
@@ -359,6 +366,17 @@ linux命令</p>
 <div class="hljs"><pre><code class="hljs bash">cat /proc/sys/net/ipv4/tcp_fastopen</code></pre></div>
 <p>检查是否开启，1为client端，2为server，3为both</p>
 <p><strong>注意一下这个功能可能被一些防火墙隔离</strong></p>
+<h4 id="tcp-粘包问题">TCP 粘包问题</h4>
+<p>这个其实没有特定的术语指明粘包这种东西，只是一种现象，主要是应用层对缓冲区中的数据解析出了问题（因为tcp是<code>流式传输</code>，字节流可能没有传完，所以一般在接收端要重组分组）,没有正确处理消息边界的原因（发送方可能用了<code>nagle</code>或者接收方接收到没有立即处理）;</p>
+<p>处理方法:</p>
+<ol>
+<li>发送方设置<code>TCP_NODELAY</code>;</li>
+<li>接收方在应用层，要和发送方商量，让<code>发送方带上消息边界（这时也要保证消息内容不含消息边界）</code>或者<code>消息长度(http自带的header就可以content-length解析)</code></li>
+</ol>
+<p>这里又有了，UDP会不会有这个问题呢？</p>
+<ul>
+<li>不会；因为UDP是基于<code>数据报(datagram)</code>来发送的，不会有分组，在接收端是有一个<code>skbuff</code>是一个链表来接收一个个数据报；</li>
+</ul>
 <h3 id="3-有哪些字段-一些字段的意义">3. 有哪些字段，一些字段的意义</h3>
 <p>比较关键的字段</p>
 <ul>
@@ -430,6 +448,8 @@ Nagle就是解决这种问题，具体做法</p>
 <p>如图<img src="/img/tcpsynlogs.png" srcset="/img/loading.gif" alt="tcpsynlog"></p>
 <p>TCP在未完成队列接收SYN的request，当三次握手完成(established)后，就会将这个request移到已完成的连接队列的尾部;</p>
 <p>除了两个队列模型外，TCP listen path也用无锁方式来改进???（似乎有点问题）4.7内核版本改进</p>
+<h4 id="tcp复用端口">TCP复用端口</h4>
+<p>NAT</p>
 <h4 id="dns协议">DNS协议</h4>
 <p>首先这🐔是<strong>应用层</strong>协议！！！
 功能主要就是<strong>把域名转换为IP地址</strong>

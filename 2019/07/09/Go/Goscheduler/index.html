@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      17.2k 字
+      17.3k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      267
+      268
        分钟
     </span>
   
@@ -2000,6 +2000,7 @@ TEXT runtime·goexit(SB),NOSPLIT,$<span class="hljs-number">0</span><span class=
 <p>可以看这幅图<img src="/img/scheduleTrigger.png" srcset="/img/loading.gif" alt="一幅图">
 其实就是看一下哪里调用了<code>runtime.schedule</code>方法:</p>
 <h4 id="主动挂起">主动挂起</h4>
+<p>gopark方法,由channel操作、sleep、netpoll_block、gc、select等待</p>
 <p><code>runtime.gopark</code>-&gt;<code>runtime.park_m</code></p>
 <p><code>runtime.gopark</code>这个方法会将当前goroutine暂停，被暂停的任务不会放回runq:</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">// Puts the current goroutine into a waiting state and calls unlockf.</span>
@@ -2095,8 +2096,8 @@ TEXT runtime·goexit(SB),NOSPLIT,$<span class="hljs-number">0</span><span class=
 	releasem(mp)
 &#125;</code></pre></div>
 <h4 id="系统调用">系统调用</h4>
-<p>这部分代码主要是汇编组成:
-<code>syscall.Syscall</code>
+<p>这部分代码主要是汇编组成:</p>
+<p><code>syscall.Syscall</code>
 同样是<code>linux amd64</code>:</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//</span>
 <span class="hljs-comment">// System call support for AMD64, Darwin</span>
@@ -2466,7 +2467,9 @@ ok:
 &#125;</code></pre></div>
 <h4 id="sysmon-v2">sysmon</h4>
 <p>主要对运行时间过长的，强行让出
-<code>p</code>中的<code>schedtick</code> 和 <code>schedwhen</code>与当前时间计算，运算出是否超时，要让出</p>
+<code>p</code>中的<code>schedtick</code> 和 <code>schedwhen</code>与当前时间计算，运算出是否超时，要让出
+<code>runtime.retake</code>方法中的<code>runtime.preemptone</code>进行异步抢占:</p>
+<div class="hljs"><pre><code class="hljs go"><span class="hljs-comment">//todo</span></code></pre></div>
 <ol>
 <li>Channel,mutex之类同步操作发生阻塞</li>
 <li>time.sleep</li>
@@ -2588,10 +2591,11 @@ goroutine 准备步骤是：提交一个goroutine去local queue，store-style me
 <h4 id="特殊的m0和g0">特殊的m0和g0</h4>
 <ul>
 <li>
-<p>M0 是启动程序后的编号为 0 的主线程，这个 M 对应的实例会在全局变量 runtime.m0 中，不需要在 heap 上分配，M0 负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。</p>
+<p><code>M0</code> 是启动程序后的编号为 0 的<code>主线程</code>，这个 M 对应的实例会在全局变量<code>runtime.m0</code>中，不需要在heap上分配，<code>M0</code>负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。</p>
 </li>
 <li>
-<p>G0 是每次启动一个 M 都会第一个创建的 gourtine，G0 仅用于负责调度的 G，G0 不指向任何可执行的函数，每个 M 都会有一个自己的 G0。在调度或系统调用时会使用 G0 的栈空间，全局变量的 G0 是 M0 的 G0。</p>
+<p><code>G0</code> 是每次启动一个 M 都会第一个创建的 gourtine，<code>G0</code> 仅用于<strong>负责调度</strong>的 G(作用);
+<code>G0</code> 不指向任何可执行的函数，每个 M 都会有一个自己的 <code>G0</code>。在调度或系统调用时会使用 G0 的栈空间(栈空间是一定的,Unix一般是8MB)，全局变量的 <code>G0</code> 是 <code>M0</code> 的 <code>G0</code> (这种一般指sysmon,垃圾回收器等，注意调度器本身属于第三种goroutine，不是g0，也不是普通的goroutine)</p>
 </li>
 </ul>
 <ol start="3">

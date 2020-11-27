@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      370 字
+      557 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      5
+      8
        分钟
     </span>
   
@@ -213,43 +213,43 @@
 <li>ps
 From MANNUAL:</li>
 </ul>
-<p>EXAMPLES
-To see every process on the system using standard syntax:
-ps -e
-ps -ef
-ps -eF
-ps -ely</p>
-<div class="hljs"><pre><code>   To see every process on the system using BSD syntax:
-      ps ax
-      ps axu
+<p>EXAMPLES</p>
+<div class="hljs"><pre><code class="hljs s">To see every process on the system using standard syntax:
+   ps -e
+   ps -ef
+   ps -eF
+   ps -ely
 
-   To print a process tree:
-      ps -ejH
-      ps axjf
+To see every process on the system using BSD syntax:
+   ps ax
+   ps axu
 
-   To get info about threads:
-      ps -eLf
-      ps axms
+To print a process tree:
+   ps -ejH
+   ps axjf
 
-   To get security info:
-      ps -eo euser,ruser,suser,fuser,f,comm,label
-      ps axZ
-      ps -eM
+To get info about threads:
+   ps -eLf
+   ps axms
 
-   To see every process running as root (real &amp; effective ID) in user format:
-      ps -U root -u root u
+To get security info:
+   ps -eo euser,ruser,suser,fuser,f,comm,label
+   ps axZ
+   ps -eM
 
-   To see every process with a user-defined format:
-      ps -eo pid,tid,class,rtprio,ni,pri,psr,pcpu,stat,wchan:14,comm
-      ps axo stat,euid,ruid,tty,tpgid,sess,pgrp,ppid,pid,pcpu,comm
-      ps -Ao pid,tt,user,fname,tmout,f,wchan
+To see every process running as root (real &amp; effective ID) in user format:
+   ps -U root -u root u
 
-   Print only the process IDs of syslogd:
-      ps -C syslogd -o pid=
+To see every process with a user-defined format:
+   ps -eo pid,tid,class,rtprio,ni,pri,psr,pcpu,stat,wchan:14,comm
+   ps axo stat,euid,ruid,tty,tpgid,sess,pgrp,ppid,pid,pcpu,comm
+   ps -Ao pid,tt,user,fname,tmout,f,wchan
 
-   Print only the name of PID 42:
-      ps -q 42 -o comm=
-</code></pre></div>
+Print only the process IDs of syslogd:
+   ps -C syslogd -o pid=
+
+Print only the name of PID 42:
+   ps -q 42 -o comm=</code></pre></div>
 <ul>
 <li>转换文件编码格式:</li>
 </ul>
@@ -289,6 +289,33 @@ ps -ely</p>
 --x = 001
 --- = 000</code></pre></div>
 <p>注意：对于文件夹来说，<code>s</code>执行,是其读取<code>r</code>(ls),<code>w</code>写入(在里面进行创建删除更改等操作)的前提，没有<code>s</code>权限，</p>
+<ul>
+<li>
+<p>free
+相对与<code>top</code> 命令来说，free命令是准确展示内存和cache的，因为linux本身的机制，有些内存来不及回收，当做<code>cache</code>存留在内存中，所以top命令看到的内存大小是不一定正确的，可能有大部分cache占用了;</p>
+</li>
+<li>
+<p>查找程序莫名被killed的原因</p>
+</li>
+</ul>
+<ol>
+<li><code>/var/log</code>下查找，每天的log中过滤killed process等字眼即可
+可以通过<code>egrep</code>(同grep -e，只不过匹配原则不一样):</li>
+</ol>
+<div class="hljs"><pre><code class="hljs s">egrep -i &apos;killed process&apos; /var/log/messages</code></pre></div>
+<ol start="2">
+<li>或者<code>journalctl</code>:</li>
+</ol>
+<div class="hljs"><pre><code class="hljs s">journalctl -xb | egrep -i &apos;killed process&apos;</code></pre></div>
+<div class="hljs"><pre><code class="hljs s">//
+journalctl -k
+//一段范围
+journalctl --since=&quot;2018-09-21 10:21:00&quot; --until=&quot;2018-09-21 10:22:00&quot;
+//日志占用空间
+journalctl --disk-usage</code></pre></div>
+<ol start="3">
+<li>或者<code>dmesg</code>来查看开机信息:</li>
+</ol>
 
             </div>
             <hr>
