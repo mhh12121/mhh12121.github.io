@@ -103,7 +103,7 @@ type _panic struct {
 
 
  1. `defer` 关键字**转换成**了`deferproc`,堆上分配 ;
- 2. 还会在所有调用defer的函数末尾插入`deferreturn`，栈上分配, ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用`cmd/compile/internal/gc.state.call`将结构体分配到栈并调用`runtime.deferprocStack`);
+ 2. 还会在所有调用defer的函数末尾插入`deferreturn`，栈上分配(1.13新增), ssa会预留defer空间(1.13，在函数体内最多执行一次就会调用`cmd/compile/internal/gc.state.call`将结构体分配到栈并调用`runtime.deferprocStack`);
  3. `open-coded`(1.14新增),只会在以下情况:
 	- 函数的 `defer` 数量少于或者等于 8 个；
 	- 函数的 `defer` 关键字不能在循环中执行(包括goto)；
@@ -147,7 +147,7 @@ func walkstmt(n *Node) *Node {
 ```
 
 
-#### 栈上分配
+#### 栈上分配(消耗更少)
 ```go
 // deferprocStack queues a new deferred function with a defer record on the stack.
 // The defer record must have its siz and fn fields initialized.
@@ -437,7 +437,18 @@ TEXT runtime·jmpdefer(SB), NOSPLIT, $0-16
 #### open-coded
 
 对于`运行中`才确定的defer，
-可以看到其中1.14新增的`open-coded`，采用位操作(`defer bits`)来确认分支
+可以看到其中1.14新增的`open-coded`，采用位操作(`defer bits`，即变量`df`)来确认分支:
+
+- 首先直接在`defer func()`这种会直接插入;
+
+- 其次，在`条件判断分支`中的 defer,则要在`运行时`记录每个defer是否被执行，从而便于判断最后的延迟调用该执行哪些函数;
+
+原理：
+
+同一个函数内每出现一个 defer 都会为其分配 `var df byte`，如果被执行到则设为 `1`，否则设为 `0`(比如`df|=1`)，当到达函数返回之前需要判断延迟调用时，则用掩码(比如`df&1>0`判断第一个defer是否存在)判断每个位置的比特，若为 1 则调用延迟函数，否则跳过。
+
+为了轻量，官方将延迟比特限制为 1 个字节，即 8 个比特，这就是为什么不能超过 8 个 `defer` 的原因，若超过依然会选择堆栈分配，但显然大部分情况不会超过 8 个;
+
 
 ```go
 // runOpenDeferFrame runs the active open-coded defers in the frame specified by
@@ -463,7 +474,7 @@ func runOpenDeferFrame(gp *g, d *_defer) bool {
 		argWidth, fd = readvarintUnsafe(fd)
 		closureOffset, fd = readvarintUnsafe(fd)
 		nArgs, fd = readvarintUnsafe(fd)
-		//移位来判定
+		//移位来判定,掩码
 		if deferBits&(1<<i) == 0 {
 			for j := uint32(0); j < nArgs; j++ {
 				_, fd = readvarintUnsafe(fd)
@@ -509,3 +520,28 @@ func runOpenDeferFrame(gp *g, d *_defer) bool {
 ```
 
 
+##### 缺点
+
+官方给出的测试中提高了几乎有一个0，但是要注意到一种问题，如果在插入的多个oepn-coded代码之间`panic`或者`goExit()`，下面的代码就不会进入，而是去找注册的`defer`;
+针对这种情况，程序还会去进行一次栈扫描;
+
+当然针对这些情况，`_defer`结构体就新增了以下几个字段来帮忙找到未注册到链表的defer函数:
+```go
+type _defer struct {
+	...
+    openDefer bool
+	// If openDefer is true, the fields below record values about the stack
+	// frame and associated function that has the open-coded defer(s). sp
+	// above will be the sp for the frame, and pc will be address of the
+	// deferreturn call in the function.
+	fd   unsafe.Pointer // funcdata for the function associated with the frame
+	varp uintptr        // value of varp for the stack frame
+	// framepc is the current pc associated with the stack frame. Together,
+	// with sp above (which is the sp associated with the stack frame),
+	// framepc/sp can be used as pc/sp pair to continue a stack trace via
+	// gentraceback().
+	framepc uintptr
+}
+```
+
+其实就导致在1.14中，如果使用opencoded，defer的确会变快了，但是在有panic的情况，却更慢了;

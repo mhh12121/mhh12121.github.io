@@ -11,6 +11,7 @@ tags: Linux
 From MANNUAL:
 
 EXAMPLES
+```s
        To see every process on the system using standard syntax:
           ps -e
           ps -ef
@@ -47,8 +48,9 @@ EXAMPLES
 
        Print only the name of PID 42:
           ps -q 42 -o comm=
-
+```
 - 转换文件编码格式:
+
 ```shell
 iconv -f [encoding] -t [encoding] sourcefile -o outputfile
 ```
@@ -94,3 +96,28 @@ r-- = 100
 注意：对于文件夹来说，`s`执行,是其读取`r`(ls),`w`写入(在里面进行创建删除更改等操作)的前提，没有`s`权限，
 
 
+- free 
+相对与`top` 命令来说，free命令是准确展示内存和cache的，因为linux本身的机制，有些内存来不及回收，当做`cache`存留在内存中，所以top命令看到的内存大小是不一定正确的，可能有大部分cache占用了;
+
+- 查找程序莫名被killed的原因
+
+1. `/var/log`下查找，每天的log中过滤killed process等字眼即可
+   可以通过`egrep`(同grep -e，只不过匹配原则不一样):
+```s
+egrep -i 'killed process' /var/log/messages
+```
+2. 或者`journalctl`:
+```s
+journalctl -xb | egrep -i 'killed process'
+```
+
+```s
+//
+journalctl -k
+//一段范围
+journalctl --since="2018-09-21 10:21:00" --until="2018-09-21 10:22:00"
+//日志占用空间
+journalctl --disk-usage
+```
+
+3. 或者`dmesg`来查看开机信息:

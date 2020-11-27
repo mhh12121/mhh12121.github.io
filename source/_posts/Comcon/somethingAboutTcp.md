@@ -10,7 +10,8 @@ tags: networking
 一开始看见，这不是显而易见的吗？？？
 
 后来发现，其实他想听到的答案是： 
-1. tcp的流量窗口rwnd(接收方),拥塞控制cwnd(发送方)
+####  tcp的流量窗口rwnd(接收方),拥塞控制cwnd(发送方)
+
 如下图(盗图)：
 ![tcpwindow](/img/tcpWindow.jpg)
 绿色为 发送者发送，且接收者acked
@@ -24,13 +25,21 @@ cwnd= width（in-flight）+width（not sent）
 即发送速率在RTT（往返时延）一定的情况下，只受cwnd影响
 
 
-2. 慢启动，拥塞避免
+#### 慢启动，拥塞避免
+注意: 建立连接后，client和server都有一个窗口，每次进行调整窗口都是调整自己的窗口控制发送速率(当然可以传送报文，让对方调整速率);
 
-tcp会进行**慢启动**直到丢包,每接到一个ack就会把窗口（cwnd）×2，超过ssThreshold就进行拥塞避免只增加 1/cwnd;
+`慢启动`(其实一点也不慢): tcp会进行直到丢包,每接到一个ack就会把窗口`（cwnd）×2`，超过`ssThreshold`就进行拥塞避免每一轮`RTT`只增加 `1/cwnd`（但是以上这个已经是废弃了!!! ）
+`拥塞避免`: 到达`sshThreshold`后会以线性速度上升，但是如果超时（出现拥塞），就将`ssThreshold`设置为出现拥塞的窗口的一半，然后将窗口设为1，重新开始慢启动
+            
+`快恢复`: 现在慢启动已经废弃了，在收到3个重复确认的ACK时就采用快恢复重传算法，`ssThreshold`设置为出现拥塞的窗口的一半，将cwnd设为`ssThreshold`的一半但不采用慢开始;
 
 当出现丢包的，有以下两种状况：
 - 接收者发送给发送者的ACK丢失，会导致 timeout
 - 发送者发送给接收者的数据丢失，发送者会收到接受者的重复ACK，如果收到三个重复的ACK，可以确认为丢包
+
+这里盗一幅图:
+
+![如图](/img/tcpBlock.png)
 
 
 3. 路由器（多个TCP有拥塞控制）
@@ -54,17 +63,20 @@ tcp会进行**慢启动**直到丢包,每接到一个ack就会把窗口（cwnd�
 ![tcpconn](/img/TCPshakeFhand.jpg)
 
 1. client发送server  
-**SYN=1**（同步位，这种报文不能携带数据，但要**消耗一个序号**）
+`SYN=1`（同步位，这种报文不能携带数据，但要**消耗一个序号**）
 自己的序号 **Seq=client_w ( isn )** 给 server （期间client从CLOSED到SYN-SENT状态，server从CLOSED到LISTEN状态）
 
->> ps: **isn**泛指一种计算序号的算法，有一种是每4μs+1，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；
+>> ps: **isn**泛指一种计算序号的算法，有一种是每4μs+1(动态随机,增加安全性，为了避免被第三方猜测到，从而被第三方伪造的RST报文Reset)，直到2^32归零,因为2MSL的限制，所以几乎不可能重复；
+    意义: 发送方的字节数据编号的原点，让对方生成一个合法的接收窗口;
+    
 
 2. server收到报文，把确认报文段中的SYN和ACK都设为1
  **SYN=1**(同理**要消耗一个序号**) 和 **ACK=1**
 自己的序号 Seq=server_w, ack= client_w + 1 到client （期间client仍然是SYN-SENT状态，server从LISTEN状态到SYN-RCVD状态）
+
 3. client收到确认报文后，还要给server发送确认收到。
 把**确认ACK=1**,ack=server_w+1(之前SYN消耗了序号)
-自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,**但如果不携带数据则不消耗序号**，这里携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）
+自己的序号Seq=client_w+1 (因为没有SYN，所以可以携带数据,**但如果不携带数据则不消耗序号**，这里`(可以)`携带了数据，所以Seq是上一次的序号+1);（client端进入established状态）
 4. server收到确认报文后，进入`established`状态，全部连接完成
 
 ##### 半连接状态(即服务器SYN-RECV状态)
@@ -85,23 +97,23 @@ client发出的第一个请求没有丢，只是网络阻塞;
 （但采用三次握手的话就没得事，server端没有接到client的第三次确认，就知道client没有要建立连接）
 
 
+
 #### TCP四次挥手
 
 ![tcpfour](/img/TCPgoodbye.jpg)
 1. client 发送 
-**FIN=1**（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，**无论带不带数据，这厮都要消耗一个序号！**）
-**seq=client_u** （这里序号是**前面一个传送过的数据最后一个字节的序号+1**）;(client进入FIN-WAIT-1状态)
+`FIN=1`（终止位，跟同步位一样都在header里面，<del>自己特喵去看</del>下面给你画一个算了,但这里注意，**无论带不带数据，这厮都要消耗一个序号！**）
+`seq=client_u` （这里序号是**前面一个传送过的数据最后一个字节的序号+1**）;(client进入`FIN-WAIT-1`状态)
 
 2. server收到释放报文返回 
-**ACK=1**
-**Seq=server_u**(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server->client方向的连接保持，但client->server已经没有**数据**要传输了)
+`ACK=1`
+`Seq=server_u`(同理，也是前面一个传送过的数据的最后一个字节序号+1);(server进入CLOSE-WAIT状态，但实际上是个半关闭状态，server->client方向的连接保持，但client->server已经没有**数据**要传输了)
 
-3. client收到server的确认后，进入FIN-WAIT2状态，等待server的连接释放报文
+3. client收到server的确认后，进入`FIN-WAIT2`状态，等待server的连接释放报文
 
 4. 如果server没有数据要发给client了（server持续发送数据到client，也可以不发），
-携带报文 **FIN=1**， ACK=1
-**seq=server_u2**(新，可能发送了一些数据)
-**ack=client_u+1**（重复上次已发送的确认号）
+携带报文 `FIN=1`, `ACK=1`, `seq=server_u2`(新，可能发送了一些数据)
+`ack=client_u+1`（重复上次已发送的确认号）
 (server进入LAST-ACK状态)
 
 5. (紧接3)client收到释放报文后，返回确认报文：
@@ -170,6 +182,21 @@ cat /proc/sys/net/ipv4/tcp_fastopen
 检查是否开启，1为client端，2为server，3为both
 
 **注意一下这个功能可能被一些防火墙隔离**
+
+
+#### TCP 粘包问题
+
+这个其实没有特定的术语指明粘包这种东西，只是一种现象，主要是应用层对缓冲区中的数据解析出了问题（因为tcp是`流式传输`，字节流可能没有传完，所以一般在接收端要重组分组）,没有正确处理消息边界的原因（发送方可能用了`nagle`或者接收方接收到没有立即处理）;
+
+处理方法:
+
+1. 发送方设置`TCP_NODELAY`;
+2. 接收方在应用层，要和发送方商量，让`发送方带上消息边界（这时也要保证消息内容不含消息边界）`或者`消息长度(http自带的header就可以content-length解析)`
+
+
+这里又有了，UDP会不会有这个问题呢？
+
+- 不会；因为UDP是基于`数据报(datagram)`来发送的，不会有分组，在接收端是有一个`skbuff`是一个链表来接收一个个数据报；
 
 
 ### 3. 有哪些字段，一些字段的意义
@@ -250,6 +277,10 @@ TCP在未完成队列接收SYN的request，当三次握手完成(established)后
 
 
 
+
+#### TCP复用端口
+
+NAT
 
 #### DNS协议
 

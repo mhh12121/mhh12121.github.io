@@ -1913,6 +1913,7 @@ func mcall(fn func(*g))
 其实就是看一下哪里调用了`runtime.schedule`方法:
 
 #### 主动挂起
+gopark方法,由channel操作、sleep、netpoll_block、gc、select等待
 
 `runtime.gopark`->`runtime.park_m`
 
@@ -2019,6 +2020,7 @@ func ready(gp *g, traceskip int, next bool) {
 
 #### 系统调用
 这部分代码主要是汇编组成:
+
 `syscall.Syscall`
 同样是`linux amd64`:
 
@@ -2416,7 +2418,10 @@ func goschedImpl(gp *g) {
 
 主要对运行时间过长的，强行让出
 `p`中的`schedtick` 和 `schedwhen`与当前时间计算，运算出是否超时，要让出
-
+`runtime.retake`方法中的`runtime.preemptone`进行异步抢占:
+```go
+//todo
+```
 
 1. Channel,mutex之类同步操作发生阻塞
 2. time.sleep
@@ -2557,9 +2562,10 @@ go程序的入口点是runtime.rt0_go, 流程是:
 
 #### 特殊的m0和g0
 
-- M0 是启动程序后的编号为 0 的主线程，这个 M 对应的实例会在全局变量 runtime.m0 中，不需要在 heap 上分配，M0 负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。
+- `M0` 是启动程序后的编号为 0 的`主线程`，这个 M 对应的实例会在全局变量`runtime.m0`中，不需要在heap上分配，`M0`负责执行初始化操作和启动第一个 G， 在之后 M0 就和其他的 M 一样了。
 
-- G0 是每次启动一个 M 都会第一个创建的 gourtine，G0 仅用于负责调度的 G，G0 不指向任何可执行的函数，每个 M 都会有一个自己的 G0。在调度或系统调用时会使用 G0 的栈空间，全局变量的 G0 是 M0 的 G0。
+- `G0` 是每次启动一个 M 都会第一个创建的 gourtine，`G0` 仅用于**负责调度**的 G(作用);
+	`G0` 不指向任何可执行的函数，每个 M 都会有一个自己的 `G0`。在调度或系统调用时会使用 G0 的栈空间(栈空间是一定的,Unix一般是8MB)，全局变量的 `G0` 是 `M0` 的 `G0` (这种一般指sysmon,垃圾回收器等，注意调度器本身属于第三种goroutine，不是g0，也不是普通的goroutine)
 
 3. 调用runtime.check做一些检查
 
