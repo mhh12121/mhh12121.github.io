@@ -265,6 +265,17 @@ func (m *doInterfaceWithoutMethod) Do1(s string) string{}
 
 ## 额外
 
+### 深复制
+
+1. val:=reflect.ValueOf(x)
+2. k:=val.Kind():判断类型
+
+3. k.NumField():获得fields的数目
+
+4. 逐一field去判断类型:
+
+### 缓存itab类型
+
 go会缓存itab的类型为一个k-v的表(底层有一个数组排列)，需要一个itab会首先从`itabTable`里面找
 
 ```go

@@ -114,29 +114,6 @@ GPM
 4. 看一下net中有无poll的出来
 5. 从其他的p 偷一部分
 
-#### 相关状态转换
-
-![一个状态图](/img/gstatus.png)
-
-状态的详细描述:
-
-- `_Gidle`:刚刚被分配还没有初始化
-- `_Grunnable`:	没有执行代码，没有栈的所有权，存储在runq（local or global???）中；
-- `_Grunning`:可以执行代码，拥有栈的所有权，绑定了M，P；
-- `_Gsyscall`: 正在执行系统调用，拥有栈的所有权，没有执行用户代码，被赋予了内核线程 M 但是不在运行队列上;
-- `_Gwaiting`:由于运行时而被阻塞，没有执行用户代码并且不在runq上，但是可能存在于`Channel`的等待队列上或者`lock`内等等;
-- `_Gdead`:	没有被使用，没有执行代码，**可能有分配的栈???**,或者在`gFree`(g的一个字段,全部状态都是`Gdead`);
-- `_Gcopystack`:栈正在被拷贝，没有执行代码，不在运行队列上;
-- `_Gpreempted`:由于抢占而被阻塞，没有执行用户代码并且不在运行队列上，等待唤醒;
-- `_Gscan`: GC 正在扫描栈空间，没有执行代码，可以与其他状态同时存（其值为0x1000,其他有些状态比如`_GscanRunning`=2，直接加上去）
-
-当有新的Goroutine被创建或者是现存的goroutine更新为runnable状态，它会被push到当前P的runnable goroutine list里面，
-当P完成了执行goroutine，它会
-- 首先从自己的runnable g list里面pop一个goroutine，如果list是空的，它会随机选取其他P，并且偷取其list的一半runnable goroutine
-
-当M 创建了新的goroutine，它要保证有其他M执行这个goroutine
-同样的，如果M进入了syscall阶段，它也要保证有其他M可以执行这个goroutine
-
 #### 禁止抢占:
 ```go
 func runtime_procPin() int //标记当前G在M上不会被抢占，并返回当前P的ID
@@ -1027,6 +1004,58 @@ ps：其实可以注意下`p.runq`是一个256位(？？？这里为什么是256
 ### SchedDt 调度器
 主要在`runtime.schedinit()`上:
 
+涉及了GPM几个部分的初始化，其中其实还有其他cpu信息等初始化:
+![如图](/img/schedInit.png)
+
+#### 初始化m
+通过`mcommoninit()`方法初始化`allm`
+
+```go
+func mcommoninit(mp *m) {
+	_g_ := getg()
+
+	// g0 stack won't make sense for user (and is not necessary unwindable).
+	if _g_ != _g_.m.g0 {
+		callers(1, mp.createstack[:])
+	}
+
+	lock(&sched.lock)
+	if sched.mnext+1 < sched.mnext {
+		throw("runtime: thread ID overflow")
+	}
+	mp.id = sched.mnext
+	sched.mnext++
+	checkmcount()
+
+	mp.fastrand[0] = uint32(int64Hash(uint64(mp.id), fastrandseed))
+	mp.fastrand[1] = uint32(int64Hash(uint64(cputicks()), ^fastrandseed))
+	if mp.fastrand[0]|mp.fastrand[1] == 0 {
+		mp.fastrand[1] = 1
+	}
+
+	mpreinit(mp)
+	if mp.gsignal != nil {
+		mp.gsignal.stackguard1 = mp.gsignal.stack.lo + _StackGuard
+	}
+
+	// Add to allm so garbage collector doesn't free g->m
+	// when it is just in a register or thread-local storage.
+	mp.alllink = allm
+
+	// NumCgoCall() iterates over allm w/o schedlock,
+	// so we need to publish it safely.
+	atomicstorep(unsafe.Pointer(&allm), unsafe.Pointer(mp))
+	unlock(&sched.lock)
+
+	// Allocate memory to hold a cgo traceback if the cgo call crashes.
+	if iscgo || GOOS == "solaris" || GOOS == "illumos" || GOOS == "windows" {
+		mp.cgoCallers = new(cgoCallers)
+	}
+}
+```
+
+#### 初始化p(procresize)
+
 - 设置了maxcount，可以有10000个线程，但是同时运行的线程仍然受`GOMAXPROCS`设置影响
 - 获取最大运行procs后会调用`procresize`来更新程序中处理器数量，调度器进入锁定状态，不会执行任何goroutine
 	
@@ -1058,15 +1087,26 @@ func schedinit() {
 }
 ```
 
+![大概流程](/img/pstatus.png)
+
 P在GOMAXPROCS中，所有的P被组织成一个数组，当GOMAXPROCS改变时会触发 stop the world来重新调整P 数组的长度
-一些变量会从sched中分离出到P中
+一些变量会从sched中分离出到P中;
 `procresize`大概流程:
-1. 如果全局`allp` slice 小于期望值，会对其扩容
-2. new一个新的处理器结构体，并调用`runtime.p.init`方法初始化(会将其状态设为`_Pgcstop`,这个函数可用于创建新的p或复用之前销毁的p)；
-3. 将`m0`和`allp[0]`绑定(如果目前m持有p的话，会继续使用该P，但是是另外一个地方`startTheWorldWithSema`使用`procresize`方法，这里`schedinit`是不可能进入的)
-4. `destroy`方法释放不使用的旧P
-5. Trim一下`allp`使其跟传入的`nproc`长度相等
-6. 初始化所有p(除了`allp[0]` ???为什么呢，因为m0和allp[0]绑定)的状态为`_Pidle`
+
+1. 记录一下调度时间`sched.procresizetime`；
+2. 如果全局`allp` slice 小于期望值，会对其扩容；
+3. new一个新的处理器结构体，并调用`runtime.p.init`方法初始化`allp`里面的p(会将其状态设为`_Pgcstop`,这个函数可用于创建新的p或复用之前销毁的p)；
+4. 如果当前p还可以使用，将p设为`_Prunning`;
+5. 否则将当前`m`和`allp[0]`绑定
+6. `destroy`方法释放不使用的旧P；
+7. Trim一下`allp`使其跟传入的`nproc`长度相等
+8. `allp`slice 中除去当前p之外，将其中的任务通过`pidleput()`方法将无任务的p放入全局`sched.pidle`队列
+9. 除去当前p之外，将有任务的p放入p的`link`结构，连成一个链表
+
+
+
+因为运行初始化p的时候，是刚刚初始化M结束，因此第 6 步中的绑定 M 会将当前的 P 绑定到初始 M 上;
+而后由于程序刚刚开始，P 队列是空的，所以他们都会被链接到可运行的 P `link`上处于 `_Pidle` 状态
 
 ```go
 // Change number of processors. The world is stopped, sched is locked.
@@ -1119,12 +1159,13 @@ func procresize(nprocs int32) *p {
 	}
 
 	_g_ := getg()
+	//当前p存在，且不是在缩小CPU后(id在nprocs范围内)
 	if _g_.m.p != 0 && _g_.m.p.ptr().id < nprocs {
 		// continue to use the current P
 		_g_.m.p.ptr().status = _Prunning
 		_g_.m.p.ptr().mcache.prepareForSweep()
 	} else {
-		//3. 将`m0`和`allp[0]`绑定???
+		//3. 将当前m和`allp[0]`绑定，并设置p为_Pidle状态
 		// release the current P and acquire allp[0].
 		//
 		// We must do this before destroying our current P
@@ -1150,7 +1191,7 @@ func procresize(nprocs int32) *p {
 			traceGoStart()
 		}
 	}
-
+	//4.
 	// release resources from unused P's
 	for i := nprocs; i < old; i++ {
 		p := allp[i]
@@ -1172,9 +1213,11 @@ func procresize(nprocs int32) *p {
 			continue
 		}
 		p.status = _Pidle
+		//无任务的p，放入全局队列sched.pidle
 		if runqempty(p) {
 			pidleput(p)
 		} else {
+			//有任务的p，放入链表
 			p.m.set(mget())
 			p.link.set(runnablePs)
 			runnablePs = p
@@ -1240,7 +1283,30 @@ type schedt struct{
 相关结构可以在runtime/runtime2.go 中找到
 
 
-### 生成新的goroutine
+### 初始化生成新的goroutine
+
+g的状态转换图:
+
+![一个状态图](/img/gstatus.png)
+
+状态的详细描述:
+
+- `_Gidle`:刚刚被分配还没有初始化
+- `_Grunnable`:	没有执行代码，没有栈的所有权，存储在runq（local or global???）中；
+- `_Grunning`:可以执行代码，拥有栈的所有权，绑定了M，P；
+- `_Gsyscall`: 正在执行系统调用，拥有栈的所有权，没有执行用户代码，被赋予了内核线程 M 但是不在运行队列上;
+- `_Gwaiting`:由于运行时而被阻塞，没有执行用户代码并且不在runq上，但是可能存在于`Channel`的等待队列上或者`lock`内等等;
+- `_Gdead`:	没有被使用，没有执行代码，**可能有分配的栈???**,或者在`gFree`(g的一个字段,全部状态都是`Gdead`);
+- `_Gcopystack`:栈正在被拷贝，没有执行代码，不在运行队列上;
+- `_Gpreempted`:由于抢占而被阻塞，没有执行用户代码并且不在运行队列上，等待唤醒;
+- `_Gscan`: GC 正在扫描栈空间，没有执行代码，可以与其他状态同时存（其值为0x1000,其他有些状态比如`_GscanRunning`=2，直接加上去）
+
+当有新的Goroutine被创建或者是现存的goroutine更新为runnable状态，它会被push到当前P的runnable goroutine list里面，
+当P完成了执行goroutine，它会
+- 首先从自己的runnable g list里面pop一个goroutine，如果list是空的，它会随机选取其他P，并且偷取其list的一半runnable goroutine
+
+当M 创建了新的goroutine，它要保证有其他M执行这个goroutine
+同样的，如果M进入了syscall阶段，它也要保证有其他M可以执行这个goroutine
 
 语言层面上，当然是编译器先检查有无`go`关键字，在编译期:
 `cmd/compile/internal/gc.state.stmt`和`cmd/compile/internal/gc.state.call`会将其转换成`runtime.newproc`函数
@@ -1261,7 +1327,7 @@ func (s *state) call(n *Node, k callKind) *ssa.Value {
 }
 ```
 
-`runtime.newproc`函数，传入siz，还有go后面接着的function，因为其假定了**函数的传入参数一定跟在fn的地址后面**，如果split了栈，则无法寻找到对应的传入参数，所以加上nosplit
+- `runtime.newproc`函数，使用了`g0`系统栈创建goroutine，还有go后面接着的function,传入参数有:`fn` 函数入口地址, `argp` 为参数起始地址, `siz `参数长度, `gp`（g0），调用方 `pc（goroutine）`（因为其假定了**函数的传入参数一定跟在fn的地址后面**，如果split了栈，则无法寻找到对应的传入参数，所以加上nosplit）
 
 
 ```go
@@ -1273,17 +1339,106 @@ func (s *state) call(n *Node, k callKind) *ssa.Value {
 // copied if a stack split occurred.
 //go:nosplit
 func newproc(siz int32, fn *funcval) {
+	// 从 fn 的地址增加一个指针的长度，从而获取第一参数地址
 	argp := add(unsafe.Pointer(&fn), sys.PtrSize)
 	gp := getg()
-	pc := getcallerpc()
+	pc := getcallerpc()// 获取调用方 PC/IP 寄存器值
+	//用 g0 系统栈创建goroutine
 	systemstack(func() {
+		// fn 函数入口地址, argp 为参数起始地址, siz 参数长度, gp（g0），调用方 pc（goroutine）
 		newproc1(fn, argp, siz, gp, pc)
 	})
 }
+type funcval struct {
+	fn uintptr
+	//变长的变量，fn数据的头部指针
+	// variable-size, fn-specific data here
+}
+//caller的pc值
+func getcallerpc() uintptr
+```
+看一个例子:
+
+```go
+package main
+
+func sayhi(s string){
+	println(s)
+}
+
+func main() {
+	go sayhi("hi")
+}
+
+```
+汇编解析:
+
+```plan9
+	0x0000 00000 (/home/main.go:7)	TEXT	"".main(SB), ABIInternal, $40-0
+	0x0000 00000 (/home/main.go:7)	MOVQ	(TLS), CX
+	0x0009 00009 (/home/main.go:7)	CMPQ	SP, 16(CX)
+	0x000d 00013 (/home/main.go:7)	PCDATA	$0, $-2
+	0x000d 00013 (/home/main.go:7)	JLS	84
+	0x000f 00015 (/home/main.go:7)	PCDATA	$0, $-1
+	0x000f 00015 (/home/main.go:7)	SUBQ	$40, SP
+	0x0013 00019 (/home/main.go:7)	MOVQ	BP, 32(SP)
+	0x0018 00024 (/home/main.go:7)	LEAQ	32(SP), BP
+	0x001d 00029 (/home/main.go:7)	PCDATA	$0, $-2
+	0x001d 00029 (/home/main.go:7)	PCDATA	$1, $-2
+	0x001d 00029 (/home/main.go:7)	FUNCDATA	$0, gclocals·33cdeccccebe80329f1fdbee7f5874cb(SB) //gc用,局部函数调用参数，需要回收
+	0x001d 00029 (/home/main.go:7)	FUNCDATA	$1, gclocals·33cdeccccebe80329f1fdbee7f5874cb(SB)
+	0x001d 00029 (/home/main.go:7)	FUNCDATA	$2, gclocals·9fb7f0986f647f17cb53dda1484e0f7a(SB)
+	0x001d 00029 (/home/main.go:8)	PCDATA	$0, $0
+	0x001d 00029 (/home/main.go:8)	PCDATA	$1, $0
+	0x001d 00029 (/home/main.go:8)	MOVL	$16, (SP)
+	0x0024 00036 (/home/main.go:8)	PCDATA	$0, $1
+	0x0024 00036 (/home/main.go:8)	LEAQ	"".sayhi·f(SB), AX
+	0x002b 00043 (/home/main.go:8)	PCDATA	$0, $0
+	0x002b 00043 (/home/main.go:8)	MOVQ	AX, 8(SP)
+	0x0030 00048 (/home/main.go:8)	PCDATA	$0, $1
+	0x0030 00048 (/home/main.go:8)	LEAQ	go.string."hi"(SB), AX // 将 "hi" 的地址给 AX
+	0x0037 00055 (/home/main.go:8)	PCDATA	$0, $0
+	0x0037 00055 (/home/main.go:8)	MOVQ	AX, 16(SP)  // 将 AX 的值放到 16(SP)
+	0x003c 00060 (/home/main.go:8)	MOVQ	$2, 24(SP)
+	0x0045 00069 (/home/main.go:8)	CALL	runtime.newproc(SB)
+	0x004a 00074 (/home/main.go:9)	MOVQ	32(SP), BP
+	0x004f 00079 (/home/main.go:9)	ADDQ	$40, SP
+	0x0053 00083 (/home/main.go:9)	RET
+	0x0054 00084 (/home/main.go:9)	NOP
+	0x0054 00084 (/home/main.go:7)	PCDATA	$1, $-1
+	0x0054 00084 (/home/main.go:7)	PCDATA	$0, $-2
+	0x0054 00084 (/home/main.go:7)	CALL	runtime.morestack_noctxt(SB)
+	0x0059 00089 (/home/main.go:7)	PCDATA	$0, $-1
+	0x0059 00089 (/home/main.go:7)	JMP	0
+LEAQ go.string.*+1874(SB), AX // 将 "hello world" 的地址给 AX
+MOVQ AX, 0x10(SP)             // 将 AX 的值放到 0x10
+MOVL $0x10, 0(SP)             // 将最后一个参数的位置存到栈顶 0x00
+LEAQ go.func.*+67(SB), AX     // 将 go 语句调用的函数入口地址给 AX
+MOVQ AX, 0x8(SP)              // 将 AX 存入 0x08
+CALL runtime.newproc(SB)      // 调用 newproc
+
+```
+//????todo
+```s
+             栈布局
+      |                 |       高地址
+      |                 |
+      +-----------------+ 
+      |     &"hi"  		|
+0x16  +-----------------+ <--- fn + sys.PtrSize
+      |      sayhi      |
+0x08  +-----------------+ <--- fn
+      |       siz       |
+0x00  +-----------------+ SP
+      |    newproc PC   |  
+      +-----------------+ callerpc: 要运行的 Goroutine 的 PC
+      |                 |
+      |                 |       低地址
 ```
 
 注意到会在系统栈下调用`newproc1`，传入的是go关键字后函数的地址，这个函数caller的pc值、goroutine，传入参数地址大小等等信息
-1. 首先就是创建`newg`,会调用`gfget`从`gfree`列表拿到空闲的goroutine或者创建一个新的goroutine
+
+1. 首先就是创建`newg`,会调用`gfget`从`gfree`链表或者全局`sched.gFree`(已经执行过的g)上拿到空闲的goroutine或者创建一个新的goroutine，都没有就创建一个goroutine
 	
 ```go
 // Create a new g running fn with narg bytes of arguments starting
@@ -1351,9 +1506,14 @@ retry:
 	}
 ```
 
-- `malg`:
-call `newg`方法，然后分配2KB栈空间,
-并且其返回的值，会放入到全局`allg` slice上面，因为是`Gdead`状态，所以gc也不会扫描这个未初始化的栈
+
+因为这里我们讨论的是初始化，所以上述两种情况都不会发生，会直接使用下面:
+
+- `malg`来初始化一个新的goroutine:
+
+call `newg`方法，然后分配2KB栈空间,并设为`_Gidle`状态(值为0)
+
+创建完成后，其返回的值，会放入到全局`allg` slice上面，从`_Gidle`设为`Gdead`状态，所以gc也不会扫描这个未初始化的栈
 
 ```go
 // Allocate a new g, with a stack big enough for stacksize bytes.
@@ -1375,11 +1535,12 @@ func malg(stacksize int32) *g {
 }
 ```
 
-2. 接下来就用`memove`copy fn的所有参数到栈中,`argp`和`narg`分别为参数内存地址和大小
+2. 接下来就用`memove`copy fn的所有参数到栈中,`argp`和`narg`分别为参数内存地址和大小，根据要执行函数的入口地址和参数，初始化执行栈的 `SP` 和参数的入栈位置，并将需要的参数拷贝一份存入执行栈中;
 
 ```go
 func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerpc uintptr) {
 	....
+	//内存对齐
 	totalSize := 4*sys.RegSize + uintptr(siz) + sys.MinFrameSize // extra space in case of reads slightly beyond frame
 	totalSize += -totalSize & (sys.SpAlign - 1)                  // align to spAlign
 	sp := newg.stack.hi - totalSize
@@ -1391,7 +1552,9 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 		prepGoExitFrame(sp)
 		spArg += sys.MinFrameSize
 	}
+	//处理传入的参数，有参数时
 	if narg > 0 {
+		//从argp的位置开始，复制narg个bytes到spArg
 		memmove(unsafe.Pointer(spArg), argp, uintptr(narg))
 		// This is a stack-to-stack copy. If write barriers
 		// are enabled and the source stack is grey (the
@@ -1399,6 +1562,7 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 		// barrier copy. We do this *after* the memmove
 		// because the destination stack may have garbage on
 		// it.
+		//栈到栈的copy，如果用了写屏障，且源栈为灰色（目标始终为黑色），则执行barrier copy，因为目标栈上可能有垃圾，
 		if writeBarrier.needed && !_g_.m.curg.gcscandone {
 			f := findfunc(fn.fn)
 			stkmap := (*stackmap)(funcdata(f, _FUNCDATA_ArgsPointerMaps))
@@ -1412,7 +1576,7 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 	...
 ```
 
-3. 然后复制之后，继续设置一些新的结构体(栈指针sp，pc等等)，并将其状态改为`Grunnable`
+3. 然后复制之后，根据SP以及相关参数清理创建并初始化g的运行现场，然后将调用方、要执行的函数的入口 PC 进行保存，并将其状态改为`Grunnable`;
 
 其中`gostartcallfn`方法在(后面)[#调度循环]会详细聊到
 
@@ -1457,7 +1621,7 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 	...
 ```
 
-4. 最后将初始化好的goroutine放入runq
+4. 给 Goroutine 分配 id，并将其放入 P 本地队列的队头或全局队列（初始化阶段队列肯定不是满的，因此不可能放入全局队列）,最后将初始化好的goroutine放入runq
 
 
 ```go
@@ -1471,6 +1635,7 @@ func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerp
 	}
 	releasem(_g_.m)
 ```
+
 注意这个`runqput`方法中
 - 首先会将其放入local runnable q，并将其放入`_p_.runnext`
 - 如果传入next为`false`且本地runq未满，就会放入本地runq尾部
@@ -1517,8 +1682,9 @@ retry:
 }
 ```
 
-最后自选`wakeup`新的P来处理goroutine
+5. 检查空闲的 P，将其唤醒，准备执行 G，但我们目前处于初始化阶段，主goroutine尚未开始执行，**因此这里不会唤醒 P**;
 
+提多一句，整个`newproc`在nosplit环境下，所以执行过程中是不会发生扩容和抢占；
 
 ### 调度循环
 
@@ -2419,8 +2585,92 @@ func goschedImpl(gp *g) {
 主要对运行时间过长的，强行让出
 `p`中的`schedtick` 和 `schedwhen`与当前时间计算，运算出是否超时，要让出
 `runtime.retake`方法中的`runtime.preemptone`进行异步抢占:
+
+- `retake()`方法会先锁住全局`allp`，注意这里一定要在stw条件下，否则不成功
+
+
+
+- 注意在`syscall`中,`preemptone()`无法工作，因为此时，无P与M关联(syscall会让出p)
 ```go
-//todo
+func sysmon() {
+    ...
+        // retake P's blocked in syscalls
+        // and preempt long running G's
+        if retake(now) != 0 {
+            idle = 0
+        } else {
+            idle++
+        }
+    ...
+}
+func retake(now int64) uint32 {
+	//锁住全局allp，不让改变
+	lock(&allpLock)
+    for i := 0; i < len(allp); i++ {
+    	...
+        if s == _Prunning || s == _Psyscall {
+            // Preempt G if it's running for too long.
+            t := int64(_p_.schedtick)
+            //G对应的schedtick跟监控的不一致，则需要重新更新一些sched的数值
+            if int64(pd.schedtick) != t {
+                pd.schedtick = uint32(t)
+                pd.schedwhen = now
+            } else if pd.schedwhen+forcePreemptNS <= now {
+				//forcePreemptNS=10ms
+                // 如果超过了10ms就需要进行抢占了
+                preemptone(_p_)
+                // In case of syscall, preemptone() doesn't
+                // work, because there is no M wired to P.
+                sysretake = true
+            }
+        }
+    ...
+    }
+}
+```
+
+在符合条件下会调用`preemptone()`:
+- 该方法是尽力模型，有可能错误地通知goroutine；
+- 即使它正确通知了goroutine，goroutine也可能会忽视请求如果该goroutine同时在执行`newstack`函数(`runtime·morestack`会call这个函数，用于栈扩容)
+- `不需要锁`（上面allp已经锁住）
+- 真正的抢占会发生在未来的某个时间点，当`gp.status!=Grunnning`时会被标记出
+```go
+// Tell the goroutine running on processor P to stop.
+// This function is purely best-effort. It can incorrectly fail to inform the
+// goroutine. It can send inform the wrong goroutine. Even if it informs the
+// correct goroutine, that goroutine might ignore the request if it is
+// simultaneously executing newstack.
+// No lock needs to be held.
+// Returns true if preemption request was issued.
+// The actual preemption will happen at some point in the future
+// and will be indicated by the gp->status no longer being
+// Grunning
+func preemptone(_p_ *p) bool {
+	mp := _p_.m.ptr()
+	if mp == nil || mp == getg().m {
+		return false
+	}
+	gp := mp.curg
+	if gp == nil || gp == mp.g0 {
+		return false
+	}
+	//这个同stackguard0 = stackPreempt属性其实一样
+	gp.preempt = true
+	// Every call in a go routine checks for stack overflow by
+	// comparing the current stack pointer to gp->stackguard0.
+	// Setting gp->stackguard0 to StackPreempt folds
+	// preemption into the normal stack overflow check.
+	//在一个goroutine中检查栈溢出都是靠对比 现在栈指针 和 gp.stackguard0, 设置gp.stackguard0=stackPreempt 就是等于 将抢占放入一般的栈溢出检查中？？？？;
+	gp.stackguard0 = stackPreempt
+
+	// Request an async preemption of this P.
+	if preemptMSupported && debug.asyncpreemptoff == 0 {
+		_p_.preempt = true
+		preemptM(mp)
+	}
+
+	return true
+}
 ```
 
 1. Channel,mutex之类同步操作发生阻塞

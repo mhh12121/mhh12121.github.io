@@ -7,6 +7,15 @@ tags: golang
 常用的rpc框架
 
 <!--more-->
+## 整体模型
+
+就是常见的一种`Reactor`模型，
+
+listen线程和处理线程是不同的
+## 连接池
+
+
+
 ## 服务发现和服务注册
 
 很遗憾，grpc只提供了接口,这些是要自己用其他服务发现的中间件来实现
@@ -65,6 +74,8 @@ type Attributes struct {
 }
 
 ```
+
+
 
 #### grpclb
 主要属于在客户端处实行负载均衡:
@@ -127,11 +138,18 @@ type Attributes struct {
 ## http2
 
 见我自己的http2的文章，随便记了一点;
+
 ### server端针对不同的帧进行处理
 
+每个Stream有**唯一**的ID标识，如果是客户端创建的则ID是`奇数`，服务端创建的ID则是`偶数`。
+如果一条连接上的ID使用完了，Client会新建一条连接，Server也会给Client发送一个`GOAWAY Frame`强制让Client新建一条连接;
+
+一条grpc连接允许并发的发送和接收多个Stream，而控制的参数便是`MaxConcurrentStreams`，Golang的服务端默认是100。
 
 
 ### 超时问题
+
+可以带上一个`timeout Context`，但是里面实际会转换成header frame中的 `grpc-timeout` ???
 
 在grpc中，`header frame`会带上不少信息，比如`grpc-status`状态等等,
 server端的处理可以看到`processHeaderField`方法中解析的多种header：
@@ -163,7 +181,13 @@ func (d *decodeState) processHeaderField(f hpack.HeaderField) {
 }
 ```
 
-## proto
+## 如何识别服务以及解析
+
+### 识别服务
+识别服务方面比较直接，就是用`string`判等服务名字即可;
+
+解析数据主要是借用了`proto`的`generate`工具，生成了服务端和客户端的代码，里面使用了自带的解码器，跟pb文件结合起来，**避免了语言层面上的反射的消耗**;
+
 我们这里只讨论go语法，语言方面其他都是大同小异
 创建proto文件 **data.proto**
 
@@ -192,6 +216,7 @@ message ResponseFromServer {
 ```s
 protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件
 ```
+### proto解析
 
 生成 **data.pb.proto**
 
@@ -207,8 +232,14 @@ message toServerData{
 	required int32 ctype = 1;
 	required string name =2;
     optional bytes httpdata=3;
+	repeated string data =4;
 }
 ```
+
+- 有个`flag`开头表明类型
+- 紧接着数据长度
+- 紧接着数据本身
+- **数组**类型`protobuf`不提供，只是在二进制中连续排序(在第一个元素`flag+length+data`后面每个元素都是`length+data`);
 
 ## 提供的一些连接方式
 
