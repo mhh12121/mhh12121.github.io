@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.3k 字
+      1.6k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      17
+      20
        分钟
     </span>
   
@@ -211,6 +211,10 @@
             <div class="markdown-body" id="post-body">
               <p>常用的rpc框架</p>
 <a id="more"></a>
+<h2 id="整体模型">整体模型</h2>
+<p>就是常见的一种<code>Reactor</code>模型，</p>
+<p>listen线程和处理线程是不同的</p>
+<h2 id="连接池">连接池</h2>
 <h2 id="服务发现和服务注册">服务发现和服务注册</h2>
 <p>很遗憾，grpc只提供了接口,这些是要自己用其他服务发现的中间件来实现</p>
 <h3 id="一般的设计">一般的设计</h3>
@@ -320,7 +324,11 @@
 <h2 id="http2">http2</h2>
 <p>见我自己的http2的文章，随便记了一点;</p>
 <h3 id="server端针对不同的帧进行处理">server端针对不同的帧进行处理</h3>
+<p>每个Stream有<strong>唯一</strong>的ID标识，如果是客户端创建的则ID是<code>奇数</code>，服务端创建的ID则是<code>偶数</code>。
+如果一条连接上的ID使用完了，Client会新建一条连接，Server也会给Client发送一个<code>GOAWAY Frame</code>强制让Client新建一条连接;</p>
+<p>一条grpc连接允许并发的发送和接收多个Stream，而控制的参数便是<code>MaxConcurrentStreams</code>，Golang的服务端默认是100。</p>
 <h3 id="超时问题">超时问题</h3>
+<p>可以带上一个<code>timeout Context</code>，但是里面实际会转换成header frame中的 <code>grpc-timeout</code> ???</p>
 <p>在grpc中，<code>header frame</code>会带上不少信息，比如<code>grpc-status</code>状态等等,
 server端的处理可以看到<code>processHeaderField</code>方法中解析的多种header：
 比较重要的有:</p>
@@ -349,7 +357,10 @@ server端的处理可以看到<code>processHeaderField</code>方法中解析的�
 		<span class="hljs-keyword">case</span> ....
 	&#125;
 &#125;</code></pre></div>
-<h2 id="proto">proto</h2>
+<h2 id="如何识别服务以及解析">如何识别服务以及解析</h2>
+<h3 id="识别服务">识别服务</h3>
+<p>识别服务方面比较直接，就是用<code>string</code>判等服务名字即可;</p>
+<p>解析数据主要是借用了<code>proto</code>的<code>generate</code>工具，生成了服务端和客户端的代码，里面使用了自带的解码器，跟pb文件结合起来，<strong>避免了语言层面上的反射的消耗</strong>;</p>
 <p>我们这里只讨论go语法，语言方面其他都是大同小异
 创建proto文件 <strong>data.proto</strong></p>
 <div class="hljs"><pre><code class="hljs go">syntax = <span class="hljs-string">"proto2"</span>;
@@ -372,6 +383,7 @@ message ResponseFromServer &#123;
 &#125;</code></pre></div>
 <p>用安装的protoc插件生成</p>
 <div class="hljs"><pre><code class="hljs s">protoc --proto_path=/mypath --go_out=plugins=grpc:. *.proto //当前在mypath路径下，用grpc模式生成proto文件</code></pre></div>
+<h3 id="proto解析">proto解析</h3>
 <p>生成 <strong>data.pb.proto</strong></p>
 <p>-----------这些就直接参照手册理解吧-----------------<br>
 这里还是记录下这厮的解码方式吧，参考</p>
@@ -386,7 +398,14 @@ message ResponseFromServer &#123;
 	required int32 ctype = 1<span class="hljs-comment">;</span>
 	required string name =2<span class="hljs-comment">;</span>
     optional bytes httpdata=3<span class="hljs-comment">;</span>
+	repeated string data =4<span class="hljs-comment">;</span>
 &#125;</code></pre></div>
+<ul>
+<li>有个<code>flag</code>开头表明类型</li>
+<li>紧接着数据长度</li>
+<li>紧接着数据本身</li>
+<li><strong>数组</strong>类型<code>protobuf</code>不提供，只是在二进制中连续排序(在第一个元素<code>flag+length+data</code>后面每个元素都是<code>length+data</code>);</li>
+</ul>
 <h2 id="提供的一些连接方式">提供的一些连接方式</h2>
 <p>单向stream
 双向stream</p>

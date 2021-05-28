@@ -16,20 +16,10 @@
   <meta name="description" content>
   <meta name="author" content="Doujohner">
   <meta name="keywords" content>
-  <title>兜的破烂</title>
+  <title>Archives - 兜的破烂</title>
 
   <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
 
-
-  <link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css">
-  <link rel="stylesheet" href="/lib/hint/hint.min.css">
-
-  
-    
-    <link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/ocean.min.css">
-  
-
-  
 
 
 <!-- 主题依赖的图标库，不要自行修改 -->
@@ -48,7 +38,7 @@
 
 
 <body>
-  <header style="height: 70vh;">
+  <header style="height: 60vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -152,40 +142,6 @@
             </span>
 
             
-              
-  <div class="mt-3 post-meta">
-    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-    <time datetime="2020-11-27 05:11" pubdate>
-      November 27, 2020 am
-    </time>
-  </div>
-
-
-<div class="mt-1">
-  
-    
-    <span class="post-meta mr-2">
-      <i class="iconfont icon-chart"></i>
-      239 字
-    </span>
-  
-
-  
-    
-    <span class="post-meta mr-2">
-      <i class="iconfont icon-clock-fill"></i>
-      
-      
-      3
-       分钟
-    </span>
-  
-
-  
-  
-</div>
-
-            
           </div>
 
           
@@ -196,108 +152,37 @@
 
   <main>
     
+      <div class="container nopadding-md">
+        <div class="py-5" id="board"
+          >
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+<div class="list-group">
+  <p class="h4">54 posts in total.</p>
+  <hr>
+  
+    
       
+      <p class="h5">2021</p>
+    
+    <a href="/2021/05/28/Go/debug/" class="list-group-item list-group-item-action">
+      <span class="archive-post-title"></span>
+      <time style="float: right;">05-28</time>
+    </a>
+  
+</div>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="d-none d-lg-block col-lg-2"></div>
-    <div class="col-lg-8 nopadding-md">
-      <div class="container nopadding-md" id="board-ctn">
-        <div class="py-5" id="board">
-          <article class="post-content mx-auto" id="post">
-            <!-- SEO header -->
-            <h1 style="display: none"></h1>
-            
-            <div class="markdown-body" id="post-body">
-              <p>一些常用的debug，性能测试工具记录</p>
-<a id="more"></a>
-<h2 id="deubg">deubg</h2>
-<h3 id="build">build</h3>
-<p>一般我们想生成汇编代码，无非就是:</p>
-<div class="hljs"><pre><code class="hljs shell">go build -gcflags -S main.go</code></pre></div>
-<p>或:</p>
-<div class="hljs"><pre><code class="hljs shell">go tools compile -S main.go</code></pre></div>
-<p>但是通过以下命令，可以生成更加详细的汇编优化过程:</p>
-<div class="hljs"><pre><code class="hljs shell">GOSSAFUNC=main go build main.go</code></pre></div>
-<h3 id="gdb">gdb</h3>
-<p>列举用到的文件,其中entry_files的地址就是函数开始运行的地址</p>
-<div class="hljs"><pre><code class="hljs shell">info files</code></pre></div>
-<p>可以直接<code>b address</code>，然后运行<code>c</code></p>
-<h3 id="dlv">dlv</h3>
-<p>比较契合golang，</p>
-<p><code>dlv debug</code>： 在当前目录寻找main函数，并开始调试</p>
-<p>具体进入dlv后输入help查看命令:</p>
-<p>常用:
-<code>print(p)</code>:打印local
-<code>b xxx.go:123</code> break某一行
-<code>c</code> :continue
-<code>n</code>:下一行
-<code>step</code>:下一步
-<code>restart</code>:重启</p>
-<h2 id="performance">Performance</h2>
-<h3 id="go-pprof">Go pprof</h3>
-<p>有两个包</p>
-<p><code>runtime/pprof</code>
-<code>net/pprof</code>用于网络型，可以实时监控</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof  xxx.pprof</code></pre></div>
-<p>也可以展示http网页</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> tool pprof -http localhost:<span class="hljs-number">9190</span> xxx.pprof</code></pre></div>
-<h3 id="go-test">Go test</h3>
-<p>pprof还可以与go test结合</p>
-<div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">go</span> test -bench . -cpuprofile=cpu.prof
 
-<span class="hljs-keyword">go</span> test -bench . -memprofile=./mem.prof</code></pre></div>
 
-            </div>
-            <hr>
-            <div>
-              <div class="post-metas mb-3">
-                
-                
               </div>
-              
-                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
-              
-              
-                <div class="post-prevnext row">
-                  <article class="post-prev col-6">
-                    
-                    
-                  </article>
-                  <article class="post-next col-6">
-                    
-                    
-                      <a href="/2020/11/09/Comcon/seckillDesign/">
-                        <span class="hidden-mobile">Something about Seckill</span>
-                        <span class="visible-mobile">Next</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
-                    
-                  </article>
-                </div>
-              
             </div>
-
-            
-          </article>
+          </div>
         </div>
       </div>
-    </div>
-    
-      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
-        <div id="toc">
-  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
-  <div id="tocbot"></div>
-</div>
-
-      </div>
-    
-  </div>
-</div>
-
-<!-- Custom -->
-
-
     
   </main>
 
@@ -375,31 +260,6 @@
 
 
 
-  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
-  <script>
-    $(document).ready(function () {
-      var boardCtn = $('#board-ctn');
-      var boardTop = boardCtn.offset().top;
-
-      tocbot.init({
-        tocSelector: '#tocbot',
-        contentSelector: '#post-body',
-        headingSelector: 'h1,h2,h3,h4,h5,h6',
-        linkClass: 'tocbot-link',
-        activeLinkClass: 'tocbot-active-link',
-        listClass: 'tocbot-list',
-        isCollapsedClass: 'tocbot-is-collapsed',
-        collapsibleClass: 'tocbot-is-collapsible',
-        collapseDepth: 0,
-        scrollSmooth: true,
-        headingsOffset: -boardTop
-      });
-      if ($('.toc-list-item').length > 0) {
-        $('#toc').css('visibility', 'visible');
-      }
-    });
-  </script>
-
 
 
   <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
@@ -407,7 +267,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "&nbsp;",
+        "Archive&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
@@ -422,21 +282,6 @@
 
 
 
-  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
-  <script>
-    anchors.options = {
-      placement: "right",
-      visible: "hover",
-      
-    };
-    var el = "h1,h2,h3,h4,h5,h6".split(",");
-    var res = [];
-    for (item of el) {
-      res.push(".markdown-body > " + item)
-    }
-    anchors.add(res.join(", "))
-  </script>
-
 
 
   <script  src="/js/local-search.js" ></script>
@@ -450,20 +295,6 @@
   </script>
 
 
-
-  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
-  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
-
-  <script>
-    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
-      function () {
-        var element = document.createElement('a');
-        $(element).attr('data-fancybox', 'images');
-        $(element).attr('href', $(this).attr('src'));
-        $(this).wrap(element);
-      }
-    );
-  </script>
 
 
 

@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      590 字
+      1.2k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      6
+      13
        分钟
     </span>
   
@@ -224,8 +224,28 @@
 <li>文件传输只能是<strong>串行</strong>的（在一个通道里面）</li>
 </ol>
 <h3 id="http2结构">HTTP2结构</h3>
-<p>HTTP2 传输的最小单位是 Frame（帧）。HTTP2 的帧包含很多类型：<code>DATA Frame</code>、<code>HEADERS Frame</code>、<code>PRIORITY Frame</code>、<code>RST_STREAM Frame</code>、<code>CONTINUATON Frame</code> 等。一个 HTTP2 请求/响应可以被拆成多个帧并行发送，每一帧都有一个 StreamID 来标记属于哪个 Stream。服务端收到 Frame 后，根据 StreamID 组装出原始请求数据;</p>
+<h4 id="hpack">HPACK</h4>
+<p>头部压缩
+HTTP /1 的请求头较大，而且是以纯文本发送，HTTP/2 对消息头进行了压缩，采用的是 <code>HPACK</code> 算法；
+能够节省消息头占用的网络流量，其主要是在两端建立了索引表，消息头在传输时可以采用索引，而 HTTP/1.x 每次请求，都会携带大量冗余头信息，浪费了很多带宽资源。</p>
+<h4 id="frame">Frame</h4>
+<p>HTTP2 传输的最小单位是 Frame（帧）。HTTP2 的帧包含很多类型：<code>DATA Frame</code>、<code>HEADERS Frame</code>、<code>PRIORITY Frame</code>、<code>RST_STREAM Frame</code>、<code>CONTINUATON Frame</code> 等;</p>
+<p>这也是多路复用的关键: 一个 HTTP2 请求/响应可以被拆成多个帧并行发送，每一帧都有一个 StreamID 来标记属于哪个 Stream。服务端收到 Frame 后，根据 StreamID 组装出原始请求数据,同一个 stream 内 frame 必须是有序的,<code>SETTINGS_MAX_CONCURRENT_STREAMS</code> 控制着最大并发数(并且这个设置仅适用于接收设置的对端);</p>
 <p>如图:<img src="/img/http2header.png" srcset="/img/loading.gif" alt="tu"></p>
+<ul>
+<li>所有帧都以固定的 9 字节头开头，后跟可变长度的有效载荷，组成如下：</li>
+<li>长度：帧有效负载的长度表示为无符号的 24 位整数</li>
+<li>类型：8 位类型的帧，帧类型确定帧的格式和语义</li>
+<li>标志：为特定于帧类型的布尔标志保留的 8 位字段</li>
+<li>R：保留的 1 位字段。该位的语义未定义</li>
+<li>流标识符：流标识符，表示为无符号 31 位整数，客户端发起流标识符必须时<strong>奇数</strong>，服务端发起的流标识符必须是<strong>偶数</strong>,流标识符零(0x0)用于<strong>连接控制消息</strong>,零流标识符不能用于建立新的 stream 流</li>
+</ul>
+<p>24+8+8+1+31=9B*8=72bit</p>
+<blockquote>
+<blockquote>
+<p>常用的标志位有 <code>END_HEADERS</code> 表示头数据结束，相当于 HTTP/1 里头后的空行（“\r\n”），<code>END_STREAM</code> 表示单方向数据发送结束（即 EOS，End of Stream），相当于 HTTP/1 里 Chunked 分块结束标志（“0\r\n\r\n”）</p>
+</blockquote>
+</blockquote>
 <h3 id="http2多路复用">HTTP2多路复用</h3>
 <ol>
 <li>
@@ -236,6 +256,9 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
 <p>因为HTTP1.1传输的request和response都是<strong>基于文本的</strong>，所以所有数据必须按<strong>顺序传输</strong>才能保证可靠性（TCP）;
 然而HTTP2前面说到利用的是<strong>二进制数据帧</strong>和<strong>流</strong>（TCP其实也是流），帧就是标识了数据的顺序！即不必要传完一个request，等到response再继续下一个;</p>
 </li>
+<li>
+<p>个人认为本质上，HTTP2为了解决<code>head of line blocking</code>这种问题，可以理解为将 HTTP1.1 这种<code>一条通道</code>的 切割成<code>多个通道</code>(现在大多数的stream数目为<code>100</code>)，每个通道放不同的stream，达到了<code>multiplexing</code>的效果, 上面的flow control就在应用层上细化了粒度，管理这样不同<code>通道</code>的速度（TCP可以理解为为管理整个连接）</p>
+</li>
 </ol>
 <h2 id="question">Question</h2>
 <h3 id="why-not-use-http2-as-download-protocol">why not use HTTP2 as download protocol?</h3>
@@ -244,10 +267,12 @@ HTTP2在<strong>同一域名</strong>下所有连接都基于<strong>流</strong
 <ol>
 <li>frame overhead</li>
 </ol>
+<p>HTTP1.1 每次传输实际都是content的bytes，但是HTTP2每次传输<code>DATA</code>frame额外的<code>9 bytes</code>的header</p>
 <ol start="2">
 <li>flow control</li>
 </ol>
-<p>http2的server端会控制给每一个session和每一个在这个session里的stream的发送端口</p>
+<p>http2的<code>server</code>端会控制给每一个session和每一个在这个session里的stream的发送窗口,默认是<code>65535</code>bytes，如果要开启下载，一定要扩大该窗口;
+然而问题来了，扩大该窗口是<code>client</code>端发送<code>WINDOW_UPDATE</code>进行扩大的，万一遇到延迟，这个传输无效，那么窗口只可以保持默认值大小</p>
 <h3 id="造成的问题-something-not-compatible-with-http2">造成的问题? Something not compatible with HTTP2?</h3>
 <ol>
 <li>JS文件合并:以前多个模块（文件）会合并成一个文件，当有模块要修改的时候，会全部上传一遍;</li>

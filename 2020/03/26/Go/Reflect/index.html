@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.5k 字
+      1.6k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      23
+      24
        分钟
     </span>
   
@@ -422,6 +422,22 @@ t.SetString(<span class="hljs-string">"test1"</span>) <span class="hljs-comment"
 &#125;
 <span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(m *doInterfaceWithoutMethod)</span> <span class="hljs-title">Do1</span><span class="hljs-params">(s <span class="hljs-keyword">string</span>)</span> <span class="hljs-title">string</span></span>&#123;&#125;</code></pre></div>
 <h2 id="额外">额外</h2>
+<h3 id="深复制">深复制</h3>
+<ol>
+<li>
+<p>val:=reflect.ValueOf(x)</p>
+</li>
+<li>
+<p>k:=val.Kind():判断类型</p>
+</li>
+<li>
+<p>k.NumField():获得fields的数目</p>
+</li>
+<li>
+<p>逐一field去判断类型:</p>
+</li>
+</ol>
+<h3 id="缓存itab类型">缓存itab类型</h3>
 <p>go会缓存itab的类型为一个k-v的表(底层有一个数组排列)，需要一个itab会首先从<code>itabTable</code>里面找</p>
 <div class="hljs"><pre><code class="hljs go"><span class="hljs-keyword">const</span> itabInitSize = <span class="hljs-number">512</span>
 <span class="hljs-comment">// Note: change the formula in the mallocgc call in itabAdd if you change these fields.</span>

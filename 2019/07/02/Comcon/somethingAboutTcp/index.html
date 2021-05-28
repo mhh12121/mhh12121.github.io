@@ -166,7 +166,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      4.2k 字
+      4.5k 字
     </span>
   
 
@@ -176,7 +176,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      46
+      49
        分钟
     </span>
   
@@ -449,7 +449,12 @@ Nagle就是解决这种问题，具体做法</p>
 <p>TCP在未完成队列接收SYN的request，当三次握手完成(established)后，就会将这个request移到已完成的连接队列的尾部;</p>
 <p>除了两个队列模型外，TCP listen path也用无锁方式来改进???（似乎有点问题）4.7内核版本改进</p>
 <h4 id="tcp复用端口">TCP复用端口</h4>
-<p>NAT</p>
+<p>端口复用最常用的用途应该是防止服务器重启时之前绑定的端口还未释放或者程序突然退出而系统没有释放端口。此时如果设定了端口复用，则新启动的服务器进程可以直接绑定端口;</p>
+<p>一般来说，一个端口释放后会等待两分钟之后或三十秒才能再被使用，<code>SO_REUSEADDR</code>是让端口释放后立即就可以被再次使用;</p>
+<p><code>SO_REUSEADDR</code>套接字选项通知内核，如果TCP状态位于 <code>TIME_WAIT</code>，可以重用端口。如果TCP状态位于其他状态，重用端口时依旧得到一个错误信息，指明&quot;地址已经使用中&quot;。
+如果你的服务程序停止后想立即重启，而新套接字依旧使用同一端口，此时<code>SO_REUSEADDR</code> 选项非常有用。</p>
+<p>端口复用允许在一个应用程序可以把 n 个套接字绑在一个端口上而不出错。同时，这 n 个套接字发送信息都正常，没有问题;</p>
+<p>但是，这些套接字并不是所有都能读取信息，只有<strong>最后一个</strong>套接字会正常接收数据，这个特性都为后门程序所应用</p>
 <h4 id="dns协议">DNS协议</h4>
 <p>首先这🐔是<strong>应用层</strong>协议！！！
 功能主要就是<strong>把域名转换为IP地址</strong>
